@@ -129,6 +129,8 @@ class TileSet {
     int imagewidth;            /// Width of source image in pixels
     int imageheight;           /// Height of source image in pixels
     string[string] properties; /// Properties assigned to this tileset
+    int margin;                /// Buffer between image edge and tiles (in pixels)
+    int spacing;               /// Spacing between tiles in image (in pixels)
   }
 
   @jsonize(JsonizeOptional.yes) {
