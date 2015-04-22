@@ -113,6 +113,7 @@ class MapLayer {
     MapObject[] objects;       /// An array of objects. Only on `objectgroup` layers.
     string[string] properties; /// Optional user-defined key-value properties for this layer
     float opacity;             /// Visual opacity of all tiles in this layer
+    string draworder;          /// Not documented by tiled, but may appear in JSON.
   }
 }
 
