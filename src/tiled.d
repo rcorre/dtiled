@@ -65,28 +65,37 @@ class TiledMap {
     int nextobjectid;
   }
 
-  /// Fetch a map layer by its name. No check for layers with duplicate names is performed.
-  /// Throws if no layer has a matching name (case-sensitive).
-  /// Params:
-  ///   name = name of layer to find
-  /// Returns: Layer matching name
+  /** Fetch a map layer by its name. No check for layers with duplicate names is performed.
+    * Throws if no layer has a matching name (case-sensitive).
+    * Params:
+    *   name = name of layer to find
+    * Returns: Layer matching name
+    */
   MapLayer getLayer(string name) {
     auto r = layers.find!(x => x.name == name);
     enforce(!r.empty, "Could not find layer named %s".format(name));
     return r.front;
   }
 
-  /// Load a Tiled map from a JSON file.
-  /// Throws if no file is found at that path or if the parsing fails.
-  /// Params:
-  ///   path = filesystem path to a JSON map file exported by Tiled
-  /// Returns: The parsed map data
+  /** Load a Tiled map from a JSON file.
+    * Throws if no file is found at that path or if the parsing fails.
+    * Params:
+    *   path = filesystem path to a JSON map file exported by Tiled
+    * Returns: The parsed map data
+    */
   static TiledMap load(string path) {
     enforce(path.exists, "No map file found at " ~ path);
     return readJSON!TiledMap(path);
   }
 }
 
+/** A layer of tiles withing the map.
+  *
+  * A Map layer could be one of:
+  * Tile Layer: `data` is an array of guids that each map to some tile from a `TileSet`
+  * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
+  * Image Layer: This layer is a static image (e.g. a backdrop)
+  */
 class MapLayer {
   mixin JsonizeMe;
 
@@ -117,6 +126,11 @@ class MapLayer {
   }
 }
 
+/** Represents an entity in an object layer.
+  *
+  * Objects are not necessarily grid-aligned, but rather have a position specified in pixel coords.
+  * Each object instance can have a `name`, `type`, and set of `properties` defined in the editor.
+  */
 class MapObject {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
@@ -136,6 +150,14 @@ class MapObject {
   }
 }
 
+/**
+ * A `TileSet` maps GIDs (Global IDentifiers) to tiles.
+ *
+ * Each tileset has a range of GIDs that map to the tiles it contains.
+ * This range starts at `firstgid` and extends to the `firstgid` of the next tileset.
+ * The index of a tile within a tileset is given by tile.gid - tileset.firstgid.
+ * A tileset uses its `image` as a 'tile atlas' and may specify per-tile `properties`.
+ */
 class TileSet {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
