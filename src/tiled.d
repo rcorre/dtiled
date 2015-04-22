@@ -7,11 +7,11 @@
   */
 module tiled;
 
-import std.file;
-import std.path;
-import std.conv;
-import std.range;
-import std.algorithm;
+import std.file      : exists;
+import std.path      : buildPath, setExtension;
+import std.range     : front, empty;
+import std.string    : format;
+import std.algorithm : find;
 import std.exception : enforce;
 import jsonizer;
 
