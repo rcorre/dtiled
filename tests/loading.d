@@ -1,5 +1,8 @@
 module tests.loading;
 
+import std.conv;
+import std.range;
+import std.algorithm;
 import std.path : buildPath, setExtension;
 import std.exception : assertThrown;
 import tiled;
@@ -58,4 +61,31 @@ unittest {
 unittest {
   // load map
   auto map = TiledMap.load(testPath!"objects");
+
+  // find the object layer
+  auto layer = map.getLayer("things");
+  assert(layer.type == MapLayer.Type.objectgroup);
+  assert(layer.draworder == "topdown");
+
+  auto tileset = map.getTileset("numbers");
+  auto objects = layer.objects;
+
+  // helper to check an object in the test data
+  void checkObject(int num) {
+    string name = "number%d".format(num);
+    auto found = objects.find!(x => x.name == name);
+    assert(!found.empty, "no object with name " ~ name);
+    auto obj = found.front;
+
+    assert(obj.gid == tileset.firstgid + num - 1); // number1 is the zeroth tile, ect.
+    assert(obj.type == (num % 2 == 0 ? "even" : "odd")); // just an arbitrarily picked type
+    //assert(obj.properties["half"].to!int == num / 2 ));
+    assert(obj.rotation == 0);
+    assert(obj.visible);
+  }
+
+  checkObject(1);
+  checkObject(2);
+  checkObject(3);
+  checkObject(4);
 }
