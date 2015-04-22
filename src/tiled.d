@@ -77,6 +77,18 @@ class TiledMap {
     return r.front;
   }
 
+  /** Fetch a tileset by its name. No check for layers with duplicate names is performed.
+    * Throws if no tileset has a matching name (case-sensitive).
+    * Params:
+    *   name = name of tileset to find
+    * Returns: Tileset matching name
+    */
+  TileSet getTileset(string name) {
+    auto r = tilesets.find!(x => x.name == name);
+    enforce(!r.empty, "Could not find layer named %s".format(name));
+    return r.front;
+  }
+
   /** Load a Tiled map from a JSON file.
     * Throws if no file is found at that path or if the parsing fails.
     * Params:
@@ -143,6 +155,7 @@ class MapObject {
     bool visible;              /// Whether object is shown.
     int x;                     /// x coordinate in pixels
     int y;                     /// y coordinate in pixels
+    float rotation;            /// angle in degrees clockwise
   }
 
   @jsonize(JsonizeOptional.yes) {
