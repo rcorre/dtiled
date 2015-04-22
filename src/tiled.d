@@ -64,6 +64,22 @@ class TiledMap {
     int nextobjectid;
   }
 
+  /// Fetch a map layer by its name. No check for layers with duplicate names is performed.
+  /// Throws if no layer has a matching name (case-sensitive).
+  /// Params:
+  ///   name = name of layer to find
+  /// Returns: Layer matching name
+  MapLayer getLayer(string name) {
+    auto r = layers.find!(x => x.name == name);
+    enforce(!r.empty, "Could not find layer named %s".format(name));
+    return r.front;
+  }
+
+  /// Load a Tiled map from a JSON file.
+  /// Throws if no file is found at that path or if the parsing fails.
+  /// Params:
+  ///   path = filesystem path to a JSON map file exported by Tiled
+  /// Returns: The parsed map data
   static TiledMap load(string path) {
     enforce(path.exists, "No map file found at " ~ path);
     return readJSON!TiledMap(path);
