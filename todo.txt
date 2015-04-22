@@ -1,0 +1,5 @@
+Higher level range-based api
+Use structs instead of classes when possible
+Use unions for things like data/objects on maplayer
+Use guid property to return guid with top bits zeroed
+nest types: allow access to outer context for mapping guids to tile data
