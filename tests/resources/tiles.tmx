@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="4" height="4" tilewidth="32" tileheight="32" backgroundcolor="#656667" nextobjectid="1">
+ <properties>
+  <property name="mapProperty1" value="one"/>
+  <property name="mapProperty2" value="two"/>
+ </properties>
+ <tileset firstgid="1" name="terrain" tilewidth="32" tileheight="32">
+  <image source="terrain.png" width="64" height="64"/>
+ </tileset>
+ <layer name="terrain" width="4" height="4">
+  <properties>
+   <property name="tileLayerProp" value="1"/>
+  </properties>
+  <data>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="3"/>
+   <tile gid="1"/>
+   <tile gid="3"/>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="2"/>
+   <tile gid="3"/>
+   <tile gid="3"/>
+   <tile gid="4"/>
+   <tile gid="4"/>
+   <tile gid="4"/>
+   <tile gid="1"/>
+  </data>
+ </layer>
+</map>
