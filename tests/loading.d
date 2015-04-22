@@ -1,9 +1,10 @@
 module tests.loading;
 
 import std.path : buildPath, setExtension;
+import std.exception : assertThrown;
 import tiled;
 
-enum testPath(string name) = "tests".buildPath("resources").buildPath(name).setExtension("json");
+enum testPath(string name) = "tests".buildPath("resources", name).setExtension("json");
 
 /// Load a map containing a single tile layer
 unittest {
@@ -47,4 +48,14 @@ unittest {
   assert(tileset.tileheight  == 32);
   assert(tileset.tilewidth   == 32);
   assert(tileset.spacing     == 0);
+
+  // test getTileset
+  assert(map.getLayer("terrain") == map.layers[0]);
+  assertThrown(map.getLayer("nosuchlayer"));
+}
+
+/// Load a map containing a single tile layer
+unittest {
+  // load map
+  auto map = TiledMap.load(testPath!"objects");
 }
