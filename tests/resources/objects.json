@@ -6,6 +6,10 @@
          "height":4,
          "name":"terrain",
          "opacity":1,
+         "properties":
+            {
+             "tileLayerProp":"1"
+            },
          "type":"tilelayer",
          "visible":true,
          "width":4,
@@ -14,7 +18,7 @@
         }, 
         {
          "draworder":"topdown",
-         "height":4,
+         "height":0,
          "name":"things",
          "objects":[
                 {
@@ -82,9 +86,13 @@
                  "y":128
                 }],
          "opacity":1,
+         "properties":
+            {
+             "objectLayerProp":"1"
+            },
          "type":"objectgroup",
          "visible":true,
-         "width":4,
+         "width":0,
          "x":0,
          "y":0
         }],

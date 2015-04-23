@@ -6,6 +6,10 @@
          "height":4,
          "name":"terrain",
          "opacity":1,
+         "properties":
+            {
+             "tileLayerProp":"1"
+            },
          "type":"tilelayer",
          "visible":true,
          "width":4,
