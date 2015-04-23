@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="4" height="4" tilewidth="32" tileheight="32" backgroundcolor="#656667" nextobjectid="6">
+ <properties>
+  <property name="mapProperty1" value="one"/>
+  <property name="mapProperty2" value="two"/>
+ </properties>
+ <tileset firstgid="1" name="terrain" tilewidth="32" tileheight="32">
+  <image source="terrain.png" width="64" height="64"/>
+ </tileset>
+ <tileset firstgid="5" name="numbers" tilewidth="32" tileheight="32">
+  <image source="numbers.png" width="64" height="64"/>
+ </tileset>
+ <layer name="terrain" width="4" height="4">
+  <properties>
+   <property name="tileLayerProp" value="1"/>
+  </properties>
+  <data>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="3"/>
+   <tile gid="1"/>
+   <tile gid="3"/>
+   <tile gid="1"/>
+   <tile gid="2"/>
+   <tile gid="2"/>
+   <tile gid="3"/>
+   <tile gid="3"/>
+   <tile gid="4"/>
+   <tile gid="4"/>
+   <tile gid="4"/>
+   <tile gid="1"/>
+  </data>
+ </layer>
+ <objectgroup name="things">
+  <properties>
+   <property name="objectLayerProp" value="1"/>
+  </properties>
+  <object id="1" name="number1" type="odd" gid="5" x="32" y="32">
+   <properties>
+    <property name="isPrime" value="false"/>
+   </properties>
+  </object>
+  <object id="2" name="number2" type="even" gid="1073741830" x="64" y="64">
+   <properties>
+    <property name="isPrime" value="true"/>
+   </properties>
+  </object>
+  <object id="3" name="number3" type="odd" gid="2147483655" x="32" y="96">
+   <properties>
+    <property name="isPrime" value="true"/>
+   </properties>
+  </object>
+  <object id="4" name="number4" type="even" gid="3221225480" x="64" y="128">
+   <properties>
+    <property name="isPrime" value="false"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

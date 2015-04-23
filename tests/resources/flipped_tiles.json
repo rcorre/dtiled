@@ -1,0 +1,47 @@
+{ "backgroundcolor":"#656667",
+ "height":4,
+ "layers":[
+        {
+         "data":[1, 2, 2147483650, 2147483649, 3, 1, 2147483649, 2147483651, 1073741828, 1073741828, 3221225473, 3221225476, 1073741826, 1073741826, 3221225475, 3221225475],
+         "height":4,
+         "name":"terrain",
+         "opacity":1,
+         "properties":
+            {
+             "tileLayerProp":"1"
+            },
+         "type":"tilelayer",
+         "visible":true,
+         "width":4,
+         "x":0,
+         "y":0
+        }],
+ "nextobjectid":1,
+ "orientation":"orthogonal",
+ "properties":
+    {
+     "mapProperty1":"one",
+     "mapProperty2":"two"
+    },
+ "renderorder":"right-down",
+ "tileheight":32,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "image":"terrain.png",
+         "imageheight":64,
+         "imagewidth":64,
+         "margin":0,
+         "name":"terrain",
+         "properties":
+            {
+
+            },
+         "spacing":0,
+         "tileheight":32,
+         "tilewidth":32
+        }],
+ "tilewidth":32,
+ "version":1,
+ "width":4
+}
