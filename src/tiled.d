@@ -37,7 +37,7 @@ unittest {
 }
 
 /// Top-level Tiled structure - encapsulates all data in the map file.
-class TiledMap {
+struct TiledMap {
   mixin JsonizeMe;
 
   /// Map orientation.
@@ -113,14 +113,14 @@ class TiledMap {
   }
 }
 
-/** A layer of tiles withing the map.
+/** A layer of tiles within the map.
   *
   * A Map layer could be one of:
   * Tile Layer: `data` is an array of guids that each map to some tile from a `TileSet`
   * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
   * Image Layer: This layer is a static image (e.g. a backdrop)
   */
-class MapLayer {
+struct MapLayer {
   mixin JsonizeMe;
 
   /// Identifies what kind of information a layer contains.
@@ -155,7 +155,7 @@ class MapLayer {
   * Objects are not necessarily grid-aligned, but rather have a position specified in pixel coords.
   * Each object instance can have a `name`, `type`, and set of `properties` defined in the editor.
   */
-class MapObject {
+struct MapObject {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
     int id;                    /// Incremental id - unique across all objects
@@ -183,7 +183,7 @@ class MapObject {
  * The index of a tile within a tileset is given by tile.gid - tileset.firstgid.
  * A tileset uses its `image` as a 'tile atlas' and may specify per-tile `properties`.
  */
-class TileSet {
+struct TileSet {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
     int firstgid;              /// The GID that maps to the first tile in this set
