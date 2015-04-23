@@ -1,4 +1,4 @@
-module tests.loading;
+module tests.core;
 
 import std.conv;
 import std.range;
