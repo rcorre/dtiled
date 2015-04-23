@@ -1,18 +1,14 @@
 /**
-  * Parse map files produced by <a href="http://www.mapeditor.org/">Tiled</a>.
+  * Pure data representation of a Tiled map.
   * Currently only supports JSON format.
   *
   * Authors: <a href="https://github.com/rcorre">rcorre</a>
 	* License: <a href="http://opensource.org/licenses/MIT">MIT</a>
 	* Copyright: Copyright © 2015, Ryan Roden-Corrent
   */
-module tiled;
+module tiled.core;
 
 import std.file      : exists;
-import std.path      : buildPath, setExtension;
-import std.range     : front, empty;
-import std.string    : format;
-import std.algorithm : find;
 import std.exception : enforce;
 import jsonizer;
 
@@ -77,30 +73,6 @@ struct TiledMap {
     int nextobjectid;
   }
 
-  /** Fetch a map layer by its name. No check for layers with duplicate names is performed.
-    * Throws if no layer has a matching name (case-sensitive).
-    * Params:
-    *   name = name of layer to find
-    * Returns: Layer matching name
-    */
-  MapLayer getLayer(string name) {
-    auto r = layers.find!(x => x.name == name);
-    enforce(!r.empty, "Could not find layer named %s".format(name));
-    return r.front;
-  }
-
-  /** Fetch a tileset by its name. No check for layers with duplicate names is performed.
-    * Throws if no tileset has a matching name (case-sensitive).
-    * Params:
-    *   name = name of tileset to find
-    * Returns: Tileset matching name
-    */
-  TileSet getTileset(string name) {
-    auto r = tilesets.find!(x => x.name == name);
-    enforce(!r.empty, "Could not find layer named %s".format(name));
-    return r.front;
-  }
-
   /** Load a Tiled map from a JSON file.
     * Throws if no file is found at that path or if the parsing fails.
     * Params:
@@ -110,6 +82,14 @@ struct TiledMap {
   static TiledMap load(string path) {
     enforce(path.exists, "No map file found at " ~ path);
     return readJSON!TiledMap(path);
+  }
+
+  /** Save a Tiled map to a JSON file.
+    * Params:
+    *   path = file destination; parent directory must already exist
+    */
+  void save(string path) {
+    path.writeJSON(this);
   }
 }
 
