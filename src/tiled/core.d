@@ -123,7 +123,7 @@ struct MapLayer {
 
   // These entries exist only on object layers
   @jsonize(JsonizeOptional.yes) {
-    int[] data;                /// An array of GIDs that identify tiles. Only on `tilelayer` layers
+    uint[] data;               /// An array of GIDs that identify tiles. Only on `tilelayer` layers
     MapObject[] objects;       /// An array of objects. Only on `objectgroup` layers.
     string[string] properties; /// Optional user-defined key-value properties for this layer
     float opacity;             /// Visual opacity of all tiles in this layer
