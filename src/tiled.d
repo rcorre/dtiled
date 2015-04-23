@@ -18,10 +18,22 @@ import jsonizer;
 
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
 enum TileFlag {
-  flipHorizontal = 0x80000000,
-  flipVertical   = 0x40000000,
-  flipDiagonal   = 0x20000000,
-  all            = flipHorizontal | flipVertical | flipDiagonal,
+  flipHorizontal = 0x80000000, /// Tile is flipped horizontally (over y axis)
+  flipVertical   = 0x40000000, /// Tile is flipped vertically (over x axis)
+  flipDiagonal   = 0x20000000, /// Tile is flipped diagonally
+  all = flipHorizontal | flipVertical | flipDiagonal, /// bitwise `or` of all tile flags.
+}
+
+///
+unittest {
+  // this is the GID for a tile with tileset index 21 that was flipped horizontally
+  uint gid = 2147483669;
+  // clearing the flip flags yields a gid that should map to a tileset index
+  assert((gid & ~TileFlag.all) == 21);
+  // it is flipped horizontally
+  assert(gid & TileFlag.flipHorizontal);
+  assert(!(gid & TileFlag.flipVertical));
+  assert(!(gid & TileFlag.flipDiagonal));
 }
 
 /// Top-level Tiled structure - encapsulates all data in the map file.
@@ -30,9 +42,9 @@ class TiledMap {
 
   /// Map orientation.
   enum Orientation {
-    orthogonal,
-    isometric,
-    staggered
+    orthogonal, /// rectangular orthogonal map
+    isometric,  /// diamond-shaped isometric map
+    staggered   /// rough rectangular isometric map
   }
 
   /** The order in which tiles on tile layers are rendered.
@@ -42,10 +54,10 @@ class TiledMap {
     * (since 0.10, but only supported for orthogonal maps at the moment)
     */
   enum RenderOrder : string {
-    rightDown = "right-down",
-    rightUp   = "right-up",
-    leftDown  = "left-down",
-    leftUp    = "left-up"
+    rightDown = "right-down", /// left-to-right, top-to-bottom
+    rightUp   = "right-up",   /// left-to-right, bottom-to-top
+    leftDown  = "left-down",  /// right-to-left, top-to-bottom
+    leftUp    = "left-up"     /// right-to-left, bottom-to-top
   }
 
   @jsonize(JsonizeOptional.no) {
