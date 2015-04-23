@@ -5,9 +5,13 @@ import std.range;
 import std.algorithm;
 import std.path : buildPath, setExtension;
 import std.exception : assertThrown;
-import tiled;
+import tiled.core;
 
 enum testPath(string name) = "tests".buildPath("resources", name).setExtension("json");
+
+// expected gids for the test terrain layer
+enum terrainGids = [1, 2, 1, 2, 3, 1, 3, 1, 2, 2, 3, 3, 4, 4, 4, 1];
+enum flippedTerrainGids = [1, 2, 2, 1, 3, 1, 1, 3, 4, 4, 1, 4, 2, 2, 3, 3];
 
 /// Load a map containing a single tile layer
 unittest {
@@ -31,7 +35,7 @@ unittest {
   assert(map.layers.length == 1);
   auto tiles = map.layers[0];
   assert(tiles.name    == "terrain");
-  assert(tiles.data    == [1, 2, 1, 2, 3, 1, 3, 1, 2, 2, 3, 3, 4, 4, 4, 1]);
+  assert(tiles.data    == terrainGids);
   assert(tiles.height  == 4);
   assert(tiles.width   == 4);
   assert(tiles.opacity == 1f);
@@ -51,23 +55,24 @@ unittest {
   assert(tileset.tileheight  == 32);
   assert(tileset.tilewidth   == 32);
   assert(tileset.spacing     == 0);
-
-  // test getTileset
-  assert(map.getLayer("terrain") == map.layers[0]);
-  assertThrown(map.getLayer("nosuchlayer"));
 }
 
-/// Load a map containing a single tile layer
+/// Load a map containing an object layer
 unittest {
+  import std.string : format;
+
   // load map
   auto map = TiledMap.load(testPath!"objects");
 
-  // find the object layer
-  auto layer = map.getLayer("things");
+  // Layer 1 is an object layer in the test map
+  auto layer = map.layers[1];
+  assert(layer.name == "things");
   assert(layer.type == MapLayer.Type.objectgroup);
   assert(layer.draworder == "topdown");
 
-  auto tileset = map.getTileset("numbers");
+  // Tileset 1 is the tileset used for the objects
+  auto tileset = map.tilesets[1];
+  assert(tileset.name == "numbers");
   auto objects = layer.objects;
 
   // helper to check an object in the test data
@@ -88,4 +93,41 @@ unittest {
   checkObject(2);
   checkObject(3);
   checkObject(4);
+}
+
+/// Load a map containing flipped (mirrored) tiles.
+unittest {
+  import std.range : indexed;
+  import std.algorithm : map, equal;
+
+  // load map
+  auto tileMap = TiledMap.load(testPath!"flipped_tiles");
+
+  // this map should have a single tile layer
+  assert(tileMap.layers.length == 1);
+  auto layer = tileMap.layers[0];
+
+  // clear special bits to get actual gid
+  auto gids = layer.data.map!(gid => gid & ~TileFlag.all);
+  // with the special bits cleared, the gids should be the same as in the original map
+  assert(gids.equal(flippedTerrainGids));
+
+  // isolate special bits to get flipped state
+  auto flags = layer.data.map!(gid => gid & TileFlag.all);
+
+  with(TileFlag) {
+    enum N = none;
+    enum H = flipHorizontal;
+    enum V = flipVertical;
+    enum D = H | V;
+
+    enum flippedState = [
+      N, N, H, H,
+      N, N, H, H,
+      V, V, D, D,
+      V, V, D, D,
+    ];
+
+    assert(flags.equal(flippedState));
+  }
 }
