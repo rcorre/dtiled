@@ -14,9 +14,10 @@ import jsonizer;
 
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
 enum TileFlag {
-  flipHorizontal = 0x80000000, /// Tile is flipped horizontally (over y axis)
-  flipVertical   = 0x40000000, /// Tile is flipped vertically (over x axis)
+  none           = 0x00000000, /// Tile is not flipped
   flipDiagonal   = 0x20000000, /// Tile is flipped diagonally
+  flipVertical   = 0x40000000, /// Tile is flipped vertically (over x axis)
+  flipHorizontal = 0x80000000, /// Tile is flipped horizontally (over y axis)
   all = flipHorizontal | flipVertical | flipDiagonal, /// bitwise `or` of all tile flags.
 }
 
