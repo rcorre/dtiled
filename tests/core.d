@@ -97,7 +97,6 @@ unittest {
 
 /// Load a map containing flipped (mirrored) tiles.
 unittest {
-  import std.range : indexed;
   import std.algorithm : map, equal;
 
   // load map
@@ -130,4 +129,40 @@ unittest {
 
     assert(flags.equal(flippedState));
   }
+}
+
+/// Load a map containing flipped (mirrored) objects.
+unittest {
+  import std.conv;
+  import std.string : format;
+
+  // load map
+  auto map = TiledMap.load(testPath!"flipped_objects");
+
+  // Layer 1 is an object layer in the test map
+  auto layer = map.layers[1];
+
+  // Tileset 1 is the tileset used for the objects
+  auto tileset = map.tilesets[1];
+  assert(tileset.name == "numbers");
+  auto objects = layer.objects;
+
+  // helper to check an object in the test data
+  void checkObject(int num, TileFlag expectedFlags) {
+    string name = "number%d".format(num);
+    auto found = objects.find!(x => x.name == name);
+    assert(!found.empty, "no object with name " ~ name);
+    auto obj = found.front;
+
+    auto gid = obj.gid & ~TileFlag.all;
+    auto flags = obj.gid & TileFlag.all;
+    assert(gid == tileset.firstgid + num - 1); // number1 is the zeroth tile, ect.
+    assert(flags == expectedFlags, 
+        "tile %d: expected flag %s, got %s".format(num, expectedFlags, cast(TileFlag) flags));
+  }
+
+  checkObject(1, TileFlag.none);
+  checkObject(2, TileFlag.flipVertical);
+  checkObject(3, TileFlag.flipHorizontal);
+  checkObject(4, TileFlag.flipHorizontal | TileFlag.flipVertical);
 }
