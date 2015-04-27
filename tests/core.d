@@ -44,9 +44,11 @@ unittest {
   assert(tiles.x == 0);
   assert(tiles.y == 0);
 
+  // getLayer should return layers[0]
+  assert(map.getLayer("terrain") == tiles);
+
   // this map should have a single tile set
-  assert(map.tilesets.length == 1);
-  auto tileset = map.tilesets[0];
+  assert(map.tilesets.length == 1); auto tileset = map.tilesets[0];
   // fields
   assert(tileset.name        == "terrain");
   assert(tileset.firstgid    == 1);
@@ -60,6 +62,9 @@ unittest {
   assert(tileset.numRows == 2);
   assert(tileset.numCols == 2);
   assert(tileset.numTiles == 4);
+
+  // getTileset should return tilesets[0]
+  assert(map.getTileset("terrain") == tileset);
 }
 
 /// Load a map containing an object layer

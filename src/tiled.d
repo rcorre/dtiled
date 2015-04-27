@@ -117,7 +117,7 @@ struct TiledMap {
    *   name = name of tileset to find
    * Returns: Tileset matching name
    */
-  TileSet getTileset(TiledMap map, string name) {
+  TileSet getTileset(string name) {
     auto r = tilesets.find!(x => x.name == name);
     enforce(!r.empty, "Could not find layer named %s".format(name));
     return r.front;
