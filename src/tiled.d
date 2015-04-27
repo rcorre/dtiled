@@ -91,7 +91,17 @@ struct TiledMap {
     */
   static TiledMap load(string path) {
     enforce(path.exists, "No map file found at " ~ path);
-    return readJSON!TiledMap(path);
+    auto map = readJSON!TiledMap(path);
+
+    // Tiled should export Tilesets in order of increasing GID.
+    // Double check this in debug mode, as things will break if this invariant doesn't hold.
+    debug {
+      import std.algorithm : isSorted;
+      assert(map.tilesets.isSorted!((a,b) => a.firstgid < b.firstgid),
+          "TileSets are not sorted by GID!");
+    }
+
+    return map;
   }
 
   /** Save a Tiled map to a JSON file.
@@ -99,6 +109,13 @@ struct TiledMap {
     *   path = file destination; parent directory must already exist
     */
   void save(string path) {
+    // Tilemaps must be exported sorted in order of firstgid
+    debug {
+      import std.algorithm : isSorted;
+      assert(tilesets.isSorted!((a,b) => a.firstgid < b.firstgid),
+          "TileSets are not sorted by GID!");
+    }
+
     path.writeJSON(this);
   }
 
