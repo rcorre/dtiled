@@ -4,7 +4,7 @@
   "copyright": "Copyright © 2015, erethar",
   "authors": ["erethar"],
   "dependencies": {
-    "jsonizer": "~>0.3.4"
+    "jsonizer": "~>0.4.0"
   },
   "configurations": [
     {
