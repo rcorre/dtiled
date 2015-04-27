@@ -39,7 +39,7 @@ unittest {
   assert(tiles.height  == 4);
   assert(tiles.width   == 4);
   assert(tiles.opacity == 1f);
-  assert(tiles.type    == MapLayer.Type.tilelayer);
+  assert(tiles.type    == TiledLayer.Type.tilelayer);
   assert(tiles.visible);
   assert(tiles.x == 0);
   assert(tiles.y == 0);
@@ -77,7 +77,7 @@ unittest {
   // Layer 1 is an object layer in the test map
   auto layer = map.layers[1];
   assert(layer.name == "things");
-  assert(layer.type == MapLayer.Type.objectgroup);
+  assert(layer.type == TiledLayer.Type.objectgroup);
   assert(layer.draworder == "topdown");
 
   // Tileset 1 is the tileset used for the objects
@@ -117,14 +117,14 @@ unittest {
   auto layer = tileMap.layers[0];
 
   // clear special bits to get actual gid
-  auto gids = layer.data.map!(gid => gid & ~TileFlag.all);
+  auto gids = layer.data.map!(gid => gid & ~TiledFlag.all);
   // with the special bits cleared, the gids should be the same as in the original map
   assert(gids.equal(flippedTerrainGids));
 
   // isolate special bits to get flipped state
-  auto flags = layer.data.map!(gid => gid & TileFlag.all);
+  auto flags = layer.data.map!(gid => gid & TiledFlag.all);
 
-  with(TileFlag) {
+  with(TiledFlag) {
     enum N = none;
     enum H = flipHorizontal;
     enum V = flipVertical;
@@ -158,21 +158,21 @@ unittest {
   auto objects = layer.objects;
 
   // helper to check an object in the test data
-  void checkObject(int num, TileFlag expectedFlags) {
+  void checkObject(int num, TiledFlag expectedFlags) {
     string name = "number%d".format(num);
     auto found = objects.find!(x => x.name == name);
     assert(!found.empty, "no object with name " ~ name);
     auto obj = found.front;
 
-    auto gid = obj.gid & ~TileFlag.all;
-    auto flags = obj.gid & TileFlag.all;
+    auto gid = obj.gid & ~TiledFlag.all;
+    auto flags = obj.gid & TiledFlag.all;
     assert(gid == tileset.firstgid + num - 1); // number1 is the zeroth tile, ect.
     assert(flags == expectedFlags, 
-        "tile %d: expected flag %s, got %s".format(num, expectedFlags, cast(TileFlag) flags));
+        "tile %d: expected flag %s, got %s".format(num, expectedFlags, cast(TiledFlag) flags));
   }
 
-  checkObject(1, TileFlag.none);
-  checkObject(2, TileFlag.flipVertical);
-  checkObject(3, TileFlag.flipHorizontal);
-  checkObject(4, TileFlag.flipHorizontal | TileFlag.flipVertical);
+  checkObject(1, TiledFlag.none);
+  checkObject(2, TiledFlag.flipVertical);
+  checkObject(3, TiledFlag.flipHorizontal);
+  checkObject(4, TiledFlag.flipHorizontal | TiledFlag.flipVertical);
 }

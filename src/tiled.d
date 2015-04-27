@@ -16,7 +16,7 @@ import std.exception : enforce;
 import jsonizer;
 
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
-enum TileFlag {
+enum TiledFlag {
   none           = 0x00000000, /// Tile is not flipped
   flipDiagonal   = 0x20000000, /// Tile is flipped diagonally
   flipVertical   = 0x40000000, /// Tile is flipped vertically (over x axis)
@@ -29,11 +29,11 @@ unittest {
   // this is the GID for a tile with tileset index 21 that was flipped horizontally
   uint gid = 2147483669;
   // clearing the flip flags yields a gid that should map to a tileset index
-  assert((gid & ~TileFlag.all) == 21);
+  assert((gid & ~TiledFlag.all) == 21);
   // it is flipped horizontally
-  assert(gid & TileFlag.flipHorizontal);
-  assert(!(gid & TileFlag.flipVertical));
-  assert(!(gid & TileFlag.flipDiagonal));
+  assert(gid & TiledFlag.flipHorizontal);
+  assert(!(gid & TiledFlag.flipVertical));
+  assert(!(gid & TiledFlag.flipDiagonal));
 }
 
 /// Top-level Tiled structure - encapsulates all data in the map file.
@@ -68,8 +68,8 @@ struct TiledMap {
     int tilewidth;           /// General grid size. Individual tiles sizes may differ.
     int tileheight;          /// ditto
     Orientation orientation; /// Orthogonal, isometric, or staggered
-    MapLayer[] layers;       /// All map layers (tiles and objects)
-    TileSet[] tilesets;      /// All tile sets defined in this map
+    TiledLayer[] layers;     /// All map layers (tiles and objects)
+    TiledTileset[] tilesets; /// All tile sets defined in this map
   }
 
   @jsonize(JsonizeOptional.yes) {
@@ -105,7 +105,7 @@ struct TiledMap {
    *   name = name of layer to find
    * Returns: Layer matching name
    */
-  MapLayer getLayer(string name) {
+  TiledLayer getLayer(string name) {
     auto r = layers.find!(x => x.name == name);
     enforce(!r.empty, "Could not find layer named %s".format(name));
     return r.front;
@@ -117,7 +117,7 @@ struct TiledMap {
    *   name = name of tileset to find
    * Returns: Tileset matching name
    */
-  TileSet getTileset(string name) {
+  TiledTileset getTileset(string name) {
     auto r = tilesets.find!(x => x.name == name);
     enforce(!r.empty, "Could not find layer named %s".format(name));
     return r.front;
@@ -127,17 +127,17 @@ struct TiledMap {
 /** A layer of tiles within the map.
  *
  * A Map layer could be one of:
- * Tile Layer: `data` is an array of guids that each map to some tile from a `TileSet`
+ * Tile Layer: `data` is an array of guids that each map to some tile from a `TiledTileset`
  * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
  * Image Layer: This layer is a static image (e.g. a backdrop)
  */
-struct MapLayer {
+struct TiledLayer {
   mixin JsonizeMe;
 
   /// Identifies what kind of information a layer contains.
   enum Type {
     tilelayer,   /// One tileset index for every tile in the layer
-    objectgroup, /// One or more `MapObjects`
+    objectgroup, /// One or more `TiledObjects`
     imagelayer   /// TODO: try actually creating one of these
   }
 
@@ -153,8 +153,8 @@ struct MapLayer {
 
   // These entries exist only on object layers
   @jsonize(JsonizeOptional.yes) {
-    uint[] data;               /// An array of GIDs that identify tiles. Only on `tilelayer` layers
-    MapObject[] objects;       /// An array of objects. Only on `objectgroup` layers.
+    uint[] data;               /// An array of GIDs that identify tiles. Only for `tilelayer`
+    TiledObject[] objects;     /// An array of objects. Only on `objectgroup` layers.
     string[string] properties; /// Optional user-defined key-value properties for this layer
     float opacity;             /// Visual opacity of all tiles in this layer
     string draworder;          /// Not documented by tiled, but may appear in JSON.
@@ -166,7 +166,7 @@ struct MapLayer {
  * Objects are not necessarily grid-aligned, but rather have a position specified in pixel coords.
  * Each object instance can have a `name`, `type`, and set of `properties` defined in the editor.
  */
-struct MapObject {
+struct TiledObject {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
     int id;                    /// Incremental id - unique across all objects
@@ -187,14 +187,14 @@ struct MapObject {
 }
 
 /**
- * A `TileSet` maps GIDs (Global IDentifiers) to tiles.
+ * A `TiledTileset` maps GIDs (Global IDentifiers) to tiles.
  *
  * Each tileset has a range of GIDs that map to the tiles it contains.
  * This range starts at `firstgid` and extends to the `firstgid` of the next tileset.
  * The index of a tile within a tileset is given by tile.gid - tileset.firstgid.
  * A tileset uses its `image` as a 'tile atlas' and may specify per-tile `properties`.
  */
-struct TileSet {
+struct TiledTileset {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
     int firstgid;              /// The GID that maps to the first tile in this set
@@ -229,5 +229,3 @@ struct TileSet {
   /// Number of tiles defined in the tileset
   @property int numTiles() { return numRows * numCols; }
 }
-
-
