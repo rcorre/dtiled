@@ -1,14 +1,17 @@
 /**
-  * Pure data representation of a Tiled map.
+  * Read and write data for <a href="mapeditor.org>Tiled</a> maps.
   * Currently only supports JSON format.
   *
   * Authors: <a href="https://github.com/rcorre">rcorre</a>
 	* License: <a href="http://opensource.org/licenses/MIT">MIT</a>
 	* Copyright: Copyright © 2015, Ryan Roden-Corrent
   */
-module tiled.core;
+module tiled;
 
 import std.file      : exists;
+import std.range     : empty, front;
+import std.string    : format;
+import std.algorithm : find;
 import std.exception : enforce;
 import jsonizer;
 
@@ -37,6 +40,7 @@ unittest {
 struct TiledMap {
   mixin JsonizeMe;
 
+  /* Types */
   /// Map orientation.
   enum Orientation {
     orthogonal, /// rectangular orthogonal map
@@ -57,6 +61,7 @@ struct TiledMap {
     leftUp    = "left-up"     /// right-to-left, bottom-to-top
   }
 
+  /* Data */
   @jsonize(JsonizeOptional.no) {
     int width;               /// Number of tile columns
     int height;              /// Number of tile rows
@@ -74,6 +79,7 @@ struct TiledMap {
     int nextobjectid;
   }
 
+  /* Functions */
   /** Load a Tiled map from a JSON file.
     * Throws if no file is found at that path or if the parsing fails.
     * Params:
@@ -92,15 +98,39 @@ struct TiledMap {
   void save(string path) {
     path.writeJSON(this);
   }
+
+  /** Fetch a map layer by its name. No check for layers with duplicate names is performed.
+   * Throws if no layer has a matching name (case-sensitive).
+   * Params:
+   *   name = name of layer to find
+   * Returns: Layer matching name
+   */
+  MapLayer getLayer(string name) {
+    auto r = layers.find!(x => x.name == name);
+    enforce(!r.empty, "Could not find layer named %s".format(name));
+    return r.front;
+  }
+
+  /** Fetch a tileset by its name. No check for layers with duplicate names is performed.
+   * Throws if no tileset has a matching name (case-sensitive).
+   * Params:
+   *   name = name of tileset to find
+   * Returns: Tileset matching name
+   */
+  TileSet getTileset(TiledMap map, string name) {
+    auto r = tilesets.find!(x => x.name == name);
+    enforce(!r.empty, "Could not find layer named %s".format(name));
+    return r.front;
+  }
 }
 
 /** A layer of tiles within the map.
-  *
-  * A Map layer could be one of:
-  * Tile Layer: `data` is an array of guids that each map to some tile from a `TileSet`
-  * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
-  * Image Layer: This layer is a static image (e.g. a backdrop)
-  */
+ *
+ * A Map layer could be one of:
+ * Tile Layer: `data` is an array of guids that each map to some tile from a `TileSet`
+ * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
+ * Image Layer: This layer is a static image (e.g. a backdrop)
+ */
 struct MapLayer {
   mixin JsonizeMe;
 
@@ -132,10 +162,10 @@ struct MapLayer {
 }
 
 /** Represents an entity in an object layer.
-  *
-  * Objects are not necessarily grid-aligned, but rather have a position specified in pixel coords.
-  * Each object instance can have a `name`, `type`, and set of `properties` defined in the editor.
-  */
+ *
+ * Objects are not necessarily grid-aligned, but rather have a position specified in pixel coords.
+ * Each object instance can have a `name`, `type`, and set of `properties` defined in the editor.
+ */
 struct MapObject {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
@@ -181,12 +211,12 @@ struct TileSet {
 
   @jsonize(JsonizeOptional.yes) {
     /** Optional per-tile properties, indexed by the GID as a string.
-      *
-      * For example, if the tile with GID 25 has the property "moveCost=4", then
-      * `tileproperties["25"]["moveCost"] == "4"
-      * A tile with no special properties will not have an index here.
-      * If no tiles have special properties, this field is not populated at all.
-      */
+     *
+     * For example, if the tile with GID 25 has the property "moveCost=4", then
+     * `tileproperties["25"]["moveCost"] == "4"
+     * A tile with no special properties will not have an index here.
+     * If no tiles have special properties, this field is not populated at all.
+     */
     string[string][string] tileproperties;
   }
 
@@ -199,3 +229,5 @@ struct TileSet {
   /// Number of tiles defined in the tileset
   @property int numTiles() { return numRows * numCols; }
 }
+
+

@@ -5,7 +5,7 @@ import std.range;
 import std.algorithm;
 import std.path : buildPath, setExtension;
 import std.exception : assertThrown;
-import tiled.core;
+import tiled;
 
 enum testPath(string name) = "tests".buildPath("resources", name).setExtension("json");
 
