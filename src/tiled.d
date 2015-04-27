@@ -15,6 +15,9 @@ import std.algorithm : find;
 import std.exception : enforce;
 import jsonizer;
 
+/// Underlying type used to represent Tiles Global IDentifiers
+alias TiledGid = uint;
+
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
 enum TiledFlag {
   none           = 0x00000000, /// Tile is not flipped
@@ -27,7 +30,7 @@ enum TiledFlag {
 ///
 unittest {
   // this is the GID for a tile with tileset index 21 that was flipped horizontally
-  uint gid = 2147483669;
+  TiledGid gid = 2147483669;
   // clearing the flip flags yields a gid that should map to a tileset index
   assert((gid & ~TiledFlag.all) == 21);
   // it is flipped horizontally
@@ -153,7 +156,7 @@ struct TiledLayer {
 
   // These entries exist only on object layers
   @jsonize(JsonizeOptional.yes) {
-    uint[] data;               /// An array of GIDs that identify tiles. Only for `tilelayer`
+    TiledGid[] data;           /// An array of GIDs that identify tiles. Only for `tilelayer`
     TiledObject[] objects;     /// An array of objects. Only on `objectgroup` layers.
     string[string] properties; /// Optional user-defined key-value properties for this layer
     float opacity;             /// Visual opacity of all tiles in this layer
@@ -182,7 +185,7 @@ struct TiledObject {
   }
 
   @jsonize(JsonizeOptional.yes) {
-    int gid; /// Identifies a tile in a tileset if this object is represented by a tile
+    TiledGid gid; /// Identifies a tile in a tileset if this object is represented by a tile
   }
 }
 
@@ -197,7 +200,7 @@ struct TiledObject {
 struct TiledTileset {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
-    int firstgid;              /// The GID that maps to the first tile in this set
+    TiledGid firstgid;         /// The GID that maps to the first tile in this set
     string image;              /// Image used for tiles in this set
     string name;               /// Name given to this tileset
     int tilewidth;             /// Maximum width of tiles in this set
