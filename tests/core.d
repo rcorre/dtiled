@@ -47,6 +47,7 @@ unittest {
   // this map should have a single tile set
   assert(map.tilesets.length == 1);
   auto tileset = map.tilesets[0];
+  // fields
   assert(tileset.name        == "terrain");
   assert(tileset.firstgid    == 1);
   assert(tileset.imageheight == 64);
@@ -55,6 +56,10 @@ unittest {
   assert(tileset.tileheight  == 32);
   assert(tileset.tilewidth   == 32);
   assert(tileset.spacing     == 0);
+  // properties
+  assert(tileset.numRows == 2);
+  assert(tileset.numCols == 2);
+  assert(tileset.numTiles == 4);
 }
 
 /// Load a map containing an object layer

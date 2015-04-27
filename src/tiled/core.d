@@ -189,4 +189,13 @@ struct TileSet {
       */
     string[string][string] tileproperties;
   }
+
+  /// Number of tile rows in the tileset
+  @property int numRows()  { return (imageheight - margin * 2) / (tileheight + spacing); }
+
+  /// Number of tile rows in the tileset
+  @property int numCols()  { return (imagewidth - margin * 2) / (tilewidth + spacing); }
+
+  /// Number of tiles defined in the tileset
+  @property int numTiles() { return numRows * numCols; }
 }
