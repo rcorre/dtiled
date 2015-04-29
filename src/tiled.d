@@ -8,6 +8,7 @@
   */
 module tiled;
 
+import std.conv      : to;
 import std.file      : exists;
 import std.range     : empty, front;
 import std.string    : format;
@@ -19,7 +20,7 @@ import jsonizer;
 alias TiledGid = uint;
 
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
-enum TiledFlag {
+enum TiledFlag : TiledGid {
   none           = 0x00000000, /// Tile is not flipped
   flipDiagonal   = 0x20000000, /// Tile is flipped diagonally
   flipVertical   = 0x40000000, /// Tile is flipped vertically (over x axis)
@@ -198,7 +199,7 @@ struct TiledObject {
     bool visible;              /// Whether object is shown.
     int x;                     /// x coordinate in pixels
     int y;                     /// y coordinate in pixels
-    float rotation;            /// angle in degrees clockwise
+    float rotation;            /// Angle in degrees clockwise
   }
 
   @jsonize(JsonizeOptional.yes) {
@@ -246,6 +247,117 @@ struct TiledTileset {
   /// Number of tile rows in the tileset
   @property int numCols()  { return (imagewidth - margin * 2) / (tilewidth + spacing); }
 
-  /// Number of tiles defined in the tileset
+  /// Total number of tiles defined in the tileset
   @property int numTiles() { return numRows * numCols; }
+
+  /**
+   * Find the grid position of a tile within this tileset.
+   *
+   * Throws if $(D gid) is out of range for this tileset.
+   * Params:
+   *  gid = GID of tile. Does not need to be cleaned of flags.
+   * Returns: 0-indexed row of tile
+   */
+  int tileRow(TiledGid gid) {
+    return getIdx(gid) / numCols;
+  }
+
+  /**
+   * Find the grid position of a tile within this tileset.
+   *
+   * Throws if $(D gid) is out of range for this tileset.
+   * Params:
+   *  gid = GID of tile. Does not need to be cleaned of flags.
+   * Returns: 0-indexed column of tile
+   */
+  int tileCol(TiledGid gid) {
+    return getIdx(gid) % numCols;
+  }
+
+  /**
+   * Find the pixel position of a tile within this tileset.
+   *
+   * Throws if $(D gid) is out of range for this tileset.
+   * Params:
+   *  gid = GID of tile. Does not need to be cleaned of flags.
+   * Returns: space between left side of image and left side of tile (pixels)
+   */
+  int tileOffsetX(TiledGid gid) {
+    return margin + tileCol(gid) * (tilewidth + spacing);
+  }
+
+  /**
+   * Find the pixel position of a tile within this tileset.
+   *
+   * Throws if $(D gid) is out of range for this tileset.
+   * Params:
+   *  gid = GID of tile. Does not need to be cleaned of flags.
+   * Returns: space between top side of image and top side of tile (pixels)
+   */
+  int tileOffsetY(TiledGid gid) {
+    return margin + tileRow(gid) * (tileheight + spacing);
+  }
+
+  /**
+   * Find the properties defined for a tile in this tileset.
+   *
+   * Throws if $(D gid) is out of range for this tileset.
+   * Params:
+   *  gid = GID of tile. Does not need to be cleaned of flags.
+   * Returns: AA of key-value property pairs, or $(D null) if no properties defined for this tile.
+   */
+  string[string] tileProperties(TiledGid gid) {
+    auto res = gid.to!string in tileproperties;
+    return res ? *res : null;
+  }
+
+  // clean the gid, adjust it to an index within this tileset, and throw if out of range
+  private auto getIdx(TiledGid gid) {
+    gid = gid.cleanGid;
+    auto idx = gid - firstgid;
+
+    enforce(idx >= 0 && idx < numTiles,
+      "GID %d out of range [%d,%d] for tileset %s"
+      .format( gid, firstgid, firstgid + numTiles - 1, name));
+
+    return idx;
+  }
+}
+
+unittest {
+  // 3 rows, 3 columns
+  TiledTileset tileset;
+  tileset.firstgid = 4;
+  tileset.tilewidth = tileset.tileheight = 32;
+  tileset.imagewidth = tileset.imageheight = 96;
+
+  void test(TiledGid gid, int row, int col, int x, int y, string[string] props) {
+    assert(tileset.tileRow(gid) == row         , "row mismatch   gid=%d".format(gid));
+    assert(tileset.tileCol(gid) == col         , "col mismatch   gid=%d".format(gid));
+    assert(tileset.tileOffsetX(gid) == x       , "x   mismatch   gid=%d".format(gid));
+    assert(tileset.tileOffsetY(gid) == y       , "y   mismatch   gid=%d".format(gid));
+    assert(tileset.tileProperties(gid) == props, "props mismatch gid=%d".format(gid));
+  }
+
+  //   gid , row , col , x  , y  , props
+  test(4   , 0   , 0   , 0  , 0  , null);
+  test(5   , 0   , 1   , 32 , 0  , null);
+  test(6   , 0   , 2   , 64 , 0  , null);
+  test(7   , 1   , 0   , 0  , 32 , null);
+  test(8   , 1   , 1   , 32 , 32 , null);
+  test(9   , 1   , 2   , 64 , 32 , null);
+  test(10  , 2   , 0   , 0  , 64 , null);
+  test(11  , 2   , 1   , 32 , 64 , null);
+  test(12  , 2   , 2   , 64 , 64 , null);
+}
+
+private:
+// get the ID portion of a GID
+TiledGid cleanGid(TiledGid gid) {
+  return gid & ~TiledFlag.all;
+}
+
+// get the flags portion of a GID
+TiledFlag getFlags(TiledGid gid) {
+  return cast(TiledFlag) (gid & TiledFlag.all);
 }
