@@ -214,7 +214,7 @@ struct TiledLayer {
 
   @property {
     /// get the row corresponding to a position in the $(D data) or $(D objects) array.
-    int idxToRow(int idx) { return idx / width; }
+    auto idxToRow(size_t idx) { return idx / width; }
 
     ///
     unittest {
@@ -231,7 +231,7 @@ struct TiledLayer {
     }
 
     /// get the column corresponding to a position in the $(D data) or $(D objects) array.
-    int idxToCol(int idx) { return idx % width; }
+    auto idxToCol(size_t idx) { return idx % width; }
 
     ///
     unittest {
