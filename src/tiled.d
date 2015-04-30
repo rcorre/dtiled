@@ -10,7 +10,7 @@ module tiled;
 
 import std.conv      : to;
 import std.file      : exists;
-import std.range     : empty, front;
+import std.range     : empty, front, retro;
 import std.string    : format;
 import std.algorithm : find;
 import std.exception : enforce;
@@ -142,6 +142,37 @@ struct TiledMap {
     auto r = tilesets.find!(x => x.name == name);
     enforce(!r.empty, "Could not find layer named %s".format(name));
     return r.front;
+  }
+
+  /** Fetch the tileset containing the tile a given GID.
+   * Throws if the gid is out of range for all tilesets
+   * Params:
+   *   gid = gid of tile to find tileset for
+   * Returns: Tileset containing the given gid
+   */
+  TiledTileset getTileset(TiledGid gid) {
+    gid = gid.cleanGid;
+    // search in reverse order, want the highest firstgid <= the given gid
+    auto r = tilesets.retro.find!(x => x.firstgid <= gid);
+    enforce(!r.empty, "GID %d is out of range for all tilesets".format(gid));
+    return r.front;
+  }
+
+  ///
+  unittest {
+    TiledMap map;
+    map.tilesets ~= TiledTileset();
+    map.tilesets[0].firstgid = 1;
+    map.tilesets ~= TiledTileset();
+    map.tilesets[1].firstgid = 5;
+    map.tilesets ~= TiledTileset();
+    map.tilesets[2].firstgid = 12;
+
+    assert(map.getTileset(1) == map.tilesets[0]);
+    assert(map.getTileset(3) == map.tilesets[0]);
+    assert(map.getTileset(5) == map.tilesets[1]);
+    assert(map.getTileset(9) == map.tilesets[1]);
+    assert(map.getTileset(15) == map.tilesets[2]);
   }
 }
 
