@@ -80,7 +80,7 @@ struct TiledMap {
     string backgroundcolor;    /// Hex-formatted background color (#RRGGBB)
     string renderorder;        /// Rendering direction (orthogonal maps only)
     string[string] properties; /// Key-value property pairs set at the map level
-    int nextobjectid;
+    int nextobjectid;          /// Global counter that increments for each new object
   }
 
   /* Functions */
@@ -330,6 +330,7 @@ unittest {
   tileset.firstgid = 4;
   tileset.tilewidth = tileset.tileheight = 32;
   tileset.imagewidth = tileset.imageheight = 96;
+  tileset.tileproperties = [ "6": ["a": "b"], "7": ["c": "d"] ];
 
   void test(TiledGid gid, int row, int col, int x, int y, string[string] props) {
     assert(tileset.tileRow(gid) == row         , "row mismatch   gid=%d".format(gid));
@@ -342,8 +343,8 @@ unittest {
   //   gid , row , col , x  , y  , props
   test(4   , 0   , 0   , 0  , 0  , null);
   test(5   , 0   , 1   , 32 , 0  , null);
-  test(6   , 0   , 2   , 64 , 0  , null);
-  test(7   , 1   , 0   , 0  , 32 , null);
+  test(6   , 0   , 2   , 64 , 0  , ["a": "b"]);
+  test(7   , 1   , 0   , 0  , 32 , ["c": "d"]);
   test(8   , 1   , 1   , 32 , 32 , null);
   test(9   , 1   , 2   , 64 , 32 , null);
   test(10  , 2   , 0   , 0  , 64 , null);
