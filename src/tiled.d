@@ -180,6 +180,42 @@ struct TiledLayer {
     float opacity;             /// Visual opacity of all tiles in this layer
     string draworder;          /// Not documented by tiled, but may appear in JSON.
   }
+
+  @property {
+    /// get the row corresponding to a position in the $(D data) or $(D objects) array.
+    int idxToRow(int idx) { return idx / width; }
+
+    ///
+    unittest {
+      TiledLayer layer;
+      layer.width = 3;
+      layer.height = 2;
+
+      assert(layer.idxToRow(0) == 0);
+      assert(layer.idxToRow(1) == 0);
+      assert(layer.idxToRow(2) == 0);
+      assert(layer.idxToRow(3) == 1);
+      assert(layer.idxToRow(4) == 1);
+      assert(layer.idxToRow(5) == 1);
+    }
+
+    /// get the column corresponding to a position in the $(D data) or $(D objects) array.
+    int idxToCol(int idx) { return idx % width; }
+
+    ///
+    unittest {
+      TiledLayer layer;
+      layer.width = 3;
+      layer.height = 2;
+
+      assert(layer.idxToCol(0) == 0);
+      assert(layer.idxToCol(1) == 1);
+      assert(layer.idxToCol(2) == 2);
+      assert(layer.idxToCol(3) == 0);
+      assert(layer.idxToCol(4) == 1);
+      assert(layer.idxToCol(5) == 2);
+    }
+  }
 }
 
 /** Represents an entity in an object layer.
@@ -241,14 +277,16 @@ struct TiledTileset {
     string[string][string] tileproperties;
   }
 
-  /// Number of tile rows in the tileset
-  @property int numRows()  { return (imageheight - margin * 2) / (tileheight + spacing); }
+  @property {
+    /// Number of tile rows in the tileset
+    int numRows()  { return (imageheight - margin * 2) / (tileheight + spacing); }
 
-  /// Number of tile rows in the tileset
-  @property int numCols()  { return (imagewidth - margin * 2) / (tilewidth + spacing); }
+    /// Number of tile rows in the tileset
+    int numCols()  { return (imagewidth - margin * 2) / (tilewidth + spacing); }
 
-  /// Total number of tiles defined in the tileset
-  @property int numTiles() { return numRows * numCols; }
+    /// Total number of tiles defined in the tileset
+    int numTiles() { return numRows * numCols; }
+  }
 
   /**
    * Find the grid position of a tile within this tileset.
