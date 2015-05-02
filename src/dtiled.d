@@ -1,5 +1,5 @@
 /**
-  * Read and write data for <a href="mapeditor.org>Tiled</a> maps.
+  * Read and write data for <a href="mapeditor.org">Tiled</a> maps.
   * Currently only supports JSON format.
   *
   * Authors: <a href="https://github.com/rcorre">rcorre</a>
@@ -182,7 +182,7 @@ struct TiledMap {
 /** A layer of tiles within the map.
  *
  * A Map layer could be one of:
- * Tile Layer: `data` is an array of guids that each map to some tile from a `TiledTileset`
+ * Tile Layer: $(D data) is an array of guids that each map to some tile from a `TiledTileset`
  * Object Group: `objects` is a set of entities that are not necessarily tied to the grid
  * Image Layer: This layer is a static image (e.g. a backdrop)
  */
@@ -434,6 +434,7 @@ TiledGid cleanGid(TiledGid gid) {
   return gid & ~TiledFlag.all;
 }
 
+///
 unittest {
   // normal tile, no flags
   TiledGid gid = 0x00000002;

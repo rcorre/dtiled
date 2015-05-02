@@ -14,6 +14,7 @@ release:
 test:
 	@dub test $(SETCOMPILER)
 
+.PHONY: docs
 docs:
 	@dub build $(SETCOMPILER) --build=ddox --quiet
 
