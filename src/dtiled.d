@@ -424,13 +424,23 @@ unittest {
   test(12  , 2   , 2   , 64 , 64 , null);
 }
 
-private:
-// get the ID portion of a GID
+/** 
+ * Clear the TiledFlag portion of a GID, leaving just the tile id.
+ * Params:
+ *   gid = GID to clean
+ * Returns: A GID with the flag bits zeroed out
+ */
 TiledGid cleanGid(TiledGid gid) {
   return gid & ~TiledFlag.all;
 }
 
-// get the flags portion of a GID
-TiledFlag getFlags(TiledGid gid) {
-  return cast(TiledFlag) (gid & TiledFlag.all);
+unittest {
+  // normal tile, no flags
+  TiledGid gid = 0x00000002;
+  assert(gid.cleanGid == gid);
+
+  // normal tile, no flags
+  gid = 0x80000002; // tile with id 2 flipped horizontally
+  assert(gid.cleanGid == 0x2);
+  assert(gid & TiledFlag.flipHorizontal);
 }
