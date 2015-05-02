@@ -1,8 +1,8 @@
 {
-  "name": "tiled",
+  "name": "dtiled",
   "description": "Parse Tiled map files",
-  "copyright": "Copyright © 2015, erethar",
-  "authors": ["erethar"],
+  "copyright": "Copyright © 2015, rcorre",
+  "authors": ["rcorre"],
   "dependencies": {
     "jsonizer": "~>0.4.0"
   },

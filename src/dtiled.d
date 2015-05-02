@@ -6,7 +6,7 @@
 	* License: <a href="http://opensource.org/licenses/MIT">MIT</a>
 	* Copyright: Copyright © 2015, Ryan Roden-Corrent
   */
-module tiled;
+module dtiled;
 
 import std.conv      : to;
 import std.file      : exists;
@@ -16,7 +16,10 @@ import std.algorithm : find;
 import std.exception : enforce;
 import jsonizer;
 
-/// Underlying type used to represent Tiles Global IDentifiers
+/** 
+ * Underlying type used to represent Tiles Global IDentifiers.
+ * Note that a GID of 0 is used to indicate the abscence of a tile.
+ */
 alias TiledGid = uint;
 
 /// Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.

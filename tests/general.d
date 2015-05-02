@@ -1,11 +1,11 @@
-module tests.core;
+module tests.general;
 
 import std.conv;
 import std.range;
 import std.algorithm;
 import std.path : buildPath, setExtension;
 import std.exception : assertThrown;
-import tiled;
+import dtiled;
 
 enum testPath(string name) = "tests".buildPath("resources", name).setExtension("json");
 
