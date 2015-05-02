@@ -4,6 +4,9 @@ DTiled: D language Tiled map parser.
 DTiled is a small utility to parse [Tiled](http://mapeditor.org) maps using D.
 It currently supports Tiled's JSON format.
 
+DTiled has [docs](http://rcorre.github.io/dtiled/dtiled.html)
+and a [dub package](http://code.dlang.org/packages/dtiled).
+
 # What is DTiled?
 Currently, DTiled is a pretty thin wrapper around the data exported by Tiled.
 
