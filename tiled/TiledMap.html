@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Struct TiledMap</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li>
+								<a href="../tiled.html" class="selected module">tiled</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct TiledMap</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<p>Top-level Tiled structure - encapsulates all data in the map file.
+</p>
+
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.backgroundcolor.html" class="public"><code>backgroundcolor</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Hex-formatted background color (#RRGGBB)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.height.html" class="public"><code>height</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile rows
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.layers.html" class="public"><code>layers</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../tiled/MapLayer.html">MapLayer</a>[]</code></td>
+								<td>All map <code class="prettyprint lang-d">layers</code> (tiles and objects)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.orientation.html" class="public"><code>orientation</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../tiled/TiledMap.Orientation.html">TiledMap.<wbr/>Orientation</a></code></td>
+								<td>Orthogonal, isometric, or staggered
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.properties.html" class="public"><code>properties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string]</code></td>
+								<td>Key-value property pairs set at the map level
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.renderorder.html" class="public"><code>renderorder</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Rendering direction (orthogonal maps only)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.tileheight.html" class="public"><code>tileheight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>General grid size. Individual tiles sizes may differ.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.tilesets.html" class="public"><code>tilesets</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../tiled/TileSet.html">TileSet</a>[]</code></td>
+								<td>All tile sets defined in this map
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.tilewidth.html" class="public"><code>tilewidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>General grid size. Individual tiles sizes may differ.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.width.html" class="public"><code>width</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile columns
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.getLayer.html" class="public">
+										<code>getLayer</code>
+									</a>
+								</td>
+								<td> Fetch a map layer by its <a href="../tiled/TiledMap.getLayer.html#name"><code class="prettyprint lang-d">name</code></a>. No check for <a href="../tiled/TiledMap.layers.html"><code class="prettyprint lang-d">layers</code></a> with duplicate names is performed.
+ Throws if no layer has a matching <a href="../tiled/TiledMap.getLayer.html#name"><code class="prettyprint lang-d">name</code></a> (case-sensitive).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.getTileset.html" class="public">
+										<code>getTileset</code>
+									</a>
+								</td>
+								<td> Fetch a tileset by its <a href="../tiled/TiledMap.getTileset.html#name"><code class="prettyprint lang-d">name</code></a>. No check for <a href="../tiled/TiledMap.layers.html"><code class="prettyprint lang-d">layers</code></a> with duplicate names is performed.
+ Throws if no tileset has a matching <a href="../tiled/TiledMap.getTileset.html#name"><code class="prettyprint lang-d">name</code></a> (case-sensitive).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.load.html" class="public">
+										<code>load</code>
+									</a>
+								</td>
+								<td> Load a Tiled map from a JSON file.
+ Throws if no file is found at that <a href="../tiled/TiledMap.load.html#path"><code class="prettyprint lang-d">path</code></a> or if the parsing fails.
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Enums</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.Orientation.html" class="public">
+										<code>Orientation</code>
+									</a>
+								</td>
+								<td>Map <a href="../tiled/TiledMap.orientation.html"><code class="prettyprint lang-d">orientation</code></a>.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TiledMap.RenderOrder.html" class="public">
+										<code>RenderOrder</code>
+									</a>
+								</td>
+								<td> The order in which tiles on tile <a href="../tiled/TiledMap.layers.html"><code class="prettyprint lang-d">layers</code></a> are rendered.
+ From the docs:
+ Valid values are right-down (the default), right-up, left-down and left-up.
+ In all cases, the map is drawn row-by-row.
+ (since 0.10, but only supported for orthogonal maps at the moment)
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

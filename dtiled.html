@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module dtiled</title>
+		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
+		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="./scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="./prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="./scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li>
+								<a href="./dtiled.html" class="selected module">dtiled</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="./symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dtiled</h1>
+			<p> Read and write data for <a href="mapeditor.org">Tiled</a> maps.
+ Currently only supports JSON format.
+</p>
+<section></section>
+
+			<section></section>
+			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="cleanGid" class="public" href="./dtiled/cleanGid.html">
+								<code>cleanGid</code>
+							</a>
+						</td>
+						<td> Clear the <a href="./dtiled/TiledFlag.html"><code class="prettyprint lang-d">TiledFlag</code></a> portion of a GID, leaving just the tile id.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledLayer" class="public" href="./dtiled/TiledLayer.html">
+								<code>TiledLayer</code>
+							</a>
+						</td>
+						<td> A layer of tiles within the map.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledMap" class="public" href="./dtiled/TiledMap.html">
+								<code>TiledMap</code>
+							</a>
+						</td>
+						<td>Top-level Tiled structure - encapsulates all data in the map file.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledObject" class="public" href="./dtiled/TiledObject.html">
+								<code>TiledObject</code>
+							</a>
+						</td>
+						<td> Represents an entity in an object layer.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledTileset" class="public" href="./dtiled/TiledTileset.html">
+								<code>TiledTileset</code>
+							</a>
+						</td>
+						<td> A <code class="prettyprint lang-d"><code class="prettyprint lang-d">TiledTileset</code></code> maps GIDs (Global IDentifiers) to tiles.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enums</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledFlag" class="public" href="./dtiled/TiledFlag.html">
+								<code>TiledFlag</code>
+							</a>
+						</td>
+						<td>Flags set by Tiled in the guid field. Used to indicate mirroring and rotation.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="TiledGid" class="public" href="./dtiled/TiledGid.html">
+								<code>TiledGid</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">uint</code>
+						</td>
+						<td> Underlying type used to represent Tiles Global IDentifiers.
+ Note that a GID of 0 is used to indicate the abscence of a tile.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

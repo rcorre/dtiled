@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function cleanGid</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li>
+								<a href="../dtiled.html" class="selected module">dtiled</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function cleanGid</h1>
+			<section>
+				<p> Clear the <a href="../dtiled/TiledFlag.html"><code class="prettyprint lang-d">TiledFlag</code></a> portion of a GID, leaving just the tile id.
+</p>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+uint cleanGid(
+&nbsp;&nbsp;uint gid
+);</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="gid">gid</td><td> GID to clean</td></tr>
+</table>
+</section>
+<section><h3>Returns</h3>
+<p>A GID with the flag bits zeroed out
+</p>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">// normal tile, no flags
+<a href="../dtiled/TiledGid.html">TiledGid</a> <a href="../dtiled/cleanGid.html#gid">gid</a> = 0x00000002;
+assert(gid.cleanGid == <a href="../dtiled/cleanGid.html#gid">gid</a>);
+
+// normal tile, no flags
+<a href="../dtiled/cleanGid.html#gid">gid</a> = 0x80000002; // tile with id 2 flipped horizontally
+assert(gid.cleanGid == 0x2);
+assert(<a href="../dtiled/cleanGid.html#gid">gid</a> & <a href="../dtiled/TiledFlag.flipHorizontal.html">TiledFlag.flipHorizontal</a>);
+
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

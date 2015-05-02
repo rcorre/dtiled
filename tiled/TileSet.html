@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Struct TileSet</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li>
+								<a href="../tiled.html" class="selected module">tiled</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct TileSet</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<p> A `<code class="prettyprint lang-d">TileSet</code>` maps GIDs (Global IDentifiers) to tiles.
+</p>
+<section>
+<p> Each tileset has a range of GIDs that map to the tiles it contains.
+ This range starts at `<a href="../tiled/TileSet.firstgid.html"><code class="prettyprint lang-d">firstgid</code></a>` and extends to the `<a href="../tiled/TileSet.firstgid.html"><code class="prettyprint lang-d">firstgid</code></a>` of the next tileset.
+ The index of a tile within a tileset is given by tile.gid - tileset.firstgid.
+ A tileset uses its `<a href="../tiled/TileSet.image.html"><code class="prettyprint lang-d">image</code></a>` as a 'tile atlas' and may specify per-tile `<a href="../tiled/TileSet.properties.html"><code class="prettyprint lang-d">properties</code></a>`.
+</p>
+</section>
+
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.firstgid.html" class="public"><code>firstgid</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>The GID that maps to the first tile in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.image.html" class="public"><code>image</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Image used for tiles in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.imageheight.html" class="public"><code>imageheight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Height of source <a href="../tiled/TileSet.image.html"><code class="prettyprint lang-d">image</code></a> in pixels
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.imagewidth.html" class="public"><code>imagewidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Width of source <a href="../tiled/TileSet.image.html"><code class="prettyprint lang-d">image</code></a> in pixels
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.margin.html" class="public"><code>margin</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Buffer between <a href="../tiled/TileSet.image.html"><code class="prettyprint lang-d">image</code></a> edge and tiles (in pixels)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.name.html" class="public"><code>name</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Name given to this tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.properties.html" class="public"><code>properties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string]</code></td>
+								<td>Properties assigned to this tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.spacing.html" class="public"><code>spacing</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Spacing between tiles in <a href="../tiled/TileSet.image.html"><code class="prettyprint lang-d">image</code></a> (in pixels)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.tileheight.html" class="public"><code>tileheight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Maximum height of tiles in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.tileproperties.html" class="public"><code>tileproperties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string][string]</code></td>
+								<td> Optional per-tile <a href="../tiled/TileSet.properties.html"><code class="prettyprint lang-d">properties</code></a>, indexed by the GID as a string.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../tiled/TileSet.tilewidth.html" class="public"><code>tilewidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Maximum width of tiles in this set
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>
