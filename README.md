@@ -31,12 +31,12 @@ particular graphics library, and you have likely already picked one to render
 the rest of your game.
 
 D has bindings to a number of libraries that can render your map like:
-- (Allegro)[http://code.dlang.org/packages/allegro]
-- (SDL)[http://code.dlang.org/packages/derelict-sdl2]
-- (SFML)[http://code.dlang.org/packages/dsfml]
+- [Allegro](http://code.dlang.org/packages/allegro)
+- [SDL](http://code.dlang.org/packages/derelict-sdl2)
+- [SFML](http://code.dlang.org/packages/dsfml)
 
 There are also higher-level options like
-(DGame)[http://code.dlang.org/packages/dgame].
+[DGame](http://code.dlang.org/packages/dgame).
 
 I have created a simple example using
 [DTiled with Allegro](https://github.com/rcorre/dtiled-example).
@@ -55,3 +55,9 @@ In the future, DTiled _might_ expand to provide a generic TileMap structure that
 actually is intended for in-game use, and would help support common needs like
 querying which tile is at a given pixel position. It might even enable rendering
 via callbacks, allowing users to choose what actually does the rendering.
+
+# Tips
+Tired of clicking export all the time in the Tiled editor?
+Tiled has an `--export-map` flag that can be used from the command line!
+Include a step in your build process to translate all `tmx` files to `json`
+files.
