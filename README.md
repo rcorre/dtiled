@@ -1,7 +1,7 @@
 DTiled: D language Tiled map parser.
 ===
 
-DTiled is a small utility to parse [Tiled](mapeditor.org) maps for use in D.
+DTiled is a small utility to parse [Tiled](http://mapeditor.org) maps using D.
 It currently supports Tiled's JSON format.
 
 # What is DTiled?
