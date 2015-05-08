@@ -16,15 +16,15 @@ enum flippedTerrainGids = [1, 2, 2, 1, 3, 1, 1, 3, 4, 4, 1, 4, 2, 2, 3, 3];
 /// Load a map containing a single tile layer
 unittest {
   // load map
-  auto map = TiledMap.load(testPath!"tiles");
+  auto map = MapData.load(testPath!"tiles");
 
   // general fields
   assert(map.height          == 4);
   assert(map.width           == 4);
   assert(map.tilewidth       == 32);
   assert(map.tileheight      == 32);
-  assert(map.renderorder     == TiledMap.RenderOrder.rightDown);
-  assert(map.orientation     == TiledMap.Orientation.orthogonal);
+  assert(map.renderorder     == MapData.RenderOrder.rightDown);
+  assert(map.orientation     == MapData.Orientation.orthogonal);
   assert(map.backgroundcolor == "#656667");
 
   // user defined properties
@@ -39,7 +39,7 @@ unittest {
   assert(tiles.height  == 4);
   assert(tiles.width   == 4);
   assert(tiles.opacity == 1f);
-  assert(tiles.type    == TiledLayer.Type.tilelayer);
+  assert(tiles.type    == LayerData.Type.tilelayer);
   assert(tiles.visible);
   assert(tiles.x == 0);
   assert(tiles.y == 0);
@@ -72,12 +72,12 @@ unittest {
   import std.string : format;
 
   // load map
-  auto map = TiledMap.load(testPath!"objects");
+  auto map = MapData.load(testPath!"objects");
 
   // Layer 1 is an object layer in the test map
   auto layer = map.layers[1];
   assert(layer.name == "things");
-  assert(layer.type == TiledLayer.Type.objectgroup);
+  assert(layer.type == LayerData.Type.objectgroup);
   assert(layer.draworder == "topdown");
 
   // Tileset 1 is the tileset used for the objects
@@ -110,7 +110,7 @@ unittest {
   import std.algorithm : map, equal;
 
   // load map
-  auto tileMap = TiledMap.load(testPath!"flipped_tiles");
+  auto tileMap = MapData.load(testPath!"flipped_tiles");
 
   // this map should have a single tile layer
   assert(tileMap.layers.length == 1);
@@ -147,7 +147,7 @@ unittest {
   import std.string : format;
 
   // load map
-  auto map = TiledMap.load(testPath!"flipped_objects");
+  auto map = MapData.load(testPath!"flipped_objects");
 
   // Layer 1 is an object layer in the test map
   auto layer = map.layers[1];
