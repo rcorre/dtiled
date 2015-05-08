@@ -6,7 +6,7 @@
 	* License: <a href="http://opensource.org/licenses/MIT">MIT</a>
 	* Copyright: Copyright © 2015, Ryan Roden-Corrent
   */
-module dtiled;
+module dtiled.data;
 
 import std.conv      : to;
 import std.file      : exists;
