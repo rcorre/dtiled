@@ -11,9 +11,9 @@
 module dtiled.map;
 
 import std.range     : only, take, chain;
-import std.typecons  : Flag, Tuple;
 import std.algorithm : map, filter;
 import dtiled.data;
+import dtiled.spatial;
 
 version(unittest) {
   struct TestTile { int row, col; }
@@ -182,58 +182,4 @@ struct OrthoMap(Tile) {
     // for the in-range coordinates, get the corresponding tiles
     return coords.filter!(x => this.contains(x)).map!(x => this.tileAt(x));
   }
-}
-
-/// Represents a location in continuous 2D space.
-alias PixelCoord = Tuple!(float, "x", float, "y");
-
-/// Represents a discrete location within the map grid.
-alias GridCoord  = Tuple!(uint, "row", uint, "col");
-
-/// True if T is a type that can represent a location in terms of pixels.
-enum isPixelCoord(T) = is(typeof(T.x) : real) &&
-                       is(typeof(T.y) : real);
-
-///
-unittest {
-  struct MyVector(T) { T x, y; }
-
-  static assert(isPixelCoord!(MyVector!int));
-  static assert(isPixelCoord!(MyVector!uint));
-  static assert(isPixelCoord!(MyVector!float));
-  static assert(isPixelCoord!(MyVector!double));
-  static assert(isPixelCoord!(MyVector!real));
-
-  struct MyCoord(T)  { T row, col; }
-
-  static assert(!isPixelCoord!(MyCoord!int));
-  static assert(!isPixelCoord!(MyCoord!uint));
-  static assert(!isPixelCoord!(MyCoord!float));
-  static assert(!isPixelCoord!(MyCoord!double));
-  static assert(!isPixelCoord!(MyCoord!real));
-}
-
-/// True if T is a type that can represent a location within a map grid.
-enum isGridCoord(T) = is(typeof(T.row) : ulong) &&
-                      is(typeof(T.col) : ulong);
-
-///
-unittest {
-  struct MyCoord(T)  { T row, col; }
-
-  // A grid coord must have an integral row and column
-  static assert(isGridCoord!(MyCoord!int));
-  static assert(isGridCoord!(MyCoord!uint));
-  static assert(isGridCoord!(MyCoord!ulong));
-
-  // A grid coord cannot have a floating-point representation
-  static assert(!isGridCoord!(MyCoord!float));
-  static assert(!isGridCoord!(MyCoord!double));
-  static assert(!isGridCoord!(MyCoord!real));
-
-  struct MyVector(T) { T x, y; }
-
-  // A grid coord must use row/col, not x/y
-  static assert(!isGridCoord!(MyVector!int));
-  static assert(!isGridCoord!(MyVector!uint));
 }
