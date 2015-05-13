@@ -119,7 +119,7 @@ struct OrthoMap(Tile) {
   /**
    * True if the grid coordinate is within the map bounds.
    */
-  bool contains(T)(T coord) if (isGridCoord!T) {
+  bool contains(GridCoord coord) {
     return coord.col >= 0 && coord.row >= 0 && coord.row < numRows && coord.col < numCols;
   }
 
@@ -133,10 +133,9 @@ struct OrthoMap(Tile) {
   /**
    * Get the tile at a given position in the grid. Throws if out of bounds.
    * Params:
-   *  T = any coordinate-like type (see isGridCoord).
    *  coord = a row/column pair identifying a point in the tile grid.
    */
-  Tile tileAt(T)(T coord) if (isGridCoord!T) {
+  Tile tileAt(GridCoord coord) {
     return _tiles[coord.row][coord.col];
   }
 
