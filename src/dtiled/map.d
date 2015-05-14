@@ -15,23 +15,33 @@ import std.algorithm : map, filter;
 import dtiled.data;
 import dtiled.spatial;
 
+/// Types used in examples:
 version(unittest) {
   struct TestTile { int row, col; }
 
   alias TestMap = OrthoMap!TestTile;
 
-  TestTile[][] testTiles;
+  auto testMap(int rows, int cols, int tileWidth, int tileHeight) {
+    TestTile[][] tiles;
 
-  TestMap buildTestMap() {
-    foreach(row ; 0..5) {
-      foreach(col ; 0..5) {
-        testTiles[row][col] = TestTile(row, col);
+    foreach(row ; 0..rows) {
+      TestTile[] newRow;
+      foreach(col ; 0..cols) {
+        newRow ~= TestTile(row, col);
       }
+      tiles ~= newRow;
     }
 
-    // map is a 5x5 grid of tiles, each sized 32x32 pixels
-    return TestMap(32, 32, testTiles);
+    return TestMap(tileWidth, tileHeight, tiles);
   }
+}
+
+unittest {
+  auto map = testMap(5, 10, 32, 64);
+  assert(map.numRows    == 5);
+  assert(map.numCols    == 10);
+  assert(map.tileWidth  == 32);
+  assert(map.tileHeight == 64);
 }
 
 /**
