@@ -1,13 +1,14 @@
 /**
  * This module models various representations of space in a map.
  *
- * Map coordinates can either refer to a 'grid' or 'pixel' position.
+ * When dealing with a grid, do you ever forget whether the row or column is the first index?
+ * Me too.
+ * For this reason, all functions dealing with grid coordinates take a RowCol argument.
+ * This makes it abundantly clear that the map is indexed in row-major order.
+ * Furthormore, it prevents confusion between **grid** coordinates and **pixel** coordinates.
  *
- * A RowCol refers to a (row,column) pair that is independent of tile size.
- * It is named as such specifically to avoid confusion; the order is Row, then Column
- *
- * A 'pixel' position refers to an (x,y) location in 'pixel' space.
- * Pixel coordinates refer to the same tilewidth and tileheight fields in MapData.
+ * A 'pixel' coordinate refers to an (x,y) location in 'pixel' space.
+ * The units used by 'pixel' coords are the same as used in MapData tilewidth and tileheight.
  *
  * Within dtiled, pixel locations are represented by a PixelCoord.
  * However, you may already be using a game library that provides some 'Vector' implementation
