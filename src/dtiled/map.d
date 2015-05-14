@@ -55,15 +55,15 @@ unittest {
  * e c e
  * v e v
  * 'c' is the 'center', 'e' are the 'edge' neighbors, and 'v' are the 'vertex' neighbors.
- * 'surround' would include all 'e' and 'v' tiles, 'all' would of course include all.
+ * 'around' would include all 'e' and 'v' tiles, 'all' would of course include all.
  */
 enum NeighborType {
-  center = 1 >> 0, /// The center tile.
-  edge   = 1 >> 1, /// Tiles adjacent to the sides of the center.
-  vertex = 1 >> 2, /// Tiles diagonally bordering the corners of the center.
+  center = 1 << 0, /// The center tile.
+  edge   = 1 << 1, /// Tiles adjacent to the sides of the center.
+  vertex = 1 << 2, /// Tiles diagonally bordering the corners of the center.
 
-  surround = edge | vertex,     /// All tiles around the center.
-  all      = surround | center, /// All tiles around and including the center.
+  around = edge | vertex,     /// All tiles around the center.
+  all      = around | center, /// All tiles around and including the center.
 }
 
 /**
