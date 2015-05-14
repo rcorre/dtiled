@@ -117,20 +117,49 @@ struct OrthoMap(Tile) {
 
   /**
    * Get the grid location corresponding to a given pixel coordinate.
-   * Does not check bounds; the row/col may be negative or greater than numRows/numCols.
+   * Returns outOfBounds if coord lies outside of the map.
    */
   auto gridCoordAt(T)(T pos) if (isPixelCoord!T) {
+    import std.math   : floor, lround;
+    import std.traits : isFloatingPoint, Select;
+    // if T is not floating, cast to float for operation
+    alias F = Select!(isFloatingPoint!T, T, float);
+
     GridCoord coord;
-    coord.col = pos.x / tileWidth;
-    coord.row = pos.y / tileHeight;
+    coord.col = floor(pos.x / cast(F) tileWidth).lround;
+    coord.row = floor(pos.y / cast(F) tileHeight).lround;
     return coord;
+  }
+
+  unittest {
+    auto map = testMap(10, 10, 32, 32); // 10x10 map of tiles sized 32x32
+    assert(map.gridCoordAt(PixelCoord(0 ,  0)) == GridCoord(0, 0));
+    assert(map.gridCoordAt(PixelCoord(16, 48)) == GridCoord(1, 0));
+    assert(map.gridCoordAt(PixelCoord(64, 32)) == GridCoord(1, 2));
+
+    // no bounds checking
+    assert(map.gridCoordAt(PixelCoord(320, 320)) == GridCoord(10, 10));
+    // negative indices round down
+    assert(map.gridCoordAt(PixelCoord(-16, -48)) == GridCoord(-2, -1));
   }
 
   /**
    * True if the grid coordinate is within the map bounds.
    */
   bool contains(GridCoord coord) {
-    return coord.col >= 0 && coord.row >= 0 && coord.row < numRows && coord.col < numCols;
+    return coord.row >= 0 && coord.col >= 0 && coord.row < numRows && coord.col < numCols;
+  }
+
+  unittest {
+    // 5x3 map, rows from 0 to 4, cols from 0 to 2
+    auto map = testMap(5, 3, 32, 32);
+    assert( map.contains(GridCoord(0 , 0)));  // top left
+    assert( map.contains(GridCoord(4 , 2)));  // bottom right
+    assert( map.contains(GridCoord(3 , 1)));  // center
+    assert(!map.contains(GridCoord(0 , 3)));  // beyond right border
+    assert(!map.contains(GridCoord(5 , 0)));  // beyond bottom border
+    assert(!map.contains(GridCoord(0 ,-1))); // beyond left border
+    assert(!map.contains(GridCoord(-1, 0))); // beyond top border
   }
 
   /**

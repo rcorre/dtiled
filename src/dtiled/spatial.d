@@ -22,7 +22,7 @@ import std.typecons : Tuple;
 alias PixelCoord = Tuple!(float, "x", float, "y");
 
 /// Represents a discrete location within the map grid.
-alias GridCoord  = Tuple!(long, "row", long, "col");
+alias GridCoord = Tuple!(long, "row", long, "col");
 
 /// True if T is a type that can represent a location in terms of pixels.
 enum isPixelCoord(T) = is(typeof(T.x) : real) &&
