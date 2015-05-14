@@ -274,4 +274,64 @@ struct OrthoMap(Tile) {
     return coords.filter!(x => this.contains(x)).map!(x => this.tileAt(x));
   }
 
+  ///
+  unittest {
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myMap = testMap(3, 5, 32, 32);
+
+    void test(RowCol coord, NeighborType type, string[] expected ...) {
+      import std.array     : array;
+      import std.format    : format;
+      import std.algorithm : all, canFind;
+
+      auto actual = myMap.neighbors(coord, type).map!(x => x.id).array;
+      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
+          "neighbors incorrect: %s (%d, %d), expected %s, got %s"
+          .format(type, coord.row, coord.col, expected, actual));
+    }
+
+    with (NeighborType) {
+      // tile not bordering any map edge
+      test(RowCol(1, 1), center, "11");
+      test(RowCol(1, 1), edge  , "01", "12", "21", "10");
+      test(RowCol(1, 1), vertex, "00", "02", "22", "20");
+      test(RowCol(1, 1), around, "00", "02", "22", "20", "01", "12", "21", "10");
+      test(RowCol(1, 1), all, "11", "00", "02", "22", "20", "01", "12", "21", "10");
+
+      // top left corner
+      test(RowCol(0, 0), edge  , "01", "10");
+      test(RowCol(0, 0), vertex, "11");
+
+      // bottom left
+      test(RowCol(0, 0), edge  , "01", "10");
+      test(RowCol(0, 0), vertex, "11");
+
+      // top right
+      test(RowCol(0, 4), edge  , "03", "14");
+      test(RowCol(0, 4), vertex, "13");
+
+      // bottom right
+      test(RowCol(2, 4), edge  , "23", "14");
+      test(RowCol(2, 4), vertex, "13");
+
+      // center left
+      test(RowCol(1, 0), edge  , "00", "11", "20");
+      test(RowCol(1, 0), vertex, "01", "21");
+
+      // center right
+      test(RowCol(1, 4), edge  , "04", "13", "24");
+      test(RowCol(1, 4), vertex, "03", "23");
+
+      // bottom center
+      test(RowCol(2, 2), edge  , "21", "12", "23");
+      test(RowCol(2, 2), vertex, "11", "13");
+
+      // top center
+      test(RowCol(0, 2), edge  , "01", "12", "03");
+      test(RowCol(0, 2), vertex, "11", "13");
+    }
+  }
 }
