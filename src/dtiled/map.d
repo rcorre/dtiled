@@ -125,7 +125,7 @@ struct OrthoMap(Tile) {
     // if T is not floating, cast to float for operation
     alias F = Select!(isFloatingPoint!T, T, float);
 
-    GridCoord coord;
+    RowCol coord;
     coord.col = floor(pos.x / cast(F) tileWidth).lround;
     coord.row = floor(pos.y / cast(F) tileHeight).lround;
     return coord;
@@ -133,33 +133,33 @@ struct OrthoMap(Tile) {
 
   unittest {
     auto map = testMap(10, 10, 32, 32); // 10x10 map of tiles sized 32x32
-    assert(map.gridCoordAt(PixelCoord(0 ,  0)) == GridCoord(0, 0));
-    assert(map.gridCoordAt(PixelCoord(16, 48)) == GridCoord(1, 0));
-    assert(map.gridCoordAt(PixelCoord(64, 32)) == GridCoord(1, 2));
+    assert(map.gridCoordAt(PixelCoord(0 ,  0)) == RowCol(0, 0));
+    assert(map.gridCoordAt(PixelCoord(16, 48)) == RowCol(1, 0));
+    assert(map.gridCoordAt(PixelCoord(64, 32)) == RowCol(1, 2));
 
     // no bounds checking
-    assert(map.gridCoordAt(PixelCoord(320, 320)) == GridCoord(10, 10));
+    assert(map.gridCoordAt(PixelCoord(320, 320)) == RowCol(10, 10));
     // negative indices round down
-    assert(map.gridCoordAt(PixelCoord(-16, -48)) == GridCoord(-2, -1));
+    assert(map.gridCoordAt(PixelCoord(-16, -48)) == RowCol(-2, -1));
   }
 
   /**
    * True if the grid coordinate is within the map bounds.
    */
-  bool contains(GridCoord coord) {
+  bool contains(RowCol coord) {
     return coord.row >= 0 && coord.col >= 0 && coord.row < numRows && coord.col < numCols;
   }
 
   unittest {
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
     auto map = testMap(5, 3, 32, 32);
-    assert( map.contains(GridCoord(0 , 0)));  // top left
-    assert( map.contains(GridCoord(4 , 2)));  // bottom right
-    assert( map.contains(GridCoord(3 , 1)));  // center
-    assert(!map.contains(GridCoord(0 , 3)));  // beyond right border
-    assert(!map.contains(GridCoord(5 , 0)));  // beyond bottom border
-    assert(!map.contains(GridCoord(0 ,-1))); // beyond left border
-    assert(!map.contains(GridCoord(-1, 0))); // beyond top border
+    assert( map.contains(RowCol(0 , 0)));  // top left
+    assert( map.contains(RowCol(4 , 2)));  // bottom right
+    assert( map.contains(RowCol(3 , 1)));  // center
+    assert(!map.contains(RowCol(0 , 3)));  // beyond right border
+    assert(!map.contains(RowCol(5 , 0)));  // beyond bottom border
+    assert(!map.contains(RowCol(0 ,-1))); // beyond left border
+    assert(!map.contains(RowCol(-1, 0))); // beyond top border
   }
 
   /**
@@ -174,7 +174,7 @@ struct OrthoMap(Tile) {
    * Params:
    *  coord = a row/column pair identifying a point in the tile grid.
    */
-  Tile tileAt(GridCoord coord) {
+  Tile tileAt(RowCol coord) {
     return _tiles[coord.row][coord.col];
   }
 
@@ -195,26 +195,26 @@ struct OrthoMap(Tile) {
    *  coord = grid location of center tile.
    *  neighbors = describes which neighbors to fetch.
    */
-  auto neighbors(GridCoord coord, NeighborType neighbors = NeighborType.edge) {
+  auto neighbors(RowCol coord, NeighborType neighbors = NeighborType.edge) {
     // TODO: this should be doable without allocating. custom range?
-    GridCoord[] coords;
+    RowCol[] coords;
 
     if (neighbors & NeighborType.center) {
       coords ~= coord;
     }
 
     if (neighbors & NeighborType.edge) {
-      coords ~= GridCoord(coord.row - 1, coord.col    );
-      coords ~= GridCoord(coord.row    , coord.col - 1);
-      coords ~= GridCoord(coord.row + 1, coord.col    );
-      coords ~= GridCoord(coord.row    , coord.col + 1);
+      coords ~= RowCol(coord.row - 1, coord.col    );
+      coords ~= RowCol(coord.row    , coord.col - 1);
+      coords ~= RowCol(coord.row + 1, coord.col    );
+      coords ~= RowCol(coord.row    , coord.col + 1);
     }
 
     if (neighbors & NeighborType.vertex) {
-      coords ~= GridCoord(coord.row - 1, coord.col - 1);
-      coords ~= GridCoord(coord.row - 1, coord.col + 1);
-      coords ~= GridCoord(coord.row + 1, coord.col - 1);
-      coords ~= GridCoord(coord.row + 1, coord.col + 1);
+      coords ~= RowCol(coord.row - 1, coord.col - 1);
+      coords ~= RowCol(coord.row - 1, coord.col + 1);
+      coords ~= RowCol(coord.row + 1, coord.col - 1);
+      coords ~= RowCol(coord.row + 1, coord.col + 1);
     }
 
     // for the in-range coordinates, get the corresponding tiles

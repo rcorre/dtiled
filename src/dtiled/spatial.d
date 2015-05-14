@@ -3,7 +3,8 @@
  *
  * Map coordinates can either refer to a 'grid' or 'pixel' position.
  *
- * A GridCoord refers to a (row,column) pair that is independent of tile size.
+ * A RowCol refers to a (row,column) pair that is independent of tile size.
+ * It is named as such specifically to avoid confusion; the order is Row, then Column
  *
  * A 'pixel' position refers to an (x,y) location in 'pixel' space.
  * Pixel coordinates refer to the same tilewidth and tileheight fields in MapData.
@@ -22,7 +23,7 @@ import std.typecons : Tuple;
 alias PixelCoord = Tuple!(float, "x", float, "y");
 
 /// Represents a discrete location within the map grid.
-alias GridCoord = Tuple!(long, "row", long, "col");
+alias RowCol = Tuple!(long, "row", long, "col");
 
 /// True if T is a type that can represent a location in terms of pixels.
 enum isPixelCoord(T) = is(typeof(T.x) : real) &&
@@ -40,5 +41,5 @@ unittest {
   static assert(isPixelCoord!(MyVector!real));
 
   // To avoid confusion, grid coordinates are distinct from pixel coordinates
-  static assert(!isPixelCoord!GridCoord);
+  static assert(!isPixelCoord!RowCol);
 }
