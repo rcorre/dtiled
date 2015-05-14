@@ -12,6 +12,7 @@ module dtiled.map;
 
 import std.range     : only, take, chain;
 import std.algorithm : map, filter;
+import std.exception : enforce;
 import dtiled.data;
 import dtiled.spatial;
 
@@ -175,6 +176,7 @@ struct OrthoMap(Tile) {
    *  coord = a row/column pair identifying a point in the tile grid.
    */
   Tile tileAt(RowCol coord) {
+    enforce(contains(coord), "row/col out of map bounds: " ~ coord.toString);
     return _tiles[coord.row][coord.col];
   }
 
@@ -185,6 +187,7 @@ struct OrthoMap(Tile) {
    *  pos = pixel location in 2D space
    */
   Tile tileAt(T)(T pos) if (isPixelCoord!T) {
+    enforce(contains(pos), "position out of map bounds: " ~ pos.toString);
     return tileAt(gridCoordAt(pos));
   }
 
