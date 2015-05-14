@@ -18,7 +18,9 @@ import dtiled.spatial;
 
 /// Types used in examples:
 version(unittest) {
-  struct TestTile { int row, col; }
+  import std.conv : to;
+
+  struct TestTile { string id; }
 
   alias TestMap = OrthoMap!TestTile;
 
@@ -28,7 +30,7 @@ version(unittest) {
     foreach(row ; 0..rows) {
       TestTile[] newRow;
       foreach(col ; 0..cols) {
-        newRow ~= TestTile(row, col);
+        newRow ~= TestTile(row.to!string ~ col.to!string);
       }
       tiles ~= newRow;
     }
@@ -73,8 +75,6 @@ enum NeighborType {
 struct OrthoMap(Tile) {
   private {
     Tile[][] _tiles;
-    size_t _numRows;
-    size_t _numCols;
     int _tileWidth;
     int _tileHeight;
   }
@@ -91,9 +91,6 @@ struct OrthoMap(Tile) {
     _tileWidth  = tileWidth;
     _tileHeight = tileHeight;
 
-    _numRows = tiles.length;
-    _numCols = tiles[0].length;
-
     debug {
       import std.algorithm : all;
       assert(tiles.all!(x => x.length == tiles[0].length),
@@ -105,9 +102,9 @@ struct OrthoMap(Tile) {
 
   @property {
     /// Number of rows along the tile grid y axis
-    auto numRows()    { return _numRows; }
+    auto numRows()    { return _tiles.length; }
     /// Number of columns along the tile grid x axis
-    auto numCols()    { return _numCols; }
+    auto numCols()    { return _tiles[0].length; }
     /// Width of each tile in pixels
     auto tileWidth()  { return _tileWidth; }
     /// Height of each tile in pixels
@@ -132,6 +129,7 @@ struct OrthoMap(Tile) {
     return coord;
   }
 
+  ///
   unittest {
     auto map = testMap(10, 10, 32, 32); // 10x10 map of tiles sized 32x32
     assert(map.gridCoordAt(PixelCoord(0 ,  0)) == RowCol(0, 0));
@@ -151,6 +149,7 @@ struct OrthoMap(Tile) {
     return coord.row >= 0 && coord.col >= 0 && coord.row < numRows && coord.col < numCols;
   }
 
+  ///
   unittest {
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
     auto map = testMap(5, 3, 32, 32);
@@ -170,6 +169,19 @@ struct OrthoMap(Tile) {
     return contains(gridCoordAt(pos));
   }
 
+  ///
+  unittest {
+    // 5x3 map, pixel bounds are [0, 0, 96, 160] (32*3 = 96, 32*5 = 160)
+    auto map = testMap(5, 3, 32, 32);
+    assert( map.contains(PixelCoord(   0,    0))); // top left
+    assert( map.contains(PixelCoord(  95,  159))); // bottom right
+    assert( map.contains(PixelCoord(  48,   80))); // center
+    assert(!map.contains(PixelCoord(  96,    0))); // beyond right border
+    assert(!map.contains(PixelCoord(   0,  160))); // beyond bottom border
+    assert(!map.contains(PixelCoord(-0.5,    0))); // beyond left border
+    assert(!map.contains(PixelCoord(   0, -0.5))); // beyond top border
+  }
+
   /**
    * Get the tile at a given position in the grid. Throws if out of bounds.
    * Params:
@@ -178,6 +190,25 @@ struct OrthoMap(Tile) {
   Tile tileAt(RowCol coord) {
     enforce(contains(coord), "row/col out of map bounds: " ~ coord.toString);
     return _tiles[coord.row][coord.col];
+  }
+
+  ///
+  unittest {
+    import std.exception  : assertThrown;
+
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto map = testMap(3, 5, 32, 32);
+
+    assert(map.tileAt(RowCol(0, 0)).id == "00"); // top left tile
+    assert(map.tileAt(RowCol(2, 4)).id == "24"); // bottom right tile
+    assert(map.tileAt(RowCol(1, 1)).id == "11");
+
+    // tileAt enforces in-bounds access
+    assertThrown(map.tileAt(RowCol(-1, -1))); // row/col out of bounds (< 0)
+    assertThrown(map.tileAt(RowCol(3, 1)));   // row out of bounds (> 2)
   }
 
   /**
@@ -191,29 +222,48 @@ struct OrthoMap(Tile) {
     return tileAt(gridCoordAt(pos));
   }
 
+  ///
+  unittest {
+    import std.exception  : assertThrown;
+
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto map = testMap(3, 5, 32, 32);
+
+    assert(map.tileAt(PixelCoord(  0,  0)).id == "00"); // corner of top left tile
+    assert(map.tileAt(PixelCoord( 16, 30)).id == "00"); // inside top left tile
+    assert(map.tileAt(PixelCoord(149, 95)).id == "24"); // inside bottom right tile
+
+    // tileAt enforces in-bounds access
+    assertThrown(map.tileAt(PixelCoord(-0.5, 0))); // beyond far left
+    assertThrown(map.tileAt(PixelCoord(0, 97)));   // beyond far bottom
+  }
+
   /**
    * Return tiles adjacent to the given tile.
    *
    * Params:
    *  coord = grid location of center tile.
-   *  neighbors = describes which neighbors to fetch.
+   *  type = describes which neighbors to fetch.
    */
-  auto neighbors(RowCol coord, NeighborType neighbors = NeighborType.edge) {
+  auto neighbors(RowCol coord, NeighborType type = NeighborType.edge) {
     // TODO: this should be doable without allocating. custom range?
     RowCol[] coords;
 
-    if (neighbors & NeighborType.center) {
+    if (type & NeighborType.center) {
       coords ~= coord;
     }
 
-    if (neighbors & NeighborType.edge) {
+    if (type & NeighborType.edge) {
       coords ~= RowCol(coord.row - 1, coord.col    );
       coords ~= RowCol(coord.row    , coord.col - 1);
       coords ~= RowCol(coord.row + 1, coord.col    );
       coords ~= RowCol(coord.row    , coord.col + 1);
     }
 
-    if (neighbors & NeighborType.vertex) {
+    if (type & NeighborType.vertex) {
       coords ~= RowCol(coord.row - 1, coord.col - 1);
       coords ~= RowCol(coord.row - 1, coord.col + 1);
       coords ~= RowCol(coord.row + 1, coord.col - 1);
@@ -223,4 +273,5 @@ struct OrthoMap(Tile) {
     // for the in-range coordinates, get the corresponding tiles
     return coords.filter!(x => this.contains(x)).map!(x => this.tileAt(x));
   }
+
 }
