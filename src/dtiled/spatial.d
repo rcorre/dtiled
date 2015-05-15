@@ -19,8 +19,8 @@
 module dtiled.spatial;
 
 import std.conv     : to;
+import std.math     : abs;
 import std.typecons : Tuple;
-
 
 /// Represents a discrete location within the map grid.
 alias RowCol = Tuple!(long, "row", long, "col");
@@ -77,4 +77,20 @@ unittest {
   import std.conv : ConvOverflowException;
   import std.exception : assertThrown;
   assertThrown!ConvOverflowException(PixelCoord(-1, -1).as!(MyVector!ulong));
+}
+
+/**
+ * Return the manhattan distance between two tile coordinates.
+ * For two coordinates a and b, this is defined as abs(a.row - b.row) + abs(a.col - b.col)
+ */
+auto manhattan(RowCol a, RowCol b) {
+  return abs(a.row - b.row) + abs(a.col - b.col);
+}
+
+unittest {
+  assert(manhattan(RowCol(0,0), RowCol(2,2))     == 4);
+  assert(manhattan(RowCol(2,2), RowCol(2,2))     == 0);
+  assert(manhattan(RowCol(-2,-2), RowCol(-2,-2)) == 0);
+  assert(manhattan(RowCol(4,-2), RowCol(2,2))    == 6);
+  assert(manhattan(RowCol(4,-2), RowCol(-2,-2))  == 6);
 }
