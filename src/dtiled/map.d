@@ -10,7 +10,7 @@
  */
 module dtiled.map;
 
-import std.range     : only, take, chain;
+import std.range     : only, takeNone, chain;
 import std.algorithm : map, filter;
 import std.exception : enforce;
 import dtiled.data;
@@ -249,26 +249,23 @@ struct OrthoMap(Tile) {
    *  type = describes which neighbors to fetch.
    */
   auto neighbors(RowCol coord, NeighborType type = NeighborType.edge) {
-    // TODO: this should be doable without allocating. custom range?
-    RowCol[] coords;
+    auto center = coord.only.takeIf((type & NeighborType.center) != 0);
 
-    if (type & NeighborType.center) {
-      coords ~= coord;
-    }
+    auto edges = chain(
+      RowCol(coord.row - 1, coord.col    ).only,
+      RowCol(coord.row    , coord.col - 1).only,
+      RowCol(coord.row + 1, coord.col    ).only,
+      RowCol(coord.row    , coord.col + 1).only,
+    ).takeIf((type & NeighborType.edge) != 0);
 
-    if (type & NeighborType.edge) {
-      coords ~= RowCol(coord.row - 1, coord.col    );
-      coords ~= RowCol(coord.row    , coord.col - 1);
-      coords ~= RowCol(coord.row + 1, coord.col    );
-      coords ~= RowCol(coord.row    , coord.col + 1);
-    }
+    auto vertices = chain(
+      RowCol(coord.row - 1, coord.col - 1).only,
+      RowCol(coord.row - 1, coord.col + 1).only,
+      RowCol(coord.row + 1, coord.col - 1).only,
+      RowCol(coord.row + 1, coord.col + 1).only,
+    ).takeIf((type & NeighborType.vertex) != 0);
 
-    if (type & NeighborType.vertex) {
-      coords ~= RowCol(coord.row - 1, coord.col - 1);
-      coords ~= RowCol(coord.row - 1, coord.col + 1);
-      coords ~= RowCol(coord.row + 1, coord.col - 1);
-      coords ~= RowCol(coord.row + 1, coord.col + 1);
-    }
+    auto coords = chain(center, edges, vertices);
 
     // for the in-range coordinates, get the corresponding tiles
     return coords.filter!(x => this.contains(x)).map!(x => this.tileAt(x));
@@ -334,4 +331,10 @@ struct OrthoMap(Tile) {
       test(RowCol(0, 2), vertex, "11", "13");
     }
   }
+}
+
+private:
+// helper to select between 0 and all elements of a range
+auto takeIf(R)(R range, bool cond) {
+  return cond ? range : takeNone!R;
 }
