@@ -1,5 +1,5 @@
 /**
- * This module models various representations of space in a map.
+ * This module helps handle coordinate systems within a map.
  *
  * When dealing with a grid, do you ever forget whether the row or column is the first index?
  * Me too.
@@ -16,7 +16,7 @@
  * You can pass any such type to dtiled functions expecting a pixel coordinate so long as it
  * satisfies isPixelCoord.
  */
-module dtiled.spatial;
+module dtiled.coords;
 
 import std.conv     : to;
 import std.math     : abs;

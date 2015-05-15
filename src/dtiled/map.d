@@ -14,7 +14,7 @@ import std.range     : only, takeNone, chain;
 import std.algorithm : map, filter;
 import std.exception : enforce;
 import dtiled.data;
-import dtiled.spatial;
+import dtiled.coords;
 
 /// Types used in examples:
 version(unittest) {
