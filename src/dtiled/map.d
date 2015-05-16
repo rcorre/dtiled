@@ -331,6 +331,56 @@ struct OrthoMap(Tile) {
       test(RowCol(0, 2), vertex, "11", "13");
     }
   }
+
+  auto mask(RowCol origin, in ubyte[][] mask) {
+    Tile[] tiles;
+    auto topLeft     = RowCol(origin.row - mask.length / 2, origin.col - mask[0].length / 2);
+    auto bottomRight = RowCol(origin.row + mask.length / 2 + 1, origin.col + mask[0].length / 2 + 1);
+    foreach(row ; topLeft.row..bottomRight.row) {
+      foreach(col ; topLeft.col..bottomRight.col) {
+        if (mask[row][col] && this.contains(RowCol(row, col))) {
+          tiles ~= _tiles[row][col];
+        }
+      }
+    }
+
+    return tiles;
+  }
+
+  ///
+  unittest {
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myMap = testMap(3, 5, 32, 32);
+
+    void test(RowCol origin, ubyte[][] mask, string[] expected ...) {
+      import std.array     : array;
+      import std.format    : format;
+      import std.algorithm : all, canFind;
+
+      auto actual = myMap.mask(origin, mask).map!(x => x.id).array;
+      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
+          "mask incorrect: %s (%d, %d), expected %s, got %s"
+          .format(mask, origin.row, origin.col, expected, actual));
+    }
+
+    ubyte[][] mask1 = [
+      [ 1, 1, 1 ],
+      [ 0, 0, 0 ],
+      [ 0, 0, 0 ],
+    ];
+
+    ubyte[][] mask2 = [
+      [ 0, 0, 1 ],
+      [ 0, 0, 1 ],
+      [ 1, 1, 1 ],
+    ];
+
+    test(RowCol(1, 1), mask1, "00", "01", "02");
+    test(RowCol(1, 1), mask2, "02", "12", "22", "21", "20");
+  }
 }
 
 private:
