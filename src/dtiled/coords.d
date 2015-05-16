@@ -20,10 +20,34 @@ module dtiled.coords;
 
 import std.conv     : to;
 import std.math     : abs;
+import std.format   : format;
 import std.typecons : Tuple;
 
 /// Represents a discrete location within the map grid.
-alias RowCol = Tuple!(long, "row", long, "col");
+struct RowCol {
+  long row, col;
+
+  /// Construct a row column pair
+  this(long row, long col) {
+    this.row = row;
+    this.col = col;
+  }
+
+  /// Get a string representation of the coordinate, useful for debugging
+  @property string toString() {
+    return "<row: %d, col: %d".format(row, col);
+  }
+
+  /// Add or subtract one coordinate from another
+  RowCol opBinary(string op)(RowCol rhs) if (op == "+" || op == "-") {
+    return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
+  }
+
+  unittest {
+    assert(RowCol(1, 2) + RowCol(4, 1) == RowCol(5, 3));
+    assert(RowCol(4, 2) - RowCol(6, 1) == RowCol(-2, 1));
+  }
+}
 
 /// Represents a location in continuous 2D space.
 alias PixelCoord = Tuple!(float, "x", float, "y");
