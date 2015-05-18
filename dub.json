@@ -5,7 +5,7 @@
   "license": "MIT",
   "authors": ["rcorre"],
   "dependencies": {
-    "jsonizer": "~>0.4.0"
+    "jsonizer": "~>0.5.0"
   },
   "configurations": [
     {
