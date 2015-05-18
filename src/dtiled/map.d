@@ -20,11 +20,9 @@ import dtiled.coords;
 version(unittest) {
   import std.conv : to;
 
-  struct TestTile { string id; }
+  private struct TestTile { string id; }
 
-  alias TestMap = OrthoMap!TestTile;
-
-  auto testMap(int rows, int cols, int tileWidth, int tileHeight) {
+  OrthoMap!TestTile testMap(int rows, int cols, int tileWidth, int tileHeight) {
     TestTile[][] tiles;
 
     foreach(row ; 0..rows) {
@@ -35,7 +33,7 @@ version(unittest) {
       tiles ~= newRow;
     }
 
-    return TestMap(tileWidth, tileHeight, tiles);
+    return OrthoMap!TestTile(tileWidth, tileHeight, tiles);
   }
 }
 
@@ -278,7 +276,6 @@ struct OrthoMap(Tile) {
           .format(coord.row, coord.col, expected, actual));
     }
 
-    
     test(RowCol(1, 1), "01", "12", "21", "10"); // tile not bordering any map edge
 
     test(RowCol(0, 0), "01", "10");       // top left corner
