@@ -242,33 +242,20 @@ struct OrthoMap(Tile) {
   }
 
   /**
-   * Return tiles adjacent to the given tile.
+   * Return all tiles that share an edge with the tile at the given coord.
+   * Does not include the tile at that coord.
    *
    * Params:
    *  coord = grid location of center tile.
-   *  type = describes which neighbors to fetch.
    */
-  auto neighbors(RowCol coord, NeighborType type = NeighborType.edge) {
-    auto center = coord.only.takeIf((type & NeighborType.center) != 0);
+  auto adjacent(RowCol coord) {
+    immutable ubyte[][] neighborMask = [
+      [0,1,0],
+      [1,0,1],
+      [0,1,0],
+    ];
 
-    auto edges = chain(
-      RowCol(coord.row - 1, coord.col    ).only,
-      RowCol(coord.row    , coord.col - 1).only,
-      RowCol(coord.row + 1, coord.col    ).only,
-      RowCol(coord.row    , coord.col + 1).only,
-    ).takeIf((type & NeighborType.edge) != 0);
-
-    auto vertices = chain(
-      RowCol(coord.row - 1, coord.col - 1).only,
-      RowCol(coord.row - 1, coord.col + 1).only,
-      RowCol(coord.row + 1, coord.col - 1).only,
-      RowCol(coord.row + 1, coord.col + 1).only,
-    ).takeIf((type & NeighborType.vertex) != 0);
-
-    auto coords = chain(center, edges, vertices);
-
-    // for the in-range coordinates, get the corresponding tiles
-    return coords.filter!(x => this.contains(x)).map!(x => this.tileAt(x));
+    return this.mask(coord, neighborMask);
   }
 
   ///
@@ -279,57 +266,71 @@ struct OrthoMap(Tile) {
     // 20 21 22 23 24
     auto myMap = testMap(3, 5, 32, 32);
 
-    void test(RowCol coord, NeighborType type, string[] expected ...) {
+    void test(RowCol coord, string[] expected ...) {
       import std.array     : array;
       import std.format    : format;
       import std.algorithm : all, canFind;
 
-      auto actual = myMap.neighbors(coord, type).map!(x => x.id).array;
+      auto actual = myMap.adjacent(coord).map!(x => x.id).array;
+
       assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
-          "neighbors incorrect: %s (%d, %d), expected %s, got %s"
-          .format(type, coord.row, coord.col, expected, actual));
+          "neighbors incorrect for (%d, %d), expected %s, got %s"
+          .format(coord.row, coord.col, expected, actual));
     }
 
-    with (NeighborType) {
-      // tile not bordering any map edge
-      test(RowCol(1, 1), center, "11");
-      test(RowCol(1, 1), edge  , "01", "12", "21", "10");
-      test(RowCol(1, 1), vertex, "00", "02", "22", "20");
-      test(RowCol(1, 1), around, "00", "02", "22", "20", "01", "12", "21", "10");
-      test(RowCol(1, 1), all, "11", "00", "02", "22", "20", "01", "12", "21", "10");
+    
+    test(RowCol(1, 1), "01", "12", "21", "10"); // tile not bordering any map edge
 
-      // top left corner
-      test(RowCol(0, 0), edge  , "01", "10");
-      test(RowCol(0, 0), vertex, "11");
+    test(RowCol(0, 0), "01", "10");       // top left corner
+    test(RowCol(0, 0), "01", "10");       // bottom left
+    test(RowCol(0, 4), "03", "14");       // top right
+    test(RowCol(2, 4), "23", "14");       // bottom right
+    test(RowCol(1, 0), "00", "11", "20"); // center left
+    test(RowCol(1, 4), "04", "13", "24"); // center right
+    test(RowCol(2, 2), "21", "12", "23"); // bottom center
+    test(RowCol(0, 2), "01", "12", "03"); // top center
+  }
 
-      // bottom left
-      test(RowCol(0, 0), edge  , "01", "10");
-      test(RowCol(0, 0), vertex, "11");
+  /**
+   * Return all tiles that share an edge or corner with the tile at the given coord.
+   * Does not include the tile at that coord.
+   *
+   * Params:
+   *  coord = grid location of center tile.
+   */
+  auto around(RowCol coord) {
+    immutable ubyte[][] neighborMask = [
+      [1,1,1],
+      [1,0,1],
+      [1,1,1],
+    ];
 
-      // top right
-      test(RowCol(0, 4), edge  , "03", "14");
-      test(RowCol(0, 4), vertex, "13");
+    return this.mask(coord, neighborMask);
+  }
 
-      // bottom right
-      test(RowCol(2, 4), edge  , "23", "14");
-      test(RowCol(2, 4), vertex, "13");
+  ///
+  unittest {
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myMap = testMap(3, 5, 32, 32);
 
-      // center left
-      test(RowCol(1, 0), edge  , "00", "11", "20");
-      test(RowCol(1, 0), vertex, "01", "21");
+    void test(RowCol coord, string[] expected ...) {
+      import std.array     : array;
+      import std.format    : format;
+      import std.algorithm : all, canFind;
 
-      // center right
-      test(RowCol(1, 4), edge  , "04", "13", "24");
-      test(RowCol(1, 4), vertex, "03", "23");
+      auto actual = myMap.around(coord).map!(x => x.id).array;
 
-      // bottom center
-      test(RowCol(2, 2), edge  , "21", "12", "23");
-      test(RowCol(2, 2), vertex, "11", "13");
-
-      // top center
-      test(RowCol(0, 2), edge  , "01", "12", "03");
-      test(RowCol(0, 2), vertex, "11", "13");
+      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
+          "surrounding tiles incorrect for (%d, %d), expected %s, got %s"
+          .format(coord.row, coord.col, expected, actual));
     }
+
+    test(RowCol(1, 1), "00", "02", "22", "20", "01", "12", "21", "10");
+    test(RowCol(0, 0), "01", "10", "11");
+    test(RowCol(2, 1), "20", "10", "11", "12", "22");
   }
 
   /**
@@ -448,10 +449,4 @@ struct OrthoMap(Tile) {
     test(RowCol(2, 4), mask2); // all tiles in area are out of bounds
     test(RowCol(1, 2), mask5, "02", "22");
   }
-}
-
-private:
-// helper to select between 0 and all elements of a range
-auto takeIf(R)(R range, bool cond) {
-  return cond ? range : takeNone!R;
 }
