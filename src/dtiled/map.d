@@ -1,5 +1,5 @@
 /**
- * Provides a generic TileMap structure with commonly-needed functionality.
+ * Provides a generic map structure with commonly-needed functionality.
  *
  * While the types provided in dtiled.data are intended to provide the information needed to
  * load a map into a game, a TileMap is a structure intended to be used in-game.
@@ -11,7 +11,7 @@
 module dtiled.map;
 
 import std.range     : only, takeNone, chain;
-import std.algorithm : map, filter;
+import std.algorithm : all, map, filter;
 import std.exception : enforce;
 import dtiled.data;
 import dtiled.coords;
@@ -332,14 +332,56 @@ struct OrthoMap(Tile) {
     }
   }
 
+  /**
+   * Select specific tiles from within a rectangular region as defined by a mask.
+   *
+   * The mask is overlaid on the map such that the center of the mask lies on the origin coordinate.
+   * Each map tile that is overlaid with a nonzero value is included in the result.
+   * The mask is allowed to extend out of bounds.
+   *
+   * Params:
+   *  origin = coordinate on the map to position the center of the mask.
+   *  mask = a rectangular array of 0s and 1s indicating which tiles to take.
+   *         each nonzero value indicates to take a tile at that grid coordinate relative to origin.
+   *         the center of the mask is determined by its length / 2 in each dimension.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   *
+   * Examples:
+   * Suppose you are making a strategy game, and an attack hits all tiles in a cross pattern.
+   * This attack is used on the tile at row 2, column 3.
+   * You want to check each tile that was affected to see if any unit was hit:
+   * --------------
+   * // cross pattern
+   * ubyte[][] mask = [
+   *  [0,1,0]
+   *  [1,1,1]
+   *  [0,1,0]
+   * ]
+   *
+   * // tiles contained by a cross pattern centered at (2,3)
+   * auto tilesHit = map.mask(RowCol(2, 3), mask);
+   *
+   * // now do something with those tiles
+   * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
+   * --------------
+   */
   auto mask(RowCol origin, in ubyte[][] mask) {
+    // TODO: @nogc?
+    auto nRows = mask.length;
+    assert(nRows > 0, "a mask cannot be empty");
+
+    auto nCols = mask[0].length;
+    assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
+
+    auto topLeft = origin - RowCol(nRows / 2, nCols / 2);
     Tile[] tiles;
-    auto topLeft     = RowCol(origin.row - mask.length / 2, origin.col - mask[0].length / 2);
-    auto bottomRight = RowCol(origin.row + mask.length / 2 + 1, origin.col + mask[0].length / 2 + 1);
-    foreach(row ; topLeft.row..bottomRight.row) {
-      foreach(col ; topLeft.col..bottomRight.col) {
-        if (mask[row][col] && this.contains(RowCol(row, col))) {
-          tiles ~= _tiles[row][col];
+
+    foreach(row ; 0..mask.length) {
+      foreach(col ; 0..mask[0].length) {
+        auto mapCoord = topLeft + RowCol(row, col);
+
+        if (mask[row][col] && this.contains(mapCoord)) {
+          tiles ~= tileAt(mapCoord);
         }
       }
     }
@@ -347,7 +389,7 @@ struct OrthoMap(Tile) {
     return tiles;
   }
 
-  ///
+  /// More masking examples:
   unittest {
     // the test map looks like:
     // 00 01 02 03 04
@@ -378,8 +420,33 @@ struct OrthoMap(Tile) {
       [ 1, 1, 1 ],
     ];
 
+    ubyte[][] mask3 = [
+      [ 0 , 0 , 1 , 0 , 0 ],
+      [ 1 , 0 , 1 , 0 , 1 ],
+      [ 0 , 0 , 0 , 0 , 0 ],
+    ];
+
+    ubyte[][] mask4 = [
+      [ 1 , 1 , 1 , 0 , 1 ],
+    ];
+
+    ubyte[][] mask5 = [
+      [ 1 ],
+      [ 1 ],
+      [ 0 ],
+      [ 1 ],
+      [ 1 ],
+    ];
+
     test(RowCol(1, 1), mask1, "00", "01", "02");
     test(RowCol(1, 1), mask2, "02", "12", "22", "21", "20");
+    test(RowCol(1, 2), mask3, "10", "02", "12", "14");
+    test(RowCol(1, 2), mask4, "10", "11", "12", "14");
+
+    // it is fine if part of the mask extends out of bounds
+    test(RowCol(1, 0), mask1, "00", "01");
+    test(RowCol(2, 4), mask2); // all tiles in area are out of bounds
+    test(RowCol(1, 2), mask5, "02", "22");
   }
 }
 
