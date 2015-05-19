@@ -18,10 +18,12 @@
  */
 module dtiled.coords;
 
-import std.conv     : to;
-import std.math     : abs;
-import std.format   : format;
-import std.typecons : Tuple;
+import std.conv      : to;
+import std.math      : abs, sgn;
+import std.range     : iota;
+import std.format    : format;
+import std.typecons  : Tuple;
+import std.algorithm : map, cartesianProduct;
 
 /// Represents a discrete location within the map grid.
 struct RowCol {
@@ -35,7 +37,7 @@ struct RowCol {
 
   /// Get a string representation of the coordinate, useful for debugging
   @property string toString() {
-    return "<row: %d, col: %d".format(row, col);
+    return "<row: %d, col: %d>".format(row, col);
   }
 
   /// Add or subtract one coordinate from another
@@ -47,6 +49,60 @@ struct RowCol {
     assert(RowCol(1, 2) + RowCol(4, 1) == RowCol(5, 3));
     assert(RowCol(4, 2) - RowCol(6, 1) == RowCol(-2, 1));
   }
+}
+
+/**
+ * Enumerate all row/col pairs spanning the rectangle bounded by the corners start and end.
+ *
+ * The order of enumeration is determined as follows:
+ * Enumerate all columns in a row before moving to the next row.
+ * The start coordinate is always the first entry, end is always the last.
+ * If start.row >= end.row, enumerate rows in increasing order, otherwise enumerate in decreasing.
+ * If start.col >= end.col, enumerate cols in increasing order, otherwise enumerate in decreasing.
+ *
+ * Params:
+ *  start = RowCol pair to start enumeration from, inclusive
+ *  end   = RowCol pair to end enumeration at, inclusive
+ */
+auto span(RowCol start, RowCol end) {
+  auto colInc = sgn(end.col - start.col); // direction to increment columns (1 or -1)
+  auto rowInc = sgn(end.row - start.row); // direction to increment rows (1 or -1)
+
+  // default increment to 1 in case there is no difference between coords
+  colInc = (colInc == 0) ? 1 : colInc;
+  rowInc = (rowInc == 0) ? 1 : rowInc;
+
+  // add/subtract 1 because we want an inclusive range, while iota is exclusive on the upper bound
+  auto colRange = iota(start.col, end.col + colInc, colInc);
+  auto rowRange = iota(start.row, end.row + rowInc, rowInc);
+
+  return rowRange.cartesianProduct(colRange).map!(x => RowCol(x[0], x[1]));
+}
+
+///
+unittest {
+  import std.algorithm : equal;
+
+  assert(RowCol(0,0).span(RowCol(2,3)).equal([
+    RowCol(0,0), RowCol(0,1), RowCol(0,2), RowCol(0,3),
+    RowCol(1,0), RowCol(1,1), RowCol(1,2), RowCol(1,3),
+    RowCol(2,0), RowCol(2,1), RowCol(2,2), RowCol(2,3)]));
+
+  assert(RowCol(2,2).span(RowCol(0,0)).equal([
+    RowCol(2,2), RowCol(2,1), RowCol(2,0),
+    RowCol(1,2), RowCol(1,1), RowCol(1,0),
+    RowCol(0,2), RowCol(0,1), RowCol(0,0)]));
+
+  assert(RowCol(2,2).span(RowCol(1,3)).equal([
+    RowCol(2,2), RowCol(2,3),
+    RowCol(1,2), RowCol(1,3)]));
+
+  assert(RowCol(2,2).span(RowCol(3,1)).equal([
+    RowCol(2,2), RowCol(2,1),
+    RowCol(3,2), RowCol(3,1)]));
+
+  assert(RowCol(2,2).span(RowCol(2,2)).equal([RowCol(2,2)]));
+  assert(RowCol(2,2).span(RowCol(5,2)).equal([RowCol(2,2), RowCol(3,2), RowCol(4,2), RowCol(5,2)]));
 }
 
 /// Represents a location in continuous 2D space.
