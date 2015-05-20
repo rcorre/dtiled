@@ -314,14 +314,15 @@ struct OrthoMap(Tile) {
   /**
    * Select specific tiles from within a rectangular region as defined by a mask.
    *
-   * The mask is overlaid on the map such that the center of the mask lies on the origin coordinate.
-   * Each map tile that is overlaid with a nonzero value is included in the result.
+   * The mask's center is aligned with the given origin coordinate on the map.
+   * Each map tile that is overlaid with a 'true' value is included in the result.
    * The mask is allowed to extend out of bounds.
    *
    * Params:
+   *  T = type of mask marker. Anything that is convertible to bool
    *  origin = coordinate on the map to position the center of the mask.
    *  mask = a rectangular array of 0s and 1s indicating which tiles to take.
-   *         each nonzero value indicates to take a tile at that grid coordinate relative to origin.
+   *         each true value takes the tile at that grid coordinate relative to origin.
    *         the center of the mask is determined by its length / 2 in each dimension.
    *         the mask should be in row major order (indexed as mask[row][col]).
    *
@@ -344,7 +345,7 @@ struct OrthoMap(Tile) {
    * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
    * --------------
    */
-  auto mask(RowCol origin, in ubyte[][] mask) {
+  auto mask(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
     auto nRows = mask.length;
     assert(nRows > 0, "a mask cannot be empty");
 
@@ -370,7 +371,7 @@ struct OrthoMap(Tile) {
     // 20 21 22 23 24
     auto myMap = testMap(3, 5, 32, 32);
 
-    void test(RowCol origin, ubyte[][] mask, string[] expected ...) {
+    void test(T)(RowCol origin, T[][] mask, string[] expected ...) {
       import std.array     : array;
       import std.format    : format;
       import std.algorithm : all, canFind;
@@ -381,29 +382,29 @@ struct OrthoMap(Tile) {
           .format(mask, origin.row, origin.col, expected, actual));
     }
 
-    ubyte[][] mask1 = [
+    auto mask1 = [
       [ 1, 1, 1 ],
       [ 0, 0, 0 ],
       [ 0, 0, 0 ],
     ];
 
-    ubyte[][] mask2 = [
+    auto mask2 = [
       [ 0, 0, 1 ],
       [ 0, 0, 1 ],
       [ 1, 1, 1 ],
     ];
 
-    ubyte[][] mask3 = [
+    auto mask3 = [
       [ 0 , 0 , 1 , 0 , 0 ],
       [ 1 , 0 , 1 , 0 , 1 ],
       [ 0 , 0 , 0 , 0 , 0 ],
     ];
 
-    ubyte[][] mask4 = [
+    auto mask4 = [
       [ 1 , 1 , 1 , 0 , 1 ],
     ];
 
-    ubyte[][] mask5 = [
+    auto mask5 = [
       [ 1 ],
       [ 1 ],
       [ 0 ],
