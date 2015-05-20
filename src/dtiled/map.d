@@ -46,25 +46,6 @@ unittest {
 }
 
 /**
- * Which tiles are included when getting the neighbors of a tile.
- *
- * Given the following grid of tiles:
- * v e v
- * e c e
- * v e v
- * 'c' is the 'center', 'e' are the 'edge' neighbors, and 'v' are the 'vertex' neighbors.
- * 'around' would include all 'e' and 'v' tiles, 'all' would of course include all.
- */
-enum NeighborType {
-  center = 1 << 0, /// The center tile.
-  edge   = 1 << 1, /// Tiles adjacent to the sides of the center.
-  vertex = 1 << 2, /// Tiles diagonally bordering the corners of the center.
-
-  around = edge | vertex,     /// All tiles around the center.
-  all      = around | center, /// All tiles around and including the center.
-}
-
-/**
  * Generic Tile Map structure that uses a single layer of tiles in an orthogonal grid.
  *
  * This provides a 'flat' representation of multiple tile and object layers.
