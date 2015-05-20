@@ -345,27 +345,21 @@ struct OrthoMap(Tile) {
    * --------------
    */
   auto mask(RowCol origin, in ubyte[][] mask) {
-    // TODO: @nogc?
     auto nRows = mask.length;
     assert(nRows > 0, "a mask cannot be empty");
 
     auto nCols = mask[0].length;
     assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
 
-    auto topLeft = origin - RowCol(nRows / 2, nCols / 2);
-    Tile[] tiles;
+    auto start = RowCol(0, 0);
+    auto end = RowCol(nRows - 1, nCols - 1);
+    auto offset = origin - RowCol(nRows / 2, nCols / 2);
 
-    foreach(row ; 0..mask.length) {
-      foreach(col ; 0..mask[0].length) {
-        auto mapCoord = topLeft + RowCol(row, col);
-
-        if (mask[row][col] && this.contains(mapCoord)) {
-          tiles ~= tileAt(mapCoord);
-        }
-      }
-    }
-
-    return tiles;
+    return start.span(end)
+      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
+      .map!(x => x + offset)            // adjust mask coordinate to map coordinate
+      .filter!(x => this.contains(x))   // remove out of bounds coords
+      .map!(x => this.tileAt(x));       // grab the tile for each coord
   }
 
   /// More masking examples:
