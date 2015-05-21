@@ -19,13 +19,13 @@ unittest {
   auto map = MapData.load(testPath!"tiles");
 
   // general fields
-  assert(map.height          == 4);
-  assert(map.width           == 4);
-  assert(map.tilewidth       == 32);
-  assert(map.tileheight      == 32);
-  assert(map.renderorder     == MapData.RenderOrder.rightDown);
+  assert(map.numRows         == 4);
+  assert(map.numCols         == 4);
+  assert(map.tileWidth       == 32);
+  assert(map.tileHeight      == 32);
+  assert(map.renderOrder     == MapData.RenderOrder.rightDown);
   assert(map.orientation     == MapData.Orientation.orthogonal);
-  assert(map.backgroundcolor == "#656667");
+  assert(map.backgroundColor == "#656667");
 
   // user defined properties
   assert(map.properties["mapProperty1"] == "one");
@@ -33,11 +33,12 @@ unittest {
 
   // this map should have a single tile layer
   assert(map.layers.length == 1);
+
   auto tiles = map.layers[0];
   assert(tiles.name    == "terrain");
   assert(tiles.data    == terrainGids);
-  assert(tiles.height  == 4);
-  assert(tiles.width   == 4);
+  assert(tiles.numRows == 4);
+  assert(tiles.numCols == 4);
   assert(tiles.opacity == 1f);
   assert(tiles.type    == LayerData.Type.tilelayer);
   assert(tiles.visible);
@@ -51,12 +52,12 @@ unittest {
   assert(map.tilesets.length == 1); auto tileset = map.tilesets[0];
   // fields
   assert(tileset.name        == "terrain");
-  assert(tileset.firstgid    == 1);
-  assert(tileset.imageheight == 64);
-  assert(tileset.imagewidth  == 64);
+  assert(tileset.firstGid    == 1);
+  assert(tileset.imageHeight == 64);
+  assert(tileset.imageWidth  == 64);
   assert(tileset.margin      == 0);
-  assert(tileset.tileheight  == 32);
-  assert(tileset.tilewidth   == 32);
+  assert(tileset.tileHeight  == 32);
+  assert(tileset.tileWidth   == 32);
   assert(tileset.spacing     == 0);
   // properties
   assert(tileset.numRows == 2);
@@ -78,7 +79,7 @@ unittest {
   auto layer = map.layers[1];
   assert(layer.name == "things");
   assert(layer.type == LayerData.Type.objectgroup);
-  assert(layer.draworder == "topdown");
+  assert(layer.drawOrder == "topdown");
 
   // Tileset 1 is the tileset used for the objects
   auto tileset = map.tilesets[1];
@@ -92,7 +93,7 @@ unittest {
     assert(!found.empty, "no object with name " ~ name);
     auto obj = found.front;
 
-    assert(obj.gid == tileset.firstgid + num - 1); // number1 is the zeroth tile, ect.
+    assert(obj.gid == tileset.firstGid + num - 1); // number1 is the zeroth tile, ect.
     assert(obj.type == (num % 2 == 0 ? "even" : "odd")); // just an arbitrarily picked type
     //assert(obj.properties["half"].to!int == num / 2 ));
     assert(obj.rotation == 0);
@@ -166,8 +167,8 @@ unittest {
 
     auto gid = obj.gid & ~TiledFlag.all;
     auto flags = obj.gid & TiledFlag.all;
-    assert(gid == tileset.firstgid + num - 1); // number1 is the zeroth tile, ect.
-    assert(flags == expectedFlags, 
+    assert(gid == tileset.firstGid + num - 1); // number1 is the zeroth tile, ect.
+    assert(flags == expectedFlags,
         "tile %d: expected flag %s, got %s".format(num, expectedFlags, cast(TiledFlag) flags));
   }
 

@@ -70,20 +70,20 @@ struct MapData {
 
   /* Data */
   @jsonize(JsonizeOptional.no) {
-    int width;               /// Number of tile columns
-    int height;              /// Number of tile rows
-    int tilewidth;           /// General grid size. Individual tiles sizes may differ.
-    int tileheight;          /// ditto
-    Orientation orientation; /// Orthogonal, isometric, or staggered
-    LayerData[] layers;      /// All map layers (tiles and objects)
-    TilesetData[] tilesets;  /// All tile sets defined in this map
+    @jsonize("width")      int numCols;    /// Number of tile columns
+    @jsonize("height")     int numRows;    /// Number of tile rows
+    @jsonize("tilewidth")  int tileWidth;  /// General grid size. Individual tiles sizes may differ.
+    @jsonize("tileheight") int tileHeight; /// ditto
+    Orientation orientation;               /// Orthogonal, isometric, or staggered
+    LayerData[] layers;                    /// All map layers (tiles and objects)
+    TilesetData[] tilesets;                /// All tile sets defined in this map
   }
 
   @jsonize(JsonizeOptional.yes) {
-    string backgroundcolor;    /// Hex-formatted background color (#RRGGBB)
-    string renderorder;        /// Rendering direction (orthogonal maps only)
-    string[string] properties; /// Key-value property pairs set at the map level
-    int nextobjectid;          /// Global counter that increments for each new object
+    @jsonize("backgroundcolor") string backgroundColor; /// Hex-formatted background color (#RRGGBB)
+    @jsonize("renderorder")     string renderOrder;     /// Rendering direction (orthogonal only)
+    @jsonize("nextobjectid")    int    nextObjectId;    /// Global counter across all objects
+    string[string] properties;                          /// Key-value property pairs on map
   }
 
   /* Functions */
@@ -101,7 +101,7 @@ struct MapData {
     // Double check this in debug mode, as things will break if this invariant doesn't hold.
     debug {
       import std.algorithm : isSorted;
-      assert(map.tilesets.isSorted!((a,b) => a.firstgid < b.firstgid),
+      assert(map.tilesets.isSorted!((a,b) => a.firstGid < b.firstGid),
           "TileSets are not sorted by GID!");
     }
 
@@ -113,10 +113,10 @@ struct MapData {
     *   path = file destination; parent directory must already exist
     */
   void save(string path) {
-    // Tilemaps must be exported sorted in order of firstgid
+    // Tilemaps must be exported sorted in order of firstGid
     debug {
       import std.algorithm : isSorted;
-      assert(tilesets.isSorted!((a,b) => a.firstgid < b.firstgid),
+      assert(tilesets.isSorted!((a,b) => a.firstGid < b.firstGid),
           "TileSets are not sorted by GID!");
     }
 
@@ -155,8 +155,8 @@ struct MapData {
    */
   auto getTileset(TiledGid gid) {
     gid = gid.cleanGid;
-    // search in reverse order, want the highest firstgid <= the given gid
-    auto r = tilesets.retro.find!(x => x.firstgid <= gid);
+    // search in reverse order, want the highest firstGid <= the given gid
+    auto r = tilesets.retro.find!(x => x.firstGid <= gid);
     enforce(!r.empty, "GID %d is out of range for all tilesets".format(gid));
     return r.front;
   }
@@ -165,11 +165,11 @@ struct MapData {
   unittest {
     MapData map;
     map.tilesets ~= TilesetData();
-    map.tilesets[0].firstgid = 1;
+    map.tilesets[0].firstGid = 1;
     map.tilesets ~= TilesetData();
-    map.tilesets[1].firstgid = 5;
+    map.tilesets[1].firstGid = 5;
     map.tilesets ~= TilesetData();
-    map.tilesets[2].firstgid = 12;
+    map.tilesets[2].firstGid = 12;
 
     assert(map.getTileset(1) == map.tilesets[0]);
     assert(map.getTileset(3) == map.tilesets[0]);
@@ -197,33 +197,33 @@ struct LayerData {
   }
 
   @jsonize(JsonizeOptional.no) {
-    int width;    /// Number of tile columns. Always same as map width in Tiled Qt.
-    int height;   /// Number of tile rows. Always same as map height in Tiled Qt.
-    string name;  /// Name assigned to this layer
-    Type type;    /// Category (tile, object, or image)
-    bool visible; /// whether layer is shown or hidden in editor
-    int x;        /// Horizontal layer offset. Always 0 in Tiled Qt.
-    int y;        /// Vertical layer offset. Always 0 in Tiled Qt.
+    @jsonize("width")  int numCols; /// Number of tile columns. Identical to map width in Tiled Qt.
+    @jsonize("height") int numRows; /// Number of tile rows. Identical to map height in Tiled Qt.
+    string name;                    /// Name assigned to this layer
+    Type type;                      /// Category (tile, object, or image)
+    bool visible;                   /// whether layer is shown or hidden in editor
+    int x;                          /// Horizontal layer offset. Always 0 in Tiled Qt.
+    int y;                          /// Vertical layer offset. Always 0 in Tiled Qt.
   }
 
   // These entries exist only on object layers
   @jsonize(JsonizeOptional.yes) {
-    TiledGid[] data;           /// An array of GIDs that identify tiles. Only for `tilelayer`
-    ObjectData[] objects;      /// An array of objects. Only on `objectgroup` layers.
-    string[string] properties; /// Optional user-defined key-value properties for this layer
-    float opacity;             /// Visual opacity of all tiles in this layer
-    string draworder;          /// Not documented by tiled, but may appear in JSON.
+    TiledGid[] data;                        /// An array of tile GIDs. Only for `tilelayer`
+    ObjectData[] objects;                   /// An array of objects. Only on `objectgroup` layers.
+    string[string] properties;              /// Optional key-value properties for this layer
+    float opacity;                          /// Visual opacity of all tiles in this layer
+    @jsonize("draworder") string drawOrder; /// Not documented by tiled, but may appear in JSON.
   }
 
   @property {
     /// get the row corresponding to a position in the $(D data) or $(D objects) array.
-    auto idxToRow(size_t idx) { return idx / width; }
+    auto idxToRow(size_t idx) { return idx / numCols; }
 
     ///
     unittest {
       LayerData layer;
-      layer.width = 3;
-      layer.height = 2;
+      layer.numCols = 3;
+      layer.numRows = 2;
 
       assert(layer.idxToRow(0) == 0);
       assert(layer.idxToRow(1) == 0);
@@ -234,13 +234,13 @@ struct LayerData {
     }
 
     /// get the column corresponding to a position in the $(D data) or $(D objects) array.
-    auto idxToCol(size_t idx) { return idx % width; }
+    auto idxToCol(size_t idx) { return idx % numCols; }
 
     ///
     unittest {
       LayerData layer;
-      layer.width = 3;
-      layer.height = 2;
+      layer.numCols = 3;
+      layer.numRows = 2;
 
       assert(layer.idxToCol(0) == 0);
       assert(layer.idxToCol(1) == 1);
@@ -281,23 +281,23 @@ struct ObjectData {
  * A TilesetData maps GIDs (Global IDentifiers) to tiles.
  *
  * Each tileset has a range of GIDs that map to the tiles it contains.
- * This range starts at `firstgid` and extends to the `firstgid` of the next tileset.
- * The index of a tile within a tileset is given by tile.gid - tileset.firstgid.
+ * This range starts at `firstGid` and extends to the `firstGid` of the next tileset.
+ * The index of a tile within a tileset is given by tile.gid - tileset.firstGid.
  * A tileset uses its `image` as a 'tile atlas' and may specify per-tile `properties`.
  */
 struct TilesetData {
   mixin JsonizeMe;
   @jsonize(JsonizeOptional.no) {
-    TiledGid firstgid;         /// The GID that maps to the first tile in this set
-    string image;              /// Image used for tiles in this set
-    string name;               /// Name given to this tileset
-    int tilewidth;             /// Maximum width of tiles in this set
-    int tileheight;            /// Maximum height of tiles in this set
-    int imagewidth;            /// Width of source image in pixels
-    int imageheight;           /// Height of source image in pixels
-    string[string] properties; /// Properties assigned to this tileset
-    int margin;                /// Buffer between image edge and tiles (in pixels)
-    int spacing;               /// Spacing between tiles in image (in pixels)
+    string name;                               /// Name given to this tileset
+    string image;                              /// Image used for tiles in this set
+    int margin;                                /// Buffer between image edge and tiles (in pixels)
+    int spacing;                               /// Spacing between tiles in image (in pixels)
+    string[string] properties;                 /// Properties assigned to this tileset
+    @jsonize("firstgid")    TiledGid firstGid; /// The GID that maps to the first tile in this set
+    @jsonize("tilewidth")   int tileWidth;     /// Maximum width of tiles in this set
+    @jsonize("tileheight")  int tileHeight;    /// Maximum height of tiles in this set
+    @jsonize("imagewidth")  int imageWidth;    /// Width of source image in pixels
+    @jsonize("imageheight") int imageHeight;   /// Height of source image in pixels
   }
 
   @jsonize(JsonizeOptional.yes) {
@@ -313,10 +313,10 @@ struct TilesetData {
 
   @property {
     /// Number of tile rows in the tileset
-    int numRows()  { return (imageheight - margin * 2) / (tileheight + spacing); }
+    int numRows()  { return (imageHeight - margin * 2) / (tileHeight + spacing); }
 
     /// Number of tile rows in the tileset
-    int numCols()  { return (imagewidth - margin * 2) / (tilewidth + spacing); }
+    int numCols()  { return (imageWidth - margin * 2) / (tileWidth + spacing); }
 
     /// Total number of tiles defined in the tileset
     int numTiles() { return numRows * numCols; }
@@ -355,7 +355,7 @@ struct TilesetData {
    * Returns: space between left side of image and left side of tile (pixels)
    */
   int tileOffsetX(TiledGid gid) {
-    return margin + tileCol(gid) * (tilewidth + spacing);
+    return margin + tileCol(gid) * (tileWidth + spacing);
   }
 
   /**
@@ -367,7 +367,7 @@ struct TilesetData {
    * Returns: space between top side of image and top side of tile (pixels)
    */
   int tileOffsetY(TiledGid gid) {
-    return margin + tileRow(gid) * (tileheight + spacing);
+    return margin + tileRow(gid) * (tileHeight + spacing);
   }
 
   /**
@@ -386,11 +386,11 @@ struct TilesetData {
   // clean the gid, adjust it to an index within this tileset, and throw if out of range
   private auto getIdx(TiledGid gid) {
     gid = gid.cleanGid;
-    auto idx = gid - firstgid;
+    auto idx = gid - firstGid;
 
     enforce(idx >= 0 && idx < numTiles,
       "GID %d out of range [%d,%d] for tileset %s"
-      .format( gid, firstgid, firstgid + numTiles - 1, name));
+      .format( gid, firstGid, firstGid + numTiles - 1, name));
 
     return idx;
   }
@@ -399,9 +399,9 @@ struct TilesetData {
 unittest {
   // 3 rows, 3 columns
   TilesetData tileset;
-  tileset.firstgid = 4;
-  tileset.tilewidth = tileset.tileheight = 32;
-  tileset.imagewidth = tileset.imageheight = 96;
+  tileset.firstGid = 4;
+  tileset.tileWidth = tileset.tileHeight = 32;
+  tileset.imageWidth = tileset.imageHeight = 96;
   tileset.tileproperties = [ "6": ["a": "b"], "7": ["c": "d"] ];
 
   void test(TiledGid gid, int row, int col, int x, int y, string[string] props) {
