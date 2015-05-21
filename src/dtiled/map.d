@@ -166,7 +166,7 @@ struct OrthoMap(Tile) {
    * Params:
    *  coord = a row/column pair identifying a point in the tile grid.
    */
-  Tile tileAt(RowCol coord) {
+  ref Tile tileAt(RowCol coord) {
     enforce(contains(coord), "row/col out of map bounds: " ~ coord.toString);
     return _tiles[coord.row][coord.col];
   }
@@ -196,7 +196,7 @@ struct OrthoMap(Tile) {
    *  T = any pixel-positional point (see isPixelCoord).
    *  pos = pixel location in 2D space
    */
-  Tile tileAt(T)(T pos) if (isPixelCoord!T) {
+  ref Tile tileAt(T)(T pos) if (isPixelCoord!T) {
     enforce(contains(pos), "position out of map bounds: " ~ pos.toString);
     return tileAt(gridCoordAt(pos));
   }
