@@ -422,4 +422,56 @@ struct OrthoMap(Tile) {
     test(RowCol(2, 4), mask2); // all tiles in area are out of bounds
     test(RowCol(1, 2), mask5, "02", "22");
   }
+
+  /// Foreach over every tile in the map.
+  int opApply(int delegate(ref Tile) fn) {
+    int res = 0;
+
+    foreach(coord; RowCol(0, 0).span(RowCol(numRows - 1, numCols - 1))) {
+      res = fn(tileAt(coord));
+      if (res) break;
+    }
+
+    return res;
+  }
+
+  ///
+  unittest {
+    // the test map looks like:
+    // 00 01 02
+    // 10 11 12
+    auto myMap = testMap(2, 3, 32, 32);
+
+    string[] expected = ["00", "01", "02", "10", "11", "12"];
+    string[] actual;
+
+    foreach(tile ; myMap) { actual ~= tile.id; }
+
+    assert(expected == actual);
+  }
+
+  /// Foreach over every [coordinate,tile] pair in the map.
+  int opApply(int delegate(RowCol, ref Tile) fn) {
+    int res = 0;
+
+    foreach(coord; RowCol(0, 0).span(RowCol(numRows - 1, numCols - 1))) {
+      res = fn(coord, tileAt(coord));
+      if (res) break;
+    }
+
+    return res;
+  }
+
+  ///
+  unittest {
+    import std.format : format;
+    // the test map looks like:
+    // 00 01 02
+    // 10 11 12
+    auto myMap = testMap(2, 3, 32, 32);
+
+    foreach(coord, tile ; myMap) {
+      assert(tile.id == "%d%d".format(coord.row, coord.col));
+    }
+  }
 }
