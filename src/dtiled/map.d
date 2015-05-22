@@ -474,4 +474,44 @@ struct OrthoMap(Tile) {
       assert(tile.id == "%d%d".format(coord.row, coord.col));
     }
   }
+
+  /**
+   * Get the pixel offset of the top-left corner of the tile at the given coord.
+   *
+   * Params:
+   *  coord = grid location of tile.
+   */
+  PixelCoord tileOffset(RowCol coord) {
+    return PixelCoord(coord.col * tileWidth,
+                      coord.row * tileHeight);
+  }
+
+  ///
+  unittest {
+    // 2 rows, 3 cols, 32x64 tiles
+    auto myMap = testMap(2, 3, 32, 64);
+
+    assert(myMap.tileOffset(RowCol(0, 0)) == PixelCoord(0, 0));
+    assert(myMap.tileOffset(RowCol(1, 2)) == PixelCoord(64, 64));
+  }
+
+  /**
+   * Get the pixel offset of the center of the tile at the given coord.
+   *
+   * Params:
+   *  coord = grid location of tile.
+   */
+  PixelCoord tileCenter(RowCol coord) {
+    return PixelCoord(coord.col * tileWidth  + tileWidth  / 2,
+                      coord.row * tileHeight + tileHeight / 2);
+  }
+
+  ///
+  unittest {
+    // 2 rows, 3 cols, 32x64 tiles
+    auto myMap = testMap(2, 3, 32, 64);
+
+    assert(myMap.tileCenter(RowCol(0, 0)) == PixelCoord(16, 32));
+    assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
+  }
 }
