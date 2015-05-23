@@ -531,3 +531,48 @@ struct OrthoMap(Tile) {
     assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
   }
 }
+
+// NOTE: declared outside of struct due to issues with alias parameters on templated structs.
+// See https://issues.dlang.org/show_bug.cgi?id=11098
+/**
+ * Generate a mask from a region of tiles based on a condition.
+ *
+ * For each tile in the region centered at origin, sets the corresponding element of mask to the
+ * result of fn(tile).
+ *
+ * Params:
+ *  fn = function that generates a mask entry from a tile
+ *  origin = center of region to generate mask from
+ *  mask = rectangular array to populate with generated mask values.
+ */
+void createMask(alias fn, int NR, int NC, Tile, T)(OrthoMap!Tile map, RowCol origin, out T[NR][NC] mask)
+  if (is(typeof(fn(Tile.init)) : T))
+{
+  auto start = RowCol(0, 0);
+  auto end = RowCol(NR - 1, NC - 1);
+  auto offset = origin - RowCol(NR / 2, NC / 2);
+
+  foreach(coord ; start.span(end).filter!(x => map.contains(x))) {
+    mask[coord.row][coord.col] = fn(map.tileAt(coord));
+  }
+}
+
+///
+unittest {
+  import std.conv;
+  // the test map looks like:
+  // 00 01 02 03 04
+  // 10 11 12 13 14
+  // 20 21 22 23 24
+  auto myMap = testMap(3, 5, 32, 32);
+
+  uint[3][3] mask;
+
+  myMap.createMask!(tile => tile.id.to!int > 10)(RowCol(1,1), mask);
+
+  assert(mask == [
+      [0, 0, 0],
+      [0, 1, 1],
+      [1, 1, 1],
+  ]);
+}
