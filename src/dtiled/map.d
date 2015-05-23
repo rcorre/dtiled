@@ -550,10 +550,10 @@ void createMask(alias fn, int NR, int NC, Tile, T)(OrthoMap!Tile map, RowCol ori
 {
   auto start = RowCol(0, 0);
   auto end = RowCol(NR - 1, NC - 1);
-  auto offset = origin - RowCol(NR / 2, NC / 2);
+  auto offset = origin - RowCol(1, 1);
 
-  foreach(coord ; start.span(end).filter!(x => map.contains(x))) {
-    mask[coord.row][coord.col] = fn(map.tileAt(coord));
+  foreach(coord ; start.span(end).filter!(x => map.contains(x + offset))) {
+    mask[coord.row][coord.col] = fn(map.tileAt(coord + offset));
   }
 }
 
@@ -574,5 +574,13 @@ unittest {
       [0, 0, 0],
       [0, 1, 1],
       [1, 1, 1],
+  ]);
+
+  myMap.createMask!(tile => tile.id.to!int < 24)(RowCol(2,4), mask);
+
+  assert(mask == [
+      [1, 1, 0],
+      [1, 0, 0],
+      [0, 0, 0],
   ]);
 }
