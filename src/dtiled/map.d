@@ -220,21 +220,26 @@ struct OrthoMap(Tile) {
     assertThrown(map.tileAt(PixelCoord(0, 97)));   // beyond far bottom
   }
 
-  /**
-   * Return all tiles that share an edge with the tile at the given coord.
-   * Does not include the tile at that coord.
-   *
-   * Params:
-   *  coord = grid location of center tile.
-   */
-  auto adjacent(RowCol coord) {
+  /// Same as tilesBeside, but return coordinates instead of tiles.
+  auto coordsBeside(RowCol coord) {
     immutable ubyte[][] neighborMask = [
       [0,1,0],
       [1,0,1],
       [0,1,0],
     ];
 
-    return this.mask(coord, neighborMask);
+    return this.coordsMasked(coord, neighborMask);
+  }
+
+  /**
+   * Return all tiles that share an edge with the tile at the given coord.
+   * Does not include the tile at the center.
+   *
+   * Params:
+   *  coord = grid location of center tile.
+   */
+  auto tilesBeside(RowCol coord) {
+    return this.coordsBeside(coord).map!(x => this.tileAt(x));
   }
 
   ///
@@ -250,7 +255,7 @@ struct OrthoMap(Tile) {
       import std.format    : format;
       import std.algorithm : all, canFind;
 
-      auto actual = myMap.adjacent(coord).map!(x => x.id).array;
+      auto actual = myMap.tilesBeside(coord).map!(x => x.id).array;
 
       assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
           "neighbors incorrect for (%d, %d), expected %s, got %s"
@@ -269,6 +274,17 @@ struct OrthoMap(Tile) {
     test(RowCol(0, 2), "01", "12", "03"); // top center
   }
 
+  /// Same as tilesAround, but return coords instead of tiles.
+  auto coordsAround(RowCol coord) {
+    immutable ubyte[][] neighborMask = [
+      [1,1,1],
+      [1,0,1],
+      [1,1,1],
+    ];
+
+    return coordsMasked(coord, neighborMask);
+  }
+
   /**
    * Return all tiles that share an edge or corner with the tile at the given coord.
    * Does not include the tile at that coord.
@@ -276,14 +292,8 @@ struct OrthoMap(Tile) {
    * Params:
    *  coord = grid location of center tile.
    */
-  auto around(RowCol coord) {
-    immutable ubyte[][] neighborMask = [
-      [1,1,1],
-      [1,0,1],
-      [1,1,1],
-    ];
-
-    return this.mask(coord, neighborMask);
+  auto tilesAround(RowCol coord) {
+    return coordsAround(coord).map!(x => tileAt(x));
   }
 
   ///
@@ -299,16 +309,36 @@ struct OrthoMap(Tile) {
       import std.format    : format;
       import std.algorithm : all, canFind;
 
-      auto actual = myMap.around(coord).map!(x => x.id).array;
+      auto actual = myMap.tilesAround(coord).map!(x => x.id).array;
 
       assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
-          "surrounding tiles incorrect for (%d, %d), expected %s, got %s"
+          "tilesAround incorrect for (%d, %d), expected %s, got %s"
           .format(coord.row, coord.col, expected, actual));
     }
 
     test(RowCol(1, 1), "00", "02", "22", "20", "01", "12", "21", "10");
     test(RowCol(0, 0), "01", "10", "11");
     test(RowCol(2, 1), "20", "10", "11", "12", "22");
+  }
+
+  /**
+   * Same as tilesMasked, but just return the coordinates instead of the tiles at those coordinates.
+   */
+  auto coordsMasked(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+    auto nRows = mask.length;
+    assert(nRows > 0, "a mask cannot be empty");
+
+    auto nCols = mask[0].length;
+    assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
+
+    auto start = RowCol(0, 0);
+    auto end = RowCol(nRows - 1, nCols - 1);
+    auto offset = origin - RowCol(nRows / 2, nCols / 2);
+
+    return start.span(end)
+      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
+      .map!(x => x + offset)            // adjust mask coordinate to map coordinate
+      .filter!(x => this.contains(x));  // remove out of bounds coords
   }
 
   /**
@@ -345,22 +375,8 @@ struct OrthoMap(Tile) {
    * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
    * --------------
    */
-  auto mask(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
-    auto nRows = mask.length;
-    assert(nRows > 0, "a mask cannot be empty");
-
-    auto nCols = mask[0].length;
-    assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
-
-    auto start = RowCol(0, 0);
-    auto end = RowCol(nRows - 1, nCols - 1);
-    auto offset = origin - RowCol(nRows / 2, nCols / 2);
-
-    return start.span(end)
-      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
-      .map!(x => x + offset)            // adjust mask coordinate to map coordinate
-      .filter!(x => this.contains(x))   // remove out of bounds coords
-      .map!(x => this.tileAt(x));       // grab the tile for each coord
+  auto tilesMasked(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+    return coordsMasked(origin, mask).map!(x => this.tileAt(x)); // grab the tile for each coord
   }
 
   /// More masking examples:
@@ -376,7 +392,7 @@ struct OrthoMap(Tile) {
       import std.format    : format;
       import std.algorithm : all, canFind;
 
-      auto actual = myMap.mask(origin, mask).map!(x => x.id).array;
+      auto actual = myMap.tilesMasked(origin, mask).map!(x => x.id).array;
       assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
           "mask incorrect: %s (%d, %d), expected %s, got %s"
           .format(mask, origin.row, origin.col, expected, actual));
