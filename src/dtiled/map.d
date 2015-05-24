@@ -11,6 +11,7 @@
 module dtiled.map;
 
 import std.range     : only, takeNone, chain;
+import std.format    : format;
 import std.algorithm : all, map, filter;
 import std.exception : enforce;
 import dtiled.data;
@@ -197,7 +198,7 @@ struct OrthoMap(Tile) {
    *  pos = pixel location in 2D space
    */
   ref Tile tileAt(T)(T pos) if (isPixelCoord!T) {
-    enforce(contains(pos), "position out of map bounds: " ~ pos.toString);
+    enforce(contains(pos), "position %d,%d out of map bounds: ".format(pos.x, pos.y));
     return tileAt(gridCoordAt(pos));
   }
 
