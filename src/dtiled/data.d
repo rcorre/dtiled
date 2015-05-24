@@ -301,10 +301,13 @@ struct TilesetData {
   }
 
   @jsonize(JsonizeOptional.yes) {
-    /** Optional per-tile properties, indexed by the GID as a string.
+    /** Optional per-tile properties, indexed by the relative ID as a string.
      *
-     * For example, if the tile with GID 25 has the property "moveCost=4", then
-     * `tileproperties["25"]["moveCost"] == "4"
+     * $(RED Note:) The ID is $(B not) the same as the GID. The ID is calculated relative to the
+     * firstgid of the tileset the tile belongs to.
+     * For example, if a tile has GID 25 and belongs to the tileset with firstgid = 10, then its
+     * properties are given by $(D tileset.tileproperties["15"]).
+     *
      * A tile with no special properties will not have an index here.
      * If no tiles have special properties, this field is not populated at all.
      */
@@ -379,7 +382,8 @@ struct TilesetData {
    * Returns: AA of key-value property pairs, or $(D null) if no properties defined for this tile.
    */
   string[string] tileProperties(TiledGid gid) {
-    auto res = gid.to!string in tileproperties;
+    auto id = cleanGid(gid) - firstGid; // indexed by relative ID, not GID
+    auto res = id.to!string in tileproperties;
     return res ? *res : null;
   }
 
@@ -402,7 +406,7 @@ unittest {
   tileset.firstGid = 4;
   tileset.tileWidth = tileset.tileHeight = 32;
   tileset.imageWidth = tileset.imageHeight = 96;
-  tileset.tileproperties = [ "6": ["a": "b"], "7": ["c": "d"] ];
+  tileset.tileproperties = [ "2": ["a": "b"], "3": ["c": "d"] ];
 
   void test(TiledGid gid, int row, int col, int x, int y, string[string] props) {
     assert(tileset.tileRow(gid) == row         , "row mismatch   gid=%d".format(gid));
