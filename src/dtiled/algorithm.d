@@ -5,8 +5,8 @@ import std.algorithm;
 import std.container : Array;
 import dtiled.coords : RowCol;
 
-auto findEnclosure(alias cond, Tile)(Tile[][] tiles, RowCol origin)
-  if (is(typeof(cond(Tile.init)) : bool))
+auto findEnclosure(alias isWall, Tile)(Tile[][] tiles, RowCol origin)
+  if (is(typeof(isWall(Tile.init)) : bool))
 {
   auto numRows = tiles.length;
   auto numCols = tiles[0].length;
@@ -39,7 +39,7 @@ auto findEnclosure(alias cond, Tile)(Tile[][] tiles, RowCol origin)
     hitEdge = hitEdge || outOfBounds(row, col);
 
     // break this recursive branch if we hit an edge or a visited or invalid tile.
-    if (hitEdge || visited[idx] || !cond(tiles[row][col])) return;
+    if (hitEdge || visited[idx] || isWall(tiles[row][col])) return;
 
     visited[idx] = true;
 
@@ -82,25 +82,25 @@ unittest {
     [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
   ];
 
-  static bool isNotWall(char c) { return c != 'X'; }
+  static bool isWall(char c) { return c == 'X'; }
 
   // starting on a wall should return an empty result
-  assert(tiles.findEnclosure!isNotWall(RowCol(0, 0)).empty);
+  assert(tiles.findEnclosure!isWall(RowCol(0, 0)).empty);
 
   // all tiles in the [1,1] -> [2,2] area should find the 'a' room
-  assert(tiles.findEnclosure!isNotWall(RowCol(1, 1)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isNotWall(RowCol(1, 2)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isNotWall(RowCol(2, 1)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isNotWall(RowCol(2, 2)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.findEnclosure!isWall(RowCol(1, 1)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.findEnclosure!isWall(RowCol(1, 2)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.findEnclosure!isWall(RowCol(2, 1)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.findEnclosure!isWall(RowCol(2, 2)).equal(['a', 'a', 'a', 'a']));
 
   // get the two-tile 'b' room at [1,4] -> [2,4]
-  assert(tiles.findEnclosure!isNotWall(RowCol(1, 4)).equal(['b', 'b']));
-  assert(tiles.findEnclosure!isNotWall(RowCol(2, 4)).equal(['b', 'b']));
+  assert(tiles.findEnclosure!isWall(RowCol(1, 4)).equal(['b', 'b']));
+  assert(tiles.findEnclosure!isWall(RowCol(2, 4)).equal(['b', 'b']));
 
   // get the single tile 'c' room at 4,4
-  assert(tiles.findEnclosure!isNotWall(RowCol(4, 4)).equal(['c']));
+  assert(tiles.findEnclosure!isWall(RowCol(4, 4)).equal(['c']));
 
   // the 'd' region is not an enclosure (touches map edge)
-  assert(tiles.findEnclosure!isNotWall(RowCol(4, 1)).empty);
-  assert(tiles.findEnclosure!isNotWall(RowCol(5, 0)).empty);
+  assert(tiles.findEnclosure!isWall(RowCol(4, 1)).empty);
+  assert(tiles.findEnclosure!isWall(RowCol(5, 0)).empty);
 }
