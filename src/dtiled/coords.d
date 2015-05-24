@@ -37,7 +37,7 @@ struct RowCol {
 
   /// Get a string representation of the coordinate, useful for debugging
   @property string toString() {
-    return "<row: %d, col: %d>".format(row, col);
+    return "(%d,%d)".format(row, col);
   }
 
   /// Add or subtract one coordinate from another
