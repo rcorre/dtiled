@@ -30,6 +30,7 @@ struct RowCol {
   long row, col;
 
   /// Construct a row column pair
+  @nogc
   this(long row, long col) {
     this.row = row;
     this.col = col;
@@ -41,7 +42,8 @@ struct RowCol {
   }
 
   /// Add or subtract one coordinate from another
-  RowCol opBinary(string op)(RowCol rhs) if (op == "+" || op == "-") {
+  @nogc 
+  RowCol opBinary(string op)(RowCol rhs) const if (op == "+" || op == "-") {
     return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
   }
 
@@ -157,6 +159,7 @@ unittest {
  * Return the manhattan distance between two tile coordinates.
  * For two coordinates a and b, this is defined as abs(a.row - b.row) + abs(a.col - b.col)
  */
+@nogc 
 auto manhattan(RowCol a, RowCol b) {
   return abs(a.row - b.row) + abs(a.col - b.col);
 }
