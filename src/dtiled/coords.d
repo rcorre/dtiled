@@ -56,13 +56,12 @@ struct RowCol {
  *
  * The order of enumeration is determined as follows:
  * Enumerate all columns in a row before moving to the next row.
- * The start coordinate is always the first entry, end is always the last.
  * If start.row >= end.row, enumerate rows in increasing order, otherwise enumerate in decreasing.
  * If start.col >= end.col, enumerate cols in increasing order, otherwise enumerate in decreasing.
  *
  * Params:
- *  start = RowCol pair to start enumeration from, inclusive
- *  end   = RowCol pair to end enumeration at, inclusive
+ *  start = RowCol pair to start enumeration from, $(B inclusive)
+ *  end   = RowCol pair to end enumeration at, $(B exclusive)
  */
 auto span(RowCol start, RowCol end) {
   auto colInc = sgn(end.col - start.col); // direction to increment columns (1 or -1)
@@ -73,8 +72,8 @@ auto span(RowCol start, RowCol end) {
   rowInc = (rowInc == 0) ? 1 : rowInc;
 
   // add/subtract 1 because we want an inclusive range, while iota is exclusive on the upper bound
-  auto colRange = iota(start.col, end.col + colInc, colInc);
-  auto rowRange = iota(start.row, end.row + rowInc, rowInc);
+  auto colRange = iota(start.col, end.col, colInc);
+  auto rowRange = iota(start.row, end.row, rowInc);
 
   return rowRange.cartesianProduct(colRange).map!(x => RowCol(x[0], x[1]));
 }
@@ -84,25 +83,20 @@ unittest {
   import std.algorithm : equal;
 
   assert(RowCol(0,0).span(RowCol(2,3)).equal([
-    RowCol(0,0), RowCol(0,1), RowCol(0,2), RowCol(0,3),
-    RowCol(1,0), RowCol(1,1), RowCol(1,2), RowCol(1,3),
-    RowCol(2,0), RowCol(2,1), RowCol(2,2), RowCol(2,3)]));
+    RowCol(0,0), RowCol(0,1), RowCol(0,2),
+    RowCol(1,0), RowCol(1,1), RowCol(1,2)]));
 
   assert(RowCol(2,2).span(RowCol(0,0)).equal([
-    RowCol(2,2), RowCol(2,1), RowCol(2,0),
-    RowCol(1,2), RowCol(1,1), RowCol(1,0),
-    RowCol(0,2), RowCol(0,1), RowCol(0,0)]));
-
-  assert(RowCol(2,2).span(RowCol(1,3)).equal([
-    RowCol(2,2), RowCol(2,3),
-    RowCol(1,2), RowCol(1,3)]));
-
-  assert(RowCol(2,2).span(RowCol(3,1)).equal([
     RowCol(2,2), RowCol(2,1),
-    RowCol(3,2), RowCol(3,1)]));
+    RowCol(1,2), RowCol(1,1)]));
 
-  assert(RowCol(2,2).span(RowCol(2,2)).equal([RowCol(2,2)]));
-  assert(RowCol(2,2).span(RowCol(5,2)).equal([RowCol(2,2), RowCol(3,2), RowCol(4,2), RowCol(5,2)]));
+  assert(RowCol(2,2).span(RowCol(1,3)).equal([RowCol(2,2)]));
+
+  assert(RowCol(2,2).span(RowCol(3,1)).equal([RowCol(2,2)]));
+
+  // as the upper bound of span is exclusive, both of these are empty (span over 0 columns):
+  assert(RowCol(2,2).span(RowCol(2,2)).empty);
+  assert(RowCol(2,2).span(RowCol(5,2)).empty);
 }
 
 /// Represents a location in continuous 2D space.

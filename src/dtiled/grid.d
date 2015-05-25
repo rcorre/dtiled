@@ -231,7 +231,7 @@ struct TileGrid(Tile) {
     assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
 
     auto start = RowCol(0, 0);
-    auto end = RowCol(nRows - 1, nCols - 1);
+    auto end = RowCol(nRows, nCols);
     auto offset = origin - RowCol(nRows / 2, nCols / 2);
 
     return start.span(end)
@@ -342,7 +342,7 @@ struct TileGrid(Tile) {
   int opApply(int delegate(ref Tile) fn) {
     int res = 0;
 
-    foreach(coord; RowCol(0, 0).span(RowCol(numRows - 1, numCols - 1))) {
+    foreach(coord; RowCol(0, 0).span(RowCol(numRows, numCols))) {
       res = fn(tileAt(coord));
       if (res) break;
     }
@@ -369,7 +369,7 @@ struct TileGrid(Tile) {
   int opApply(int delegate(RowCol, ref Tile) fn) {
     int res = 0;
 
-    foreach(coord; RowCol(0, 0).span(RowCol(numRows - 1, numCols - 1))) {
+    foreach(coord; RowCol(0, 0).span(RowCol(numRows, numCols))) {
       res = fn(coord, tileAt(coord));
       if (res) break;
     }
@@ -409,7 +409,7 @@ void createMask(alias fn, int NR, int NC, Tile, T)(TileGrid!Tile grid, RowCol or
   if (is(typeof(fn(Tile.init)) : T))
 {
   auto start = RowCol(0, 0);
-  auto end = RowCol(NR - 1, NC - 1);
+  auto end = RowCol(NR, NC);
   auto offset = origin - RowCol(1, 1);
 
   foreach(coord ; start.span(end).filter!(x => grid.contains(x + offset))) {
