@@ -389,6 +389,42 @@ struct TileGrid(Tile) {
       assert(tile.id == "%d%d".format(coord.row, coord.col));
     }
   }
+
+  auto opSlice(RowCol start, RowCol end) {
+    // TODO: no .array, have each slice point at the same tile[][] and track its own bounds.
+    import std.array : array;
+    enforce(contains(start), "grid slice start index out of bounds: " ~ start.toString);
+    enforce(contains(end - RowCol(1,1)), "grid slice end index out of bounds: " ~ end.toString);
+    return TileGrid!Tile(_tiles[start.row .. end.row].map!(row => row[start.col .. end.col]).array);
+  }
+
+  ///
+  unittest {
+    import std.format    : format;
+    import std.algorithm : map, equal;
+    import std.exception : assertThrown;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    // slice from upper left corner to 1,1
+    auto slice = myGrid[RowCol(0,0)..RowCol(2, 2)];
+    assert(slice.tileAt(RowCol(0,0)).id == "00");
+    assert(slice.tileAt(RowCol(1,1)).id == "11");
+    assertThrown(slice.tileAt(RowCol(-1,-1)));
+    assertThrown(slice.tileAt(RowCol(2,2)));
+
+    // slice from 1,1 to lower right corner
+    slice = myGrid[RowCol(1,1)..RowCol(3, 5)];
+    assert(slice.tileAt(RowCol(0,0)).id == "11");
+    assert(slice.tileAt(RowCol(1,3)).id == "24");
+    assertThrown(slice.tileAt(RowCol(2,3)));
+
+    // slice extends out of bounds
+    assertThrown(myGrid[RowCol(0,0) .. RowCol(4,5)]);
+  }
 }
 
 // NOTE: declared outside of struct due to issues with alias parameters on templated structs.
