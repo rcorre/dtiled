@@ -86,7 +86,7 @@ struct TileGrid(Tile) {
 
   private {
     bool sliceContains(RowCol coord) {
-      return 
+      return
         coord.row >= 0 && coord.row < numRows && // row in slice bounds
         coord.col >= 0 && coord.col < numCols;   // col in slice bounds
     }
@@ -430,7 +430,7 @@ struct TileGrid(Tile) {
     }
   }
 
-  @nogc 
+  @nogc
   auto opSlice(RowCol start, RowCol end) {
     auto relStart = start + _startCoord;
     auto relEnd   = relStart + (end - start);
@@ -439,8 +439,6 @@ struct TileGrid(Tile) {
 
   ///
   unittest {
-    import std.format    : format;
-    import std.algorithm : map, equal;
     import std.exception : assertThrown;
     // the test map looks like:
     // 00 01 02 03 04
@@ -458,11 +456,50 @@ struct TileGrid(Tile) {
     //// slice from 1,1 to lower right corner
     auto slice2 = myGrid[RowCol(1,1)..RowCol(3, 5)];
     assert(slice2.tileAt(RowCol(0,0)).id == "11");
-    //assert(slice2.tileAt(RowCol(1,3)).id == "24");
-    //assertThrown(slice2.tileAt(RowCol(2,3)));
+    assert(slice2.tileAt(RowCol(1,3)).id == "24");
+    assertThrown(slice2.tileAt(RowCol(2,3)));
+  }
 
-    //// slice extends out of bounds
-    //assertThrown(myGrid[RowCol(0,0) .. RowCol(4,5)]);
+  /**
+   * Create a slice from a square subsection of the map centered at origin and extending radius
+   * tiles in each direction.
+   * 
+   * Params:
+   *  origin = Center coordinate of region.
+   *  radius = Number of tiles the region's bounds extend in each cardinal direction from origin.
+   *           The region forms a square with sides of size (radius * 2) + 1.
+   */
+  @nogc
+  auto regionAround(RowCol origin, int radius) {
+    auto start = origin - RowCol(radius, radius);
+    auto end = origin + RowCol(radius, radius) + RowCol(1, 1);
+
+    return this[start .. end];
+  }
+
+  ///
+  unittest {
+    import std.exception : assertThrown;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    // region of size 1 centered at 1,1
+    auto slice1 = myGrid.regionAround(RowCol(1,1), 1);
+    assert(slice1.tileAt(RowCol(0,0)).id == "00");
+    assert(slice1.tileAt(RowCol(1,1)).id == "11");
+    assert(slice1.tileAt(RowCol(2,1)).id == "21");
+    assertThrown(slice1.tileAt(RowCol(-1,-1)));
+    assertThrown(slice1.tileAt(RowCol(3,1)));
+
+    //// slice centered at 0,4 that extends partially out of bounds
+    auto slice2 = myGrid.regionAround(RowCol(0, 4), 1);
+    assert(slice2.tileAt(RowCol(1,0)).id == "03");
+    assert(slice2.tileAt(RowCol(2,1)).id == "14");
+    assertThrown(slice2.tileAt(RowCol(0,0)));
+    assertThrown(slice2.tileAt(RowCol(2,2)));
   }
 }
 
