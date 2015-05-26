@@ -17,37 +17,40 @@ import dtiled.coords;
 version(unittest) {
   import std.conv : to;
 
-  private struct TestTile { string id; }
-
-  private TileGrid!TestTile makeTestGrid(int rows, int cols) {
-    TestTile[][] tiles;
+  // create a test grid, where each tile is simply a string of form "rc"
+  // where r is the row number and c is the column number
+  private TileGrid!string makeTestGrid(int rows, int cols) {
+    string[][] tiles;
 
     foreach(row ; 0..rows) {
-      TestTile[] newRow;
+      string[] newRow;
       foreach(col ; 0..cols) {
-        newRow ~= TestTile(row.to!string ~ col.to!string);
+        newRow ~= (row.to!string ~ col.to!string);
       }
       tiles ~= newRow;
     }
 
-    return TileGrid!TestTile(tiles);
+    return TileGrid!string(tiles);
   }
 }
 
 unittest {
   auto grid = makeTestGrid(5, 10);
-  assert(grid.numRows    == 5);
-  assert(grid.numCols    == 10);
+  assert(grid.numRows == 5);
+  assert(grid.numCols == 10);
 }
 
 /**
  * Represents a grid of rectangular tiles.
  */
 struct TileGrid(Tile) {
-  private {
-    Tile[][] _tiles;
-    const RowCol _startCoord, _endCoord;
+  const {
+    RowCol sliceOffset; /// coord of the top-left corner of this slice
+    size_t numRows;     /// Number of rows along the tile grid y axis
+    size_t numCols;     /// Number of cols along the tile grid x axis
   }
+
+  private Tile[][] _tiles;
 
   /**
    * Wrap a 2D array in a grid structure. The grid must be rectangular (not jagged).
@@ -57,31 +60,18 @@ struct TileGrid(Tile) {
    */
   this(Tile[][] tiles) {
     // set the bounds to the entire size of the array
-    this(tiles, RowCol(0, 0), RowCol(tiles.length, tiles[0].length));
+    this(tiles, RowCol(0, 0), tiles.length, tiles[0].length);
   }
 
-  /**
-   * Wrap a slice of a larger grid.
-   *
-   * Params:
-   *  tiles = tiles arranged in **row major** order, indexed as tiles[row][col].
-   *  startCoord = first coord in slice, representing the north-west corner (inclusive)
-   *  endCoord = last coord in slice, representing the south-east corner (exclusive)
-   */
-  this(Tile[][] tiles, RowCol startCoord, RowCol endCoord) {
+  // internal slice constructor
+  private this(Tile[][] tiles, RowCol sliceOffset, size_t nRows, size_t nCols) {
     assert(tiles.all!(x => x.length == tiles[0].length),
         "all rows of an OrthoMap must have the same length (cannot be jagged array)");
 
     _tiles = tiles;
-    _startCoord = startCoord;
-    _endCoord = endCoord;
-  }
-
-  @property {
-    /// Number of rows along the tile grid y axis
-    auto numRows()    { return _endCoord.row - _startCoord.row; }
-    /// Number of columns along the tile grid x axis
-    auto numCols()    { return _endCoord.col - _startCoord.col; }
+    this.sliceOffset = sliceOffset;
+    this.numRows = nRows;
+    this.numCols = nCols;
   }
 
   private {
@@ -92,7 +82,7 @@ struct TileGrid(Tile) {
     }
 
     bool sourceContains(RowCol coord) {
-      auto absCoord = coord + _startCoord; // coord relative to source
+      auto absCoord = coord + sliceOffset; // coord relative to source
       return
         absCoord.row >= 0 && absCoord.row < _tiles.length &&  // row in source bounds
         absCoord.col >= 0 && absCoord.col < _tiles[0].length; // col in source bounds
@@ -100,11 +90,11 @@ struct TileGrid(Tile) {
 
     void enforceBounds(RowCol coord) {
       enforce(sliceContains(coord),
-        "%s out of slice bounds [%s,%s)"
-        .format(coord + _startCoord, RowCol(0,0), _endCoord - _startCoord));
+        "%s is out of slice bounds [%s,%s)"
+        .format(coord + sliceOffset, RowCol(0,0), RowCol(numRows, numCols)));
 
       enforce(sourceContains(coord),
-        "%s out of source bounds [%s,%s)"
+        "%s is out of source bounds [%s,%s)"
         .format(coord, RowCol(0,0), RowCol(_tiles.length, _tiles[0].length)));
     }
   }
@@ -136,7 +126,7 @@ struct TileGrid(Tile) {
    */
   ref Tile tileAt(RowCol coord) {
     enforceBounds(coord);
-    auto relativeCoord = coord + _startCoord;
+    auto relativeCoord = coord + sliceOffset;
     return _tiles[relativeCoord.row][relativeCoord.col];
   }
 
@@ -150,232 +140,13 @@ struct TileGrid(Tile) {
     // 20 21 22 23 24
     auto grid = makeTestGrid(3, 5);
 
-    assert(grid.tileAt(RowCol(0, 0)).id == "00"); // top left tile
-    assert(grid.tileAt(RowCol(2, 4)).id == "24"); // bottom right tile
-    assert(grid.tileAt(RowCol(1, 1)).id == "11");
+    assert(grid.tileAt(RowCol(0, 0)) == "00"); // top left tile
+    assert(grid.tileAt(RowCol(2, 4)) == "24"); // bottom right tile
+    assert(grid.tileAt(RowCol(1, 1)) == "11");
 
     // tileAt enforces in-bounds access
     assertThrown(grid.tileAt(RowCol(-1, -1))); // row/col out of bounds (< 0)
     assertThrown(grid.tileAt(RowCol(3, 1)));   // row out of bounds (> 2)
-  }
-
-  /// Same as tilesBeside, but return coordinates instead of tiles.
-  auto coordsBeside(RowCol coord) {
-    immutable ubyte[][] neighborMask = [
-      [0,1,0],
-      [1,0,1],
-      [0,1,0],
-    ];
-
-    return this.coordsMasked(coord, neighborMask);
-  }
-
-  /**
-   * Return all tiles that share an edge with the tile at the given coord.
-   * Does not include the tile at the center.
-   *
-   * Params:
-   *  coord = grid location of center tile.
-   */
-  auto tilesBeside(RowCol coord) {
-    return this.coordsBeside(coord).map!(x => this.tileAt(x));
-  }
-
-  ///
-  unittest {
-    // the test map looks like:
-    // 00 01 02 03 04
-    // 10 11 12 13 14
-    // 20 21 22 23 24
-    auto myGrid = makeTestGrid(3, 5);
-
-    void test(RowCol coord, string[] expected ...) {
-      import std.array     : array;
-      import std.format    : format;
-      import std.algorithm : all, canFind;
-
-      auto actual = myGrid.tilesBeside(coord).map!(x => x.id).array;
-
-      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
-          "neighbors incorrect for (%d, %d), expected %s, got %s"
-          .format(coord.row, coord.col, expected, actual));
-    }
-
-    test(RowCol(1, 1), "01", "12", "21", "10"); // tile not bordering any map edge
-
-    test(RowCol(0, 0), "01", "10");       // top left corner
-    test(RowCol(0, 0), "01", "10");       // bottom left
-    test(RowCol(0, 4), "03", "14");       // top right
-    test(RowCol(2, 4), "23", "14");       // bottom right
-    test(RowCol(1, 0), "00", "11", "20"); // center left
-    test(RowCol(1, 4), "04", "13", "24"); // center right
-    test(RowCol(2, 2), "21", "12", "23"); // bottom center
-    test(RowCol(0, 2), "01", "12", "03"); // top center
-  }
-
-  /// Same as tilesAround, but return coords instead of tiles.
-  auto coordsAround(RowCol coord) {
-    immutable ubyte[][] neighborMask = [
-      [1,1,1],
-      [1,0,1],
-      [1,1,1],
-    ];
-
-    return coordsMasked(coord, neighborMask);
-  }
-
-  /**
-   * Return all tiles that share an edge or corner with the tile at the given coord.
-   * Does not include the tile at that coord.
-   *
-   * Params:
-   *  coord = grid location of center tile.
-   */
-  auto tilesAround(RowCol coord) {
-    return coordsAround(coord).map!(x => tileAt(x));
-  }
-
-  ///
-  unittest {
-    // the test map looks like:
-    // 00 01 02 03 04
-    // 10 11 12 13 14
-    // 20 21 22 23 24
-    auto myGrid = makeTestGrid(3, 5);
-
-    void test(RowCol coord, string[] expected ...) {
-      import std.array     : array;
-      import std.format    : format;
-      import std.algorithm : all, canFind;
-
-      auto actual = myGrid.tilesAround(coord).map!(x => x.id).array;
-
-      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
-          "tilesAround incorrect for (%d, %d), expected %s, got %s"
-          .format(coord.row, coord.col, expected, actual));
-    }
-
-    test(RowCol(1, 1), "00", "02", "22", "20", "01", "12", "21", "10");
-    test(RowCol(0, 0), "01", "10", "11");
-    test(RowCol(2, 1), "20", "10", "11", "12", "22");
-  }
-
-  /**
-   * Same as tilesMasked, but just return the coordinates instead of the tiles at those coordinates.
-   */
-  auto coordsMasked(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
-    auto nRows = mask.length;
-    assert(nRows > 0, "a mask cannot be empty");
-
-    auto nCols = mask[0].length;
-    assert(mask.all!(x => x.length == nCols), "a mask cannot be a jagged array");
-
-    auto start = RowCol(0, 0);
-    auto end = RowCol(nRows, nCols);
-    auto offset = origin - RowCol(nRows / 2, nCols / 2);
-
-    return start.span(end)
-      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
-      .map!(x => x + offset)            // adjust mask coordinate to map coordinate
-      .filter!(x => this.contains(x));  // remove out of bounds coords
-  }
-
-  /**
-   * Select specific tiles from within a rectangular region as defined by a mask.
-   *
-   * The mask's center is aligned with the given origin coordinate on the map.
-   * Each map tile that is overlaid with a 'true' value is included in the result.
-   * The mask is allowed to extend out of bounds.
-   *
-   * Params:
-   *  T = type of mask marker. Anything that is convertible to bool
-   *  origin = coordinate on the map to position the center of the mask.
-   *  mask = a rectangular array of 0s and 1s indicating which tiles to take.
-   *         each true value takes the tile at that grid coordinate relative to origin.
-   *         the center of the mask is determined by its length / 2 in each dimension.
-   *         the mask should be in row major order (indexed as mask[row][col]).
-   *
-   * Examples:
-   * Suppose you are making a strategy game, and an attack hits all tiles in a cross pattern.
-   * This attack is used on the tile at row 2, column 3.
-   * You want to check each tile that was affected to see if any unit was hit:
-   * --------------
-   * // cross pattern
-   * ubyte[][] mask = [
-   *  [0,1,0]
-   *  [1,1,1]
-   *  [0,1,0]
-   * ]
-   *
-   * // tiles contained by a cross pattern centered at (2,3)
-   * auto tilesHit = map.mask(RowCol(2, 3), mask);
-   *
-   * // now do something with those tiles
-   * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
-   * --------------
-   */
-  auto tilesMasked(T)(RowCol origin, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
-    return coordsMasked(origin, mask).map!(x => this.tileAt(x)); // grab the tile for each coord
-  }
-
-  /// More masking examples:
-  unittest {
-    // the test map looks like:
-    // 00 01 02 03 04
-    // 10 11 12 13 14
-    // 20 21 22 23 24
-    auto myGrid = makeTestGrid(3, 5);
-
-    void test(T)(RowCol origin, T[][] mask, string[] expected ...) {
-      import std.array     : array;
-      import std.format    : format;
-      import std.algorithm : all, canFind;
-
-      auto actual = myGrid.tilesMasked(origin, mask).map!(x => x.id).array;
-      assert(expected.all!(id => actual.canFind(id)) && actual.length == expected.length,
-          "mask incorrect: %s (%d, %d), expected %s, got %s"
-          .format(mask, origin.row, origin.col, expected, actual));
-    }
-
-    auto mask1 = [
-      [ 1, 1, 1 ],
-      [ 0, 0, 0 ],
-      [ 0, 0, 0 ],
-    ];
-
-    auto mask2 = [
-      [ 0, 0, 1 ],
-      [ 0, 0, 1 ],
-      [ 1, 1, 1 ],
-    ];
-
-    auto mask3 = [
-      [ 0 , 0 , 1 , 0 , 0 ],
-      [ 1 , 0 , 1 , 0 , 1 ],
-      [ 0 , 0 , 0 , 0 , 0 ],
-    ];
-
-    auto mask4 = [
-      [ 1 , 1 , 1 , 0 , 1 ],
-    ];
-
-    auto mask5 = [
-      [ 1 ],
-      [ 1 ],
-      [ 0 ],
-      [ 1 ],
-      [ 1 ],
-    ];
-
-    test(RowCol(1, 1), mask1, "00", "01", "02");
-    test(RowCol(1, 1), mask2, "02", "12", "22", "21", "20");
-    test(RowCol(1, 2), mask3, "10", "02", "12", "14");
-    test(RowCol(1, 2), mask4, "10", "11", "12", "14");
-
-    // it is fine if part of the mask extends out of bounds
-    test(RowCol(1, 0), mask1, "00", "01");
-    test(RowCol(2, 4), mask2); // all tiles in area are out of bounds
-    test(RowCol(1, 2), mask5, "02", "22");
   }
 
   /// Foreach over every tile in the map.
@@ -400,7 +171,7 @@ struct TileGrid(Tile) {
     string[] expected = ["00", "01", "02", "10", "11", "12"];
     string[] actual;
 
-    foreach(tile ; myGrid) { actual ~= tile.id; }
+    foreach(tile ; myGrid) { actual ~= tile; }
 
     assert(expected == actual);
   }
@@ -426,15 +197,22 @@ struct TileGrid(Tile) {
     auto myGrid = makeTestGrid(2, 3);
 
     foreach(coord, tile ; myGrid) {
-      assert(tile.id == "%d%d".format(coord.row, coord.col));
+      assert(tile == "%d%d".format(coord.row, coord.col));
     }
   }
 
+  /**
+   * Create a slice of the grid covering the region [start, end$(RPAREN).
+   *
+   * Params:
+   *  start = northwest corner of slice, inclusive.
+   *  end = southeast corner of slice, exclusive.
+   */
   @nogc
   auto opSlice(RowCol start, RowCol end) {
-    auto relStart = start + _startCoord;
-    auto relEnd   = relStart + (end - start);
-    return TileGrid!Tile(_tiles, relStart, relEnd);
+    auto relStart = start + sliceOffset;
+    auto size = end - start;
+    return TileGrid!Tile(_tiles, relStart, size.row, size.col);
   }
 
   ///
@@ -448,31 +226,32 @@ struct TileGrid(Tile) {
 
     // slice from upper left corner to 1,1
     auto slice1 = myGrid[RowCol(0,0)..RowCol(2, 2)];
-    assert(slice1.tileAt(RowCol(0,0)).id == "00");
-    assert(slice1.tileAt(RowCol(1,1)).id == "11");
+    assert(slice1.numRows == 2 && slice1.numCols == 2);
+    assert(slice1.tileAt(RowCol(0,0)) == "00");
+    assert(slice1.tileAt(RowCol(1,1)) == "11");
     assertThrown(slice1.tileAt(RowCol(-1,-1)));
     assertThrown(slice1.tileAt(RowCol(2,2)));
 
     //// slice from 1,1 to lower right corner
     auto slice2 = myGrid[RowCol(1,1)..RowCol(3, 5)];
-    assert(slice2.tileAt(RowCol(0,0)).id == "11");
-    assert(slice2.tileAt(RowCol(1,3)).id == "24");
+    assert(slice2.numRows == 2 && slice1.numCols == 2);
+    assert(slice2.tileAt(RowCol(0,0)) == "11");
+    assert(slice2.tileAt(RowCol(1,3)) == "24");
     assertThrown(slice2.tileAt(RowCol(2,3)));
   }
 
   /**
-   * Create a slice from a square subsection of the map centered at origin and extending radius
-   * tiles in each direction.
-   * 
+   * Create a slice from a rectangular subsection of the map centered at origin.
+   *
    * Params:
    *  origin = Center coordinate of region.
-   *  radius = Number of tiles the region's bounds extend in each cardinal direction from origin.
-   *           The region forms a square with sides of size (radius * 2) + 1.
+   *  numRows = Vertical size of rect.
+   *  numCols = Horizontal size of rect.
    */
   @nogc
-  auto regionAround(RowCol origin, int radius) {
-    auto start = origin - RowCol(radius, radius);
-    auto end = origin + RowCol(radius, radius) + RowCol(1, 1);
+  auto sliceAround(RowCol origin, size_t numRows, size_t numCols) {
+    auto start = origin - RowCol(numRows / 2, numCols / 2);
+    auto end = start + RowCol(numRows, numCols);
 
     return this[start .. end];
   }
@@ -487,22 +266,223 @@ struct TileGrid(Tile) {
     auto myGrid = makeTestGrid(3, 5);
 
     // region of size 1 centered at 1,1
-    auto slice1 = myGrid.regionAround(RowCol(1,1), 1);
-    assert(slice1.tileAt(RowCol(0,0)).id == "00");
-    assert(slice1.tileAt(RowCol(1,1)).id == "11");
-    assert(slice1.tileAt(RowCol(2,1)).id == "21");
+    auto slice1 = myGrid.sliceAround(RowCol(1,2), 1, 5);
+    assert(slice1.numRows == 1 && slice1.numCols == 5);
+    assert(slice1.tileAt(RowCol(0,0)) == "10");
+    assert(slice1.tileAt(RowCol(0,1)) == "11");
+    assert(slice1.tileAt(RowCol(0,4)) == "14");
+    assertThrown(slice1.tileAt(RowCol(-1,-1)));
+    assertThrown(slice1.tileAt(RowCol(1,1)));
+  }
+
+  /**
+   * Create a slice from a square subsection of the grid centered at origin.
+   *
+   * Params:
+   *  origin = Center coordinate of region.
+   *  size = Number of tiles along each side of the square.
+   */
+  @nogc
+  auto sliceAround(RowCol origin, size_t size) {
+    return sliceAround(origin, size, size);
+  }
+
+  ///
+  unittest {
+    import std.exception : assertThrown;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    // region of size 1 centered at 1,1
+    auto slice1 = myGrid.sliceAround(RowCol(1,1), 3);
+    assert(slice1.numRows == 3 && slice1.numCols == 3);
+    assert(slice1.tileAt(RowCol(0,0)) == "00");
+    assert(slice1.tileAt(RowCol(1,1)) == "11");
+    assert(slice1.tileAt(RowCol(2,1)) == "21");
     assertThrown(slice1.tileAt(RowCol(-1,-1)));
     assertThrown(slice1.tileAt(RowCol(3,1)));
 
     //// slice centered at 0,4 that extends partially out of bounds
-    auto slice2 = myGrid.regionAround(RowCol(0, 4), 1);
-    assert(slice2.tileAt(RowCol(1,0)).id == "03");
-    assert(slice2.tileAt(RowCol(2,1)).id == "14");
+    auto slice2 = myGrid.sliceAround(RowCol(0, 4), 3);
+    assert(slice1.numRows == 3 && slice1.numCols == 3);
+    assert(slice2.tileAt(RowCol(1,0)) == "03");
+    assert(slice2.tileAt(RowCol(2,1)) == "14");
     assertThrown(slice2.tileAt(RowCol(0,0)));
     assertThrown(slice2.tileAt(RowCol(2,2)));
   }
+
+  /**
+   * Select specific tiles from within a rectangular region as defined by a mask.
+   *
+   * The mask must be the same size as the grid.
+   * As you often want to apply this to a subsection of the map, it works well in combination with
+   * opSlice or sliceAround.
+   * Each map tile that is overlaid with a 'true' value is included in the result.
+   *
+   * Params:
+   *  T = type of mask marker. Anything that is convertible to bool
+   *  mask = a rectangular array of 0s and 1s indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate relative to origin.
+   *         the center of the mask is determined by its length / 2 in each dimension.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   *
+   * Examples:
+   * Suppose you are making a strategy game, and an attack hits all tiles in a cross pattern.
+   * This attack is used on the tile at row 2, column 3.
+   * You want to check each tile that was affected to see if any unit was hit:
+   * --------------
+   * // cross pattern
+   * ubyte[][] attackPattern = [
+   *  [0,1,0]
+   *  [1,1,1]
+   *  [0,1,0]
+   * ]
+   *
+   * // get tiles contained by a cross pattern centered at (2,3)
+   * auto tilesHit = map.sliceAround((RowCol(2, 3), 1).mask(attackPattern));
+   *
+   * // now do something with those tiles
+   * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
+   * --------------
+   */
+  auto mask(T)(in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+    assert(mask.length    == numRows, "a mask must be the same size as the grid");
+    assert(mask[0].length == numCols, "a mask must be the same size as the grid");
+    assert(mask.all!(x => x.length == mask[0].length), "a mask cannot be a jagged array");
+
+    return RowCol(0,0).span(RowCol(numRows, numCols))
+      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
+      .filter!(x => sourceContains(x))  // remove coords outside of source map
+      .map!(x => tileAt(x));            // grab tiles at those coords
+  }
+
+  /// More masking examples:
+  unittest {
+    import std.array : empty;
+    import std.algorithm : equal;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    auto mask1 = [
+      [ 1, 1, 1 ],
+      [ 0, 0, 0 ],
+      [ 0, 0, 0 ],
+    ];
+    assert(myGrid.sliceAround(RowCol(0,0), 3).mask(mask1).empty);
+    assert(myGrid.sliceAround(RowCol(1,1), 3).mask(mask1).equal(["00", "01", "02"]));
+    assert(myGrid.sliceAround(RowCol(2,1), 3).mask(mask1).equal(["10", "11", "12"]));
+    assert(myGrid.sliceAround(RowCol(2,4), 3).mask(mask1).equal(["13", "14"]));
+
+    auto mask2 = [
+      [ 0, 0, 1 ],
+      [ 0, 0, 1 ],
+      [ 1, 1, 1 ],
+    ];
+    assert(myGrid.sliceAround(RowCol(0,0), 3).mask(mask2).equal(["01", "10", "11"]));
+    assert(myGrid.sliceAround(RowCol(1,2), 3).mask(mask2).equal(["03", "13", "21", "22", "23"]));
+    assert(myGrid.sliceAround(RowCol(2,4), 3).mask(mask2).empty);
+
+    auto mask3 = [
+      [ 0 , 0 , 1 , 0 , 0 ],
+      [ 1 , 0 , 1 , 0 , 1 ],
+      [ 0 , 0 , 0 , 0 , 0 ],
+    ];
+    assert(myGrid.sliceAround(RowCol(0,0), 3, 5).mask(mask3).equal(["00", "02"]));
+    assert(myGrid.sliceAround(RowCol(1,2), 3, 5).mask(mask3).equal(["02", "10", "12", "14"]));
+
+    auto mask4 = [
+      [ 1 , 1 , 1 , 0 , 1 ],
+    ];
+    assert(myGrid.sliceAround(RowCol(0,0), 1, 5).mask(mask4).equal(["00", "02"]));
+    assert(myGrid.sliceAround(RowCol(2,2), 1, 5).mask(mask4).equal(["20", "21", "22", "24"]));
+
+    auto mask5 = [
+      [ 1 ],
+      [ 1 ],
+      [ 0 ],
+      [ 1 ],
+      [ 1 ],
+    ];
+    assert(myGrid.sliceAround(RowCol(0,4), 5, 1).mask(mask5).equal(["14", "24"]));
+    assert(myGrid.sliceAround(RowCol(1,1), 5, 1).mask(mask5).equal(["01", "21"]));
+  }
+
+  /**
+   * Return all tiles that share an edge with the tile at the given coord.
+   * Does not include the tile at the center.
+   *
+   * Params:
+   *  coord = grid location of center tile.
+   */
+  auto tilesBeside(RowCol coord) {
+    return chain(
+        (coord.north).only,
+        (coord.west ).only,
+        (coord.east ).only,
+        (coord.south).only)
+      .filter!(x => contains(x))
+      .map!(x => tileAt(x));
+  }
+
+  ///
+  unittest {
+    import std.algorithm : equal;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    assert(myGrid.tilesBeside(RowCol(0,0)).equal(["01", "10"]));
+    assert(myGrid.tilesBeside(RowCol(1,1)).equal(["01", "10", "12", "21"]));
+    assert(myGrid.tilesBeside(RowCol(2,2)).equal(["12", "21", "23"]));
+    assert(myGrid.tilesBeside(RowCol(2,4)).equal(["14", "23"]));
+  }
+
+  /**
+   * Return all tiles that share an edge or corner with the tile at the given coord.
+   * Does not include the tile at that coord.
+   *
+   * Params:
+   *  coord = grid location of center tile.
+   */
+  auto tilesAround(RowCol coord) {
+    return chain(
+        (coord.north.west).only,
+        (coord.north     ).only,
+        (coord.north.east).only,
+        (coord.west      ).only,
+        (coord.east      ).only,
+        (coord.south.west).only,
+        (coord.south     ).only,
+        (coord.south.east).only)
+      .filter!(x => contains(x))
+      .map!(x => tileAt(x));
+  }
+
+  ///
+  unittest {
+    import std.algorithm : equal;
+    // the test map looks like:
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
+
+    assert(myGrid.tilesAround(RowCol(0,0)).equal(["01", "10", "11"]));
+    assert(myGrid.tilesAround(RowCol(1,1)).equal(["00", "01", "02", "10", "12", "20", "21", "22"]));
+    assert(myGrid.tilesAround(RowCol(2,2)).equal(["11", "12", "13", "21", "23"]));
+    assert(myGrid.tilesAround(RowCol(2,4)).equal(["13", "14", "23"]));
+  }
 }
 
+/++
 // NOTE: declared outside of struct due to issues with alias parameters on templated structs.
 // See https://issues.dlang.org/show_bug.cgi?id=11098
 /**
@@ -540,7 +520,7 @@ unittest {
 
   uint[3][3] mask;
 
-  myGrid.createMask!(tile => tile.id.to!int > 10)(RowCol(1,1), mask);
+  myGrid.createMask!(tile => tile.to!int > 10)(RowCol(1,1), mask);
 
   assert(mask == [
       [0, 0, 0],
@@ -548,7 +528,7 @@ unittest {
       [1, 1, 1],
   ]);
 
-  myGrid.createMask!(tile => tile.id.to!int < 24)(RowCol(2,4), mask);
+  myGrid.createMask!(tile => tile.to!int < 24)(RowCol(2,4), mask);
 
   assert(mask == [
       [1, 1, 0],
@@ -556,3 +536,4 @@ unittest {
       [0, 0, 0],
   ]);
 }
+++/
