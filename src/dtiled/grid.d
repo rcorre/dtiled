@@ -154,6 +154,7 @@ struct TileGrid(Tile) {
     int res = 0;
 
     foreach(coord; RowCol(0, 0).span(RowCol(numRows, numCols))) {
+      if (!sourceContains(coord)) continue;
       res = fn(tileAt(coord));
       if (res) break;
     }
@@ -164,16 +165,32 @@ struct TileGrid(Tile) {
   ///
   unittest {
     // the test map looks like:
-    // 00 01 02
-    // 10 11 12
-    auto myGrid = makeTestGrid(2, 3);
-
-    string[] expected = ["00", "01", "02", "10", "11", "12"];
+    // 00 01 02 03 04
+    // 10 11 12 13 14
+    // 20 21 22 23 24
+    auto myGrid = makeTestGrid(3, 5);
     string[] actual;
 
     foreach(tile ; myGrid) { actual ~= tile; }
+    assert(actual == [
+        "00", "01", "02", "03", "04",
+        "10", "11", "12", "13", "14",
+        "20", "21", "22", "23", "24"]);
 
-    assert(expected == actual);
+    // foreach over a subsection of a large grid
+    actual = [];
+    foreach(tile ; myGrid.sliceAround(RowCol(1,1), 3)) { actual ~= tile; }
+    assert(actual == [
+        "00", "01", "02", 
+        "10", "11", "12", 
+        "20", "21", "22"]);
+
+    // tiles out of bounds are not included
+    actual = [];
+    foreach(tile ; myGrid.sliceAround(RowCol(0,0), 3)) { actual ~= tile; }
+    assert(actual == [
+        "00", "01", 
+        "10", "11"]);
   }
 
   /// Foreach over every [coordinate,tile] pair in the map.
@@ -181,6 +198,7 @@ struct TileGrid(Tile) {
     int res = 0;
 
     foreach(coord; RowCol(0, 0).span(RowCol(numRows, numCols))) {
+      if (!sourceContains(coord)) continue;
       res = fn(coord, tileAt(coord));
       if (res) break;
     }
