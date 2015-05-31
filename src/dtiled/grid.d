@@ -315,7 +315,7 @@ struct TileGrid(Tile) {
   }
 
   /**
-   * Select specific tiles from within a rectangular region as defined by a mask.
+   * Select specific tiles from this slice based on a mask.
    *
    * The mask must be the same size as the grid.
    * As you often want to apply this to a subsection of the map, it works well in combination with
@@ -324,9 +324,8 @@ struct TileGrid(Tile) {
    *
    * Params:
    *  T = type of mask marker. Anything that is convertible to bool
-   *  mask = a rectangular array of 0s and 1s indicating which tiles to take.
-   *         each true value takes the tile at that grid coordinate relative to origin.
-   *         the center of the mask is determined by its length / 2 in each dimension.
+   *  mask = a rectangular array of true/false values indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate.
    *         the mask should be in row major order (indexed as mask[row][col]).
    *
    * Examples:
@@ -336,10 +335,10 @@ struct TileGrid(Tile) {
    * --------------
    * // cross pattern
    * ubyte[][] attackPattern = [
-   *  [0,1,0]
-   *  [1,1,1]
-   *  [0,1,0]
-   * ]
+   *   [0,1,0]
+   *   [1,1,1]
+   *   [0,1,0]
+   * ];
    *
    * // get tiles contained by a cross pattern centered at (2,3)
    * auto tilesHit = map.sliceAround((RowCol(2, 3), 1).mask(attackPattern));
@@ -482,30 +481,24 @@ struct TileGrid(Tile) {
   }
 }
 
-/++
 // NOTE: declared outside of struct due to issues with alias parameters on templated structs.
 // See https://issues.dlang.org/show_bug.cgi?id=11098
 /**
  * Generate a mask from a region of tiles based on a condition.
  *
- * For each tile in the region centered at origin, sets the corresponding element of mask to the
- * result of fn(tile).
+ * For each tile in the grid, sets the corresponding element of mask to the result of fn(tile).
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
  *  grid = grid to generate mask from
- *  origin = center of region to generate mask from
  *  mask = rectangular array to populate with generated mask values.
+ *         must match the size of the grid
  */
-void createMask(alias fn, int NR, int NC, Tile, T)(TileGrid!Tile grid, RowCol origin, out T[NR][NC] mask)
+void createMask(alias fn, int NR, int NC, Tile, T)(TileGrid!Tile grid, out T[NR][NC] mask)
   if (is(typeof(fn(Tile.init)) : T))
 {
-  auto start = RowCol(0, 0);
-  auto end = RowCol(NR, NC);
-  auto offset = origin - RowCol(1, 1);
-
-  foreach(coord ; start.span(end).filter!(x => grid.contains(x + offset))) {
-    mask[coord.row][coord.col] = fn(grid.tileAt(coord + offset));
+  foreach(coord ; RowCol(0, 0).span(RowCol(grid.numRows, grid.numCols))) {
+    mask[coord.row][coord.col] = grid.sourceContains(coord) && fn(grid.tileAt(coord));
   }
 }
 
@@ -520,7 +513,7 @@ unittest {
 
   uint[3][3] mask;
 
-  myGrid.createMask!(tile => tile.to!int > 10)(RowCol(1,1), mask);
+  myGrid.sliceAround(RowCol(1,1), 3).createMask!(tile => tile.to!int > 10)(mask);
 
   assert(mask == [
       [0, 0, 0],
@@ -528,7 +521,7 @@ unittest {
       [1, 1, 1],
   ]);
 
-  myGrid.createMask!(tile => tile.to!int < 24)(RowCol(2,4), mask);
+  myGrid.sliceAround(RowCol(2,4), 3).createMask!(tile => tile.to!int < 24)(mask);
 
   assert(mask == [
       [1, 1, 0],
@@ -536,4 +529,3 @@ unittest {
       [0, 0, 0],
   ]);
 }
-++/
