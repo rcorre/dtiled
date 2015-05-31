@@ -71,7 +71,7 @@ struct RowCol {
     auto east(int dist = 1)  { return RowCol(row, col + dist); }
   }
 
-  /// convenient access of nearby coordinates 
+  /// convenient access of nearby coordinates
   unittest {
     assert(RowCol(1,1).north == RowCol(0,1));
     assert(RowCol(1,1).south == RowCol(2,1));
@@ -83,7 +83,7 @@ struct RowCol {
   }
 
   /// Add or subtract one coordinate from another
-  @nogc 
+  @nogc
   RowCol opBinary(string op)(RowCol rhs) const if (op == "+" || op == "-") {
     return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
   }
@@ -200,7 +200,7 @@ unittest {
  * Return the manhattan distance between two tile coordinates.
  * For two coordinates a and b, this is defined as abs(a.row - b.row) + abs(a.col - b.col)
  */
-@nogc 
+@nogc
 auto manhattan(RowCol a, RowCol b) {
   return abs(a.row - b.row) + abs(a.col - b.col);
 }
