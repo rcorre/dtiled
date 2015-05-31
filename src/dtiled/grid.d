@@ -487,6 +487,8 @@ struct TileGrid(Tile) {
  * Generate a mask from a region of tiles based on a condition.
  *
  * For each tile in the grid, sets the corresponding element of mask to the result of fn(tile).
+ * If a coordinate is out of bounds (e.g. if you are generating a mask from a slice that extends
+ * over the map border) the mask value is the init value of the mask's element type.
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
@@ -494,11 +496,13 @@ struct TileGrid(Tile) {
  *  mask = rectangular array to populate with generated mask values.
  *         must match the size of the grid
  */
-void createMask(alias fn, int NR, int NC, Tile, T)(TileGrid!Tile grid, out T[NR][NC] mask)
-  if (is(typeof(fn(Tile.init)) : T))
+void createMask(alias fn, Tile, T)(TileGrid!Tile grid, ref T mask)
+  if(__traits(compiles, { mask[0][0] = fn(grid.tileAt(RowCol(0,0))); }))
 {
   foreach(coord ; RowCol(0, 0).span(RowCol(grid.numRows, grid.numCols))) {
-    mask[coord.row][coord.col] = grid.sourceContains(coord) && fn(grid.tileAt(coord));
+    mask[coord.row][coord.col] = (grid.sourceContains(coord)) ?
+      fn(grid.tileAt(coord)) :   // in bounds, apply fn to generate mask value
+      typeof(T.init[0][0]).init; // out of bounds, use default value
   }
 }
 
