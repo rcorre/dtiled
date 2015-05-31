@@ -37,8 +37,49 @@ struct RowCol {
   }
 
   /// Get a string representation of the coordinate, useful for debugging
-  @property string toString() {
-    return "(%d,%d)".format(row, col);
+  @property {
+    string toString() {
+      return "(%d,%d)".format(row, col);
+    }
+
+    /**
+     * Get a coordinate above this coordinate
+     * Params:
+     *  dist = distance in number of tiles
+     */
+    auto north(int dist = 1) { return RowCol(row - dist, col); }
+
+    /**
+     * Get a coordinate below this coordinate
+     * Params:
+     *  dist = distance in number of tiles
+     */
+    auto south(int dist = 1) { return RowCol(row + dist, col); }
+
+    /**
+     * Get a coordinate to the left of this coordinate
+     * Params:
+     *  dist = distance in number of tiles
+     */
+    auto west(int dist = 1)  { return RowCol(row, col - dist); }
+
+    /**
+     * Get a coordinate to the right of this coordinate
+     * Params:
+     *  dist = distance in number of tiles
+     */
+    auto east(int dist = 1)  { return RowCol(row, col + dist); }
+  }
+
+  /// convenient access of nearby coordinates 
+  unittest {
+    assert(RowCol(1,1).north == RowCol(0,1));
+    assert(RowCol(1,1).south == RowCol(2,1));
+    assert(RowCol(1,1).east  == RowCol(1,2));
+    assert(RowCol(1,1).west  == RowCol(1,0));
+
+    assert(RowCol(1,1).south(5)         == RowCol(6,1));
+    assert(RowCol(1,1).south(2).east(5) == RowCol(3,6));
   }
 
   /// Add or subtract one coordinate from another
