@@ -20,10 +20,12 @@ module dtiled.coords;
 
 import std.conv      : to;
 import std.math      : abs, sgn;
-import std.range     : iota;
+import std.range     : iota, only, take, chain;
 import std.format    : format;
-import std.typecons  : Tuple;
+import std.typecons  : Tuple, Flag;
 import std.algorithm : map, cartesianProduct;
+
+alias IncludeDiagonal = Flag!"IncludeDiagonal";
 
 /// Represents a discrete location within the map grid.
 struct RowCol {
@@ -69,10 +71,34 @@ struct RowCol {
      *  dist = distance in number of tiles
      */
     auto east(int dist = 1)  { return RowCol(row, col + dist); }
+
+    /**
+     * Return a range containing the coords adjacent to this coord.
+     *
+     * The returned coords are ordered from north to south, west to east.
+     *
+     * Params:
+     *  diagonal = if no, include coords to the north, south, east, and west only.
+     *             if yes, additionaly include northwest, northeast, southwest, and southeast.
+     */
+    auto adjacent(IncludeDiagonal diagonal = IncludeDiagonal.no) {
+      // the 'take' statements are used to conditionally include the diagonal coords
+      return chain(
+          (this.north.west).only.take(diagonal ? 1 : 0),
+          (this.north).only,
+          (this.north.east).only.take(diagonal ? 1 : 0),
+          (this.west ).only,
+          (this.east ).only,
+          (this.south.west).only.take(diagonal ? 1 : 0),
+          (this.south).only,
+          (this.south.east).only.take(diagonal ? 1 : 0));
+    }
   }
 
   /// convenient access of nearby coordinates
   unittest {
+    import std.algorithm : equal;
+
     assert(RowCol(1,1).north == RowCol(0,1));
     assert(RowCol(1,1).south == RowCol(2,1));
     assert(RowCol(1,1).east  == RowCol(1,2));
@@ -80,6 +106,24 @@ struct RowCol {
 
     assert(RowCol(1,1).south(5)         == RowCol(6,1));
     assert(RowCol(1,1).south(2).east(5) == RowCol(3,6));
+
+    assert(RowCol(1,1).adjacent.equal([
+      RowCol(0,1),
+      RowCol(1,0),
+      RowCol(1,2),
+      RowCol(2,1)
+    ]));
+
+    assert(RowCol(1,1).adjacent(IncludeDiagonal.yes).equal([
+      RowCol(0,0),
+      RowCol(0,1),
+      RowCol(0,2),
+      RowCol(1,0),
+      RowCol(1,2),
+      RowCol(2,0),
+      RowCol(2,1),
+      RowCol(2,2)
+    ]));
   }
 
   /// Add or subtract one coordinate from another
