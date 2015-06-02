@@ -123,14 +123,15 @@ unittest {
   assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
 }
 
-auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
+/// Same as floodTiles, but return coordinates instead of the tiles at those coordinates.
+auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
   if (is(typeof(pred(Tile.init)) : bool))
 {
   struct Result {
     private {
-      TileGrid     _grid;
-      SList!RowCol _stack;
-      Array!bool   _visited;
+      TileGrid!Tile _grid;
+      SList!RowCol  _stack;
+      Array!bool    _visited;
 
       // helpers to translate between the 2D grid coordinate space and the 1D visited array
       bool getVisited(RowCol coord) {
@@ -149,17 +150,17 @@ auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals di
       }
     }
 
-    this(TileGrid grid, RowCol origin) {
+    this(TileGrid!Tile grid, RowCol origin) {
       _grid = grid;
       _visited.length = grid.numRows * grid.numCols; // one visited entry for each tile
 
       // push the first tile onto the stack only if it meets the predicate
       if (pred(grid.tileAt(origin))) {
-        stack.insertFront(origin);
+        _stack.insertFront(origin);
       }
     }
 
-    @property auto ref front() { return _grid.tileAt(topCoord); }
+    @property auto ref front() { return topCoord; }
     @property bool empty() { return _stack.empty; }
 
     void popFront() {
@@ -168,15 +169,75 @@ auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals di
 
       // mark that the current coord was visited and pop it
       setVisited(coord);
-      _stack.popFront();
+      _stack.removeFront();
 
       // push neighboring coords onto the stack
       foreach(neighbor ; coord.adjacent(diags)) { _stack.insert(neighbor); }
 
       // keep popping until stack is empty or we get a floodable coord
-      while (!stack.empty && !topCoordOk) { stack.popFront(); }
+      while (!_stack.empty && !topCoordOk) { _stack.removeFront(); }
     }
   }
 
-  return Result();
+  return Result(grid, origin);
+}
+
+/**
+ * Returns a range that iterates through tiles based on a flood filling algorithm.
+ *
+ * Params:
+ *  pred   = predicate that returns true if the flood should progress through a given tile.
+ *  Tile   = type representing a tile in the grid.
+ *  grid   = grid to apply flood to.
+ *  origin = coordinate at which to begin flood.
+ *  diags  = by default, flood only progresses to directly adjacent tiles.
+ *           Diagonals.yes causes the flood to progress across diagonals too.
+ */
+auto floodTiles(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
+  if (is(typeof(pred(Tile.init)) : bool))
+{
+  return floodCoords!pred(grid, origin, diags).map!(x => grid.tileAt(x));
+}
+
+///
+unittest {
+  import std.array;
+  import std.algorithm : equal;
+
+  // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
+  auto grid = TileGrid!char([
+    // 0    1    2    3    4    5 <-col| row
+    [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
+    [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
+    [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 2
+    [ 'X', 'X', 'X', 'X', 'X', 'c' ], // 3
+    [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
+    [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
+  ]);
+
+  // starting on a wall should return an empty result
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(0,0)).empty);
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(3,3)).empty);
+
+  // flood the 'a' room
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(1,1)).equal(['a', 'a', 'a', 'a']));
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(1,2)).equal(['a', 'a', 'a', 'a']));
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(2,1)).equal(['a', 'a', 'a', 'a']));
+  assert(grid.floodTiles!(x => x == 'a')(RowCol(2,2)).equal(['a', 'a', 'a', 'a']));
+
+  // flood the 'a' room, but asking for a 'b'
+  assert(grid.floodTiles!(x => x == 'b')(RowCol(2,2)).empty);
+
+  // flood the 'b' room
+  assert(grid.floodTiles!(x => x == 'b')(RowCol(1,4)).equal(['b', 'b']));
+
+  // flood the 'c' room
+  assert(grid.floodTiles!(x => x == 'c')(RowCol(4,4)).equal(['c']));
+
+  // flood the 'd' room
+  assert(grid.floodTiles!(x => x == 'd')(RowCol(4,1)).equal(['d', 'd', 'd', 'd', 'd', 'd']));
+
+  // flood the 'b' and 'c' rooms, moving through diagonals
+  assert(grid.floodTiles!(x => x == 'b' || x == 'c')(RowCol(4,4), Diagonals.yes)
+      .equal(['c', 'c', 'b', 'b']));
 }
