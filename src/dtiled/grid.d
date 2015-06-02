@@ -181,15 +181,15 @@ struct TileGrid(Tile) {
     actual = [];
     foreach(tile ; myGrid.sliceAround(RowCol(1,1), 3)) { actual ~= tile; }
     assert(actual == [
-        "00", "01", "02", 
-        "10", "11", "12", 
+        "00", "01", "02",
+        "10", "11", "12",
         "20", "21", "22"]);
 
     // tiles out of bounds are not included
     actual = [];
     foreach(tile ; myGrid.sliceAround(RowCol(0,0), 3)) { actual ~= tile; }
     assert(actual == [
-        "00", "01", 
+        "00", "01",
         "10", "11"]);
   }
 
@@ -431,18 +431,15 @@ struct TileGrid(Tile) {
   }
 
   /**
-   * Return all tiles that share an edge with the tile at the given coord.
-   * Does not include the tile at the center.
+   * Return all tiles adjacent to the tile at the given coord (not including the tile itself).
    *
    * Params:
    *  coord = grid location of center tile.
+   *  diagonal = if no, include tiles to the north, south, east, and west only.
+   *             if yes, additionaly include northwest, northeast, southwest, and southeast.
    */
-  auto tilesBeside(RowCol coord) {
-    return chain(
-        (coord.north).only,
-        (coord.west ).only,
-        (coord.east ).only,
-        (coord.south).only)
+  auto tilesAdjacent(RowCol coord, IncludeDiagonal diagonal = IncludeDiagonal.no) {
+    return coord.adjacent(diagonal)
       .filter!(x => contains(x))
       .map!(x => tileAt(x));
   }
@@ -456,46 +453,19 @@ struct TileGrid(Tile) {
     // 20 21 22 23 24
     auto myGrid = makeTestGrid(3, 5);
 
-    assert(myGrid.tilesBeside(RowCol(0,0)).equal(["01", "10"]));
-    assert(myGrid.tilesBeside(RowCol(1,1)).equal(["01", "10", "12", "21"]));
-    assert(myGrid.tilesBeside(RowCol(2,2)).equal(["12", "21", "23"]));
-    assert(myGrid.tilesBeside(RowCol(2,4)).equal(["14", "23"]));
-  }
+    assert(myGrid.tilesAdjacent(RowCol(0,0)).equal(["01", "10"]));
+    assert(myGrid.tilesAdjacent(RowCol(1,1)).equal(["01", "10", "12", "21"]));
+    assert(myGrid.tilesAdjacent(RowCol(2,2)).equal(["12", "21", "23"]));
+    assert(myGrid.tilesAdjacent(RowCol(2,4)).equal(["14", "23"]));
 
-  /**
-   * Return all tiles that share an edge or corner with the tile at the given coord.
-   * Does not include the tile at that coord.
-   *
-   * Params:
-   *  coord = grid location of center tile.
-   */
-  auto tilesAround(RowCol coord) {
-    return chain(
-        (coord.north.west).only,
-        (coord.north     ).only,
-        (coord.north.east).only,
-        (coord.west      ).only,
-        (coord.east      ).only,
-        (coord.south.west).only,
-        (coord.south     ).only,
-        (coord.south.east).only)
-      .filter!(x => contains(x))
-      .map!(x => tileAt(x));
-  }
-
-  ///
-  unittest {
-    import std.algorithm : equal;
-    // the test map looks like:
-    // 00 01 02 03 04
-    // 10 11 12 13 14
-    // 20 21 22 23 24
-    auto myGrid = makeTestGrid(3, 5);
-
-    assert(myGrid.tilesAround(RowCol(0,0)).equal(["01", "10", "11"]));
-    assert(myGrid.tilesAround(RowCol(1,1)).equal(["00", "01", "02", "10", "12", "20", "21", "22"]));
-    assert(myGrid.tilesAround(RowCol(2,2)).equal(["11", "12", "13", "21", "23"]));
-    assert(myGrid.tilesAround(RowCol(2,4)).equal(["13", "14", "23"]));
+    assert(myGrid.tilesAdjacent(RowCol(0,0), IncludeDiagonal.yes)
+        .equal(["01", "10", "11"]));
+    assert(myGrid.tilesAdjacent(RowCol(1,1), IncludeDiagonal.yes)
+        .equal(["00", "01", "02", "10", "12", "20", "21", "22"]));
+    assert(myGrid.tilesAdjacent(RowCol(2,2), IncludeDiagonal.yes)
+        .equal(["11", "12", "13", "21", "23"]));
+    assert(myGrid.tilesAdjacent(RowCol(2,4), IncludeDiagonal.yes)
+        .equal(["13", "14", "23"]));
   }
 }
 
