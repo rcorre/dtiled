@@ -7,7 +7,7 @@ import std.range;
 import std.typecons : Tuple;
 import std.algorithm;
 import std.container : Array, SList;
-import dtiled.coords : RowCol;
+import dtiled.coords : RowCol, IncludeDiagonal;
 import dtiled.grid;
 
 /// Same as enclosedTiles, but return coords instead of tiles
@@ -123,9 +123,9 @@ unittest {
   assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
 }
 
-/// Same as enclosedTiles, but return coords instead of tiles
-auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin)
-  if (is(typeof(isWall(Tile.init)) : bool))
+auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin,
+    IncludeDiagonal includeDiagonal = IncludeDiagonal.no)
+  if (is(typeof(pred(Tile.init)) : bool))
 {
   struct Result {
     private {
@@ -171,20 +171,11 @@ auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin)
       setVisited(coord);
       _stack.popFront();
 
-      // cardinal directions
-      _stack.insertFront(coord.north);
-      _stack.insertFront(coord.south);
-      _stack.insertFront(coord.west);
-      _stack.insertFront(coord.east);
-
-      // diagonals
-      _stack.insertFront(coord.north.west);
-      _stack.insertFront(coord.north.east);
-      _stack.insertFront(coord.south.west);
-      _stack.insertFront(coord.south.east);
+      // push neighboring coords onto the stack
+      foreach(neighbor ; coord.adjacent(includeDiagonal)) { _stack.insert(neighbor); }
 
       // keep popping until stack is empty or we get a floodable coord
-      while (!stack.empty && !topCoordOk) { stack.popFront(); } 
+      while (!stack.empty && !topCoordOk) { stack.popFront(); }
     }
   }
 
