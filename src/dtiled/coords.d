@@ -25,7 +25,8 @@ import std.format    : format;
 import std.typecons  : Tuple, Flag;
 import std.algorithm : map, cartesianProduct;
 
-alias IncludeDiagonal = Flag!"IncludeDiagonal";
+/// Whether to consider diagonals adjacent in situations dealing with the concept of adjacency.
+alias Diagonals = Flag!"Diagonals";
 
 /// Represents a discrete location within the map grid.
 struct RowCol {
@@ -81,7 +82,7 @@ struct RowCol {
      *  diagonal = if no, include coords to the north, south, east, and west only.
      *             if yes, additionaly include northwest, northeast, southwest, and southeast.
      */
-    auto adjacent(IncludeDiagonal diagonal = IncludeDiagonal.no) {
+    auto adjacent(Diagonals diagonal = Diagonals.no) {
       // the 'take' statements are used to conditionally include the diagonal coords
       return chain(
           (this.north.west).only.take(diagonal ? 1 : 0),
@@ -114,7 +115,7 @@ struct RowCol {
       RowCol(2,1)
     ]));
 
-    assert(RowCol(1,1).adjacent(IncludeDiagonal.yes).equal([
+    assert(RowCol(1,1).adjacent(Diagonals.yes).equal([
       RowCol(0,0),
       RowCol(0,1),
       RowCol(0,2),

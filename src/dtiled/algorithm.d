@@ -7,7 +7,7 @@ import std.range;
 import std.typecons : Tuple;
 import std.algorithm;
 import std.container : Array, SList;
-import dtiled.coords : RowCol, IncludeDiagonal;
+import dtiled.coords : RowCol, Diagonals;
 import dtiled.grid;
 
 /// Same as enclosedTiles, but return coords instead of tiles
@@ -123,8 +123,7 @@ unittest {
   assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
 }
 
-auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin,
-    IncludeDiagonal includeDiagonal = IncludeDiagonal.no)
+auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
   if (is(typeof(pred(Tile.init)) : bool))
 {
   struct Result {
@@ -172,7 +171,7 @@ auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin,
       _stack.popFront();
 
       // push neighboring coords onto the stack
-      foreach(neighbor ; coord.adjacent(includeDiagonal)) { _stack.insert(neighbor); }
+      foreach(neighbor ; coord.adjacent(diags)) { _stack.insert(neighbor); }
 
       // keep popping until stack is empty or we get a floodable coord
       while (!stack.empty && !topCoordOk) { stack.popFront(); }

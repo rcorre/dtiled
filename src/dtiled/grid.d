@@ -438,8 +438,8 @@ struct TileGrid(Tile) {
    *  diagonal = if no, include tiles to the north, south, east, and west only.
    *             if yes, additionaly include northwest, northeast, southwest, and southeast.
    */
-  auto tilesAdjacent(RowCol coord, IncludeDiagonal diagonal = IncludeDiagonal.no) {
-    return coord.adjacent(diagonal)
+  auto tilesAdjacent(RowCol coord, Diagonals diagonals = Diagonals.no) {
+    return coord.adjacent(diagonals)
       .filter!(x => contains(x))
       .map!(x => tileAt(x));
   }
@@ -458,13 +458,13 @@ struct TileGrid(Tile) {
     assert(myGrid.tilesAdjacent(RowCol(2,2)).equal(["12", "21", "23"]));
     assert(myGrid.tilesAdjacent(RowCol(2,4)).equal(["14", "23"]));
 
-    assert(myGrid.tilesAdjacent(RowCol(0,0), IncludeDiagonal.yes)
+    assert(myGrid.tilesAdjacent(RowCol(0,0), Diagonals.yes)
         .equal(["01", "10", "11"]));
-    assert(myGrid.tilesAdjacent(RowCol(1,1), IncludeDiagonal.yes)
+    assert(myGrid.tilesAdjacent(RowCol(1,1), Diagonals.yes)
         .equal(["00", "01", "02", "10", "12", "20", "21", "22"]));
-    assert(myGrid.tilesAdjacent(RowCol(2,2), IncludeDiagonal.yes)
+    assert(myGrid.tilesAdjacent(RowCol(2,2), Diagonals.yes)
         .equal(["11", "12", "13", "21", "23"]));
-    assert(myGrid.tilesAdjacent(RowCol(2,4), IncludeDiagonal.yes)
+    assert(myGrid.tilesAdjacent(RowCol(2,4), Diagonals.yes)
         .equal(["13", "14", "23"]));
   }
 }
