@@ -1,3 +1,6 @@
+/**
+ * Provides various useful operations on a tile grid.
+ */
 module dtiled.algorithm;
 
 import std.range;
@@ -6,7 +9,8 @@ import std.container : Array;
 import dtiled.coords : RowCol;
 import dtiled.grid;
 
-auto findEnclosure(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
+/// Same as enclosedTiles, but return coords instead of tiles
+auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
   if (is(typeof(isWall(Tile.init)) : bool))
 {
   // track whether we have hit the edge of the map
@@ -21,10 +25,9 @@ auto findEnclosure(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
     return coord.row * grid.numCols + coord.col;
   }
 
-  // visited[] index for a (row,col) pair
-  auto ref idxToTile(size_t idx) {
-    auto coord = RowCol(idx / grid.numCols, idx % grid.numCols);
-    return grid.tileAt(coord);
+  // row/col coord for a visited[] index
+  auto idxToCoord(size_t idx) {
+    return RowCol(idx / grid.numCols, idx % grid.numCols);
   }
 
   bool outOfBounds(RowCol coord) {
@@ -57,10 +60,27 @@ auto findEnclosure(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
   flood(origin);
 
   return visited[]
-    .enumerate                           // pair each bool with an index
-    .filter!(pair => pair.value)         // keep only the visited nodes
-    .map!(pair => idxToTile(pair.index)) // grab the tile for each visited node
-    .take(hitEdge ? 0 : size_t.max);     // empty range if edge of map was touched
+    .enumerate                            // pair each bool with an index
+    .filter!(pair => pair.value)          // keep only the visited nodes
+    .map!(pair => idxToCoord(pair.index)) // grab the tile for each visited node
+    .take(hitEdge ? 0 : size_t.max);      // empty range if edge of map was touched
+}
+
+/**
+ * Find an area of tiles enclosed by 'walls'.
+ *
+ * Params:
+ *  isWall = predicate which returns true if a tile should be considered a 'wall'
+ *  Tile = type that represents a tile in the grid
+ *  grid = grid of tiles to find enclosed area in
+ *  origin = tile that may be part of an enclosed region
+ *
+ * Returns: a range of tiles in the enclosure (empty if origin is not part of an enclosed region)
+ */
+auto enclosedTiles(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
+  if (is(typeof(isWall(Tile.init)) : bool))
+{
+  return enclosedCoords!isWall(grid, origin).map!(x => grid.tileAt(x));
 }
 
 ///
@@ -82,22 +102,22 @@ unittest {
   static bool isWall(char c) { return c == 'X'; }
 
   // starting on a wall should return an empty result
-  assert(tiles.findEnclosure!isWall(RowCol(0, 0)).empty);
+  assert(tiles.enclosedTiles!isWall(RowCol(0, 0)).empty);
 
   // all tiles in the [1,1] -> [2,2] area should find the 'a' room
-  assert(tiles.findEnclosure!isWall(RowCol(1, 1)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isWall(RowCol(1, 2)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isWall(RowCol(2, 1)).equal(['a', 'a', 'a', 'a']));
-  assert(tiles.findEnclosure!isWall(RowCol(2, 2)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.enclosedTiles!isWall(RowCol(1, 1)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.enclosedTiles!isWall(RowCol(1, 2)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.enclosedTiles!isWall(RowCol(2, 1)).equal(['a', 'a', 'a', 'a']));
+  assert(tiles.enclosedTiles!isWall(RowCol(2, 2)).equal(['a', 'a', 'a', 'a']));
 
   // get the two-tile 'b' room at [1,4] -> [2,4]
-  assert(tiles.findEnclosure!isWall(RowCol(1, 4)).equal(['b', 'b']));
-  assert(tiles.findEnclosure!isWall(RowCol(2, 4)).equal(['b', 'b']));
+  assert(tiles.enclosedTiles!isWall(RowCol(1, 4)).equal(['b', 'b']));
+  assert(tiles.enclosedTiles!isWall(RowCol(2, 4)).equal(['b', 'b']));
 
   // get the single tile 'c' room at 4,4
-  assert(tiles.findEnclosure!isWall(RowCol(4, 4)).equal(['c']));
+  assert(tiles.enclosedTiles!isWall(RowCol(4, 4)).equal(['c']));
 
   // the 'd' region is not an enclosure (touches map edge)
-  assert(tiles.findEnclosure!isWall(RowCol(4, 1)).empty);
-  assert(tiles.findEnclosure!isWall(RowCol(5, 0)).empty);
+  assert(tiles.enclosedTiles!isWall(RowCol(4, 1)).empty);
+  assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
 }
