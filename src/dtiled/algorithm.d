@@ -4,60 +4,57 @@ import std.range;
 import std.algorithm;
 import std.container : Array;
 import dtiled.coords : RowCol;
+import dtiled.grid;
 
-auto findEnclosure(alias isWall, Tile)(Tile[][] tiles, RowCol origin)
+auto findEnclosure(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
   if (is(typeof(isWall(Tile.init)) : bool))
 {
-  auto numRows = tiles.length;
-  auto numCols = tiles[0].length;
-
   // track whether we have hit the edge of the map
   bool hitEdge;
 
   // keep a flag for each tile to mark which have been visited
   Array!bool visited;
-  visited.length = numRows * numCols;
+  visited.length = grid.numRows * grid.numCols;
 
   // visited[] index for a (row,col) pair
-  auto coordToIdx(size_t row, size_t col) {
-    return row * numCols + col;
+  auto coordToIdx(RowCol coord) {
+    return coord.row * grid.numCols + coord.col;
   }
 
   // visited[] index for a (row,col) pair
-  auto idxToTile(size_t idx) {
-    auto row = idx / numCols;
-    auto col = idx % numCols;
-    return tiles[row][col];
+  auto ref idxToTile(size_t idx) {
+    auto coord = RowCol(idx / grid.numCols, idx % grid.numCols);
+    return grid.tileAt(coord);
   }
 
-  bool outOfBounds(size_t row, size_t col) {
-    return row < 0 || col < 0 || row >= numRows || col >= numCols;
+  bool outOfBounds(RowCol coord) {
+    return coord.row < 0 || coord.col < 0 || coord.row >= grid.numRows || coord.col >= grid.numCols;
   }
 
-  void flood(size_t row, size_t col) {
-    auto idx = coordToIdx(row, col);
-    hitEdge = hitEdge || outOfBounds(row, col);
+  void flood(RowCol coord) {
+    auto idx = coordToIdx(coord);
+    hitEdge = hitEdge || outOfBounds(coord);
 
     // break this recursive branch if we hit an edge or a visited or invalid tile.
-    if (hitEdge || visited[idx] || isWall(tiles[row][col])) return;
+    if (hitEdge || visited[idx] || isWall(grid.tileAt(coord))) return;
 
     visited[idx] = true;
 
     // cardinal directions
-    flood(row - 1 , col    );
-    flood(row + 1 , col    );
-    flood(row     , col - 1);
-    flood(row     , col + 1);
+    flood(coord.north);
+    flood(coord.south);
+    flood(coord.west);
+    flood(coord.east);
 
     // diagonals
-    flood(row - 1 , col - 1);
-    flood(row - 1 , col + 1);
-    flood(row + 1 , col - 1);
-    flood(row + 1 , col + 1);
+    flood(coord.north.west);
+    flood(coord.north.east);
+    flood(coord.south.west);
+    flood(coord.south.east);
   }
 
   // start the flood at the origin tile
-  flood(origin.row, origin.col);
+  flood(origin);
 
   return visited[]
     .enumerate                           // pair each bool with an index
@@ -72,7 +69,7 @@ unittest {
   import std.algorithm : equal;
 
   // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
-  auto tiles = [
+  auto tiles = TileGrid!char([
     // 0    1    2    3    4    5 <-col| row
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
     [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
@@ -80,7 +77,7 @@ unittest {
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 3
     [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
     [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
-  ];
+  ]);
 
   static bool isWall(char c) { return c == 'X'; }
 
