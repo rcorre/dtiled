@@ -4,8 +4,9 @@
 module dtiled.algorithm;
 
 import std.range;
+import std.typecons : Tuple;
 import std.algorithm;
-import std.container : Array;
+import std.container : Array, SList;
 import dtiled.coords : RowCol;
 import dtiled.grid;
 
@@ -120,4 +121,72 @@ unittest {
   // the 'd' region is not an enclosure (touches map edge)
   assert(tiles.enclosedTiles!isWall(RowCol(4, 1)).empty);
   assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
+}
+
+/// Same as enclosedTiles, but return coords instead of tiles
+auto floodFill(alias pred, Tile)(TileGrid!Tile grid, RowCol origin)
+  if (is(typeof(isWall(Tile.init)) : bool))
+{
+  struct Result {
+    private {
+      TileGrid     _grid;
+      SList!RowCol _stack;
+      Array!bool   _visited;
+
+      // helpers to translate between the 2D grid coordinate space and the 1D visited array
+      bool getVisited(RowCol coord) {
+        auto idx = coord.row * grid.numCols + coord.col;
+        return _visited[idx];
+      }
+
+      void setVisited(RowCol coord) {
+        auto idx = coord.row * grid.numCols + coord.col;
+        _visited[idx] = true;
+      }
+
+      @property auto topCoord() { return _stack.front; }
+      @property bool topCoordOk() {
+        return _grid.contains(topCoord) && !getVisited(topCoord) && pred(_grid.tileAt(topCoord));
+      }
+    }
+
+    this(TileGrid grid, RowCol origin) {
+      _grid = grid;
+      _visited.length = grid.numRows * grid.numCols; // one visited entry for each tile
+
+      // push the first tile onto the stack only if it meets the predicate
+      if (pred(grid.tileAt(origin))) {
+        stack.insertFront(origin);
+      }
+    }
+
+    @property auto ref front() { return _grid.tileAt(topCoord); }
+    @property bool empty() { return _stack.empty; }
+
+    void popFront() {
+      // copy the current coord before we pop it
+      auto coord = topCoord;
+
+      // mark that the current coord was visited and pop it
+      setVisited(coord);
+      _stack.popFront();
+
+      // cardinal directions
+      _stack.insertFront(coord.north);
+      _stack.insertFront(coord.south);
+      _stack.insertFront(coord.west);
+      _stack.insertFront(coord.east);
+
+      // diagonals
+      _stack.insertFront(coord.north.west);
+      _stack.insertFront(coord.north.east);
+      _stack.insertFront(coord.south.west);
+      _stack.insertFront(coord.south.east);
+
+      // keep popping until stack is empty or we get a floodable coord
+      while (!stack.empty && !topCoordOk) { stack.popFront(); } 
+    }
+  }
+
+  return Result();
 }
