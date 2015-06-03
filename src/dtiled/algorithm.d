@@ -144,9 +144,9 @@ auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals 
         _visited[idx] = true;
       }
 
-      @property auto topCoord() { return _stack.front; }
-      @property bool topCoordOk() {
-        return _grid.contains(topCoord) && !getVisited(topCoord) && pred(_grid.tileAt(topCoord));
+      // true if front is out of bounds, already visited, or does not meet the predicate
+      bool shouldSkipFront() {
+        return !_grid.contains(front) || getVisited(front) || !pred(_grid.tileAt(front));
       }
     }
 
@@ -160,12 +160,12 @@ auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals 
       }
     }
 
-    @property auto ref front() { return topCoord; }
+    @property auto front() { return _stack.front; }
     @property bool empty() { return _stack.empty; }
 
     void popFront() {
       // copy the current coord before we pop it
-      auto coord = topCoord;
+      auto coord = front;
 
       // mark that the current coord was visited and pop it
       setVisited(coord);
@@ -175,7 +175,7 @@ auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals 
       foreach(neighbor ; coord.adjacent(diags)) { _stack.insert(neighbor); }
 
       // keep popping until stack is empty or we get a floodable coord
-      while (!_stack.empty && !topCoordOk) { _stack.removeFront(); }
+      while (!_stack.empty && shouldSkipFront()) { _stack.removeFront(); }
     }
   }
 
