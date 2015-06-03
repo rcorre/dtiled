@@ -11,7 +11,8 @@ import dtiled.coords : RowCol, Diagonals;
 import dtiled.grid;
 
 /// Same as enclosedTiles, but return coords instead of tiles
-auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
+auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin,
+    Diagonals diags = Diagonals.no)
   if (is(typeof(isWall(Tile.init)) : bool))
 {
   // track whether we have hit the edge of the map
@@ -44,17 +45,8 @@ auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
 
     visited[idx] = true;
 
-    // cardinal directions
-    flood(coord.north);
-    flood(coord.south);
-    flood(coord.west);
-    flood(coord.east);
-
-    // diagonals
-    flood(coord.north.west);
-    flood(coord.north.east);
-    flood(coord.south.west);
-    flood(coord.south.east);
+    // recurse into neighboring tiles
+    foreach(neighbor ; coord.adjacent(diags)) flood(neighbor);
   }
 
   // start the flood at the origin tile
@@ -75,13 +67,15 @@ auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
  *  Tile = type that represents a tile in the grid
  *  grid = grid of tiles to find enclosed area in
  *  origin = tile that may be part of an enclosed region
+ *  diags = if yes, an area is not considered enclosed if there is a diagonal opening.
  *
  * Returns: a range of tiles in the enclosure (empty if origin is not part of an enclosed region)
  */
-auto enclosedTiles(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin)
+auto enclosedTiles(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin,
+    Diagonals diags = Diagonals.no)
   if (is(typeof(isWall(Tile.init)) : bool))
 {
-  return enclosedCoords!isWall(grid, origin).map!(x => grid.tileAt(x));
+  return enclosedCoords!isWall(grid, origin, diags).map!(x => grid.tileAt(x));
 }
 
 ///
@@ -97,7 +91,7 @@ unittest {
     [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 2
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 3
     [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
-    [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
+    [ 'd', 'd', 'd', 'X', 'X', 'c' ], // 5
   ]);
 
   static bool isWall(char c) { return c == 'X'; }
@@ -117,6 +111,8 @@ unittest {
 
   // get the single tile 'c' room at 4,4
   assert(tiles.enclosedTiles!isWall(RowCol(4, 4)).equal(['c']));
+  // if we require that diagonals be blocked too, 'c' is not an enclosure
+  assert(tiles.enclosedTiles!isWall(RowCol(4, 4), Diagonals.yes).empty);
 
   // the 'd' region is not an enclosure (touches map edge)
   assert(tiles.enclosedTiles!isWall(RowCol(4, 1)).empty);
