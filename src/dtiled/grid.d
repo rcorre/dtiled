@@ -38,6 +38,7 @@ unittest {
   auto grid = makeTestGrid(5, 10);
   assert(grid.numRows == 5);
   assert(grid.numCols == 10);
+  assert(grid.numTiles == 50);
 }
 
 /**
@@ -51,6 +52,9 @@ struct TileGrid(Tile) {
   }
 
   private Tile[][] _tiles;
+
+  /// The total number of tiles in the grid.
+  @property auto numTiles() { return numRows * numCols; }
 
   /**
    * Wrap a 2D array in a grid structure. The grid must be rectangular (not jagged).
