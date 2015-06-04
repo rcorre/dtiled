@@ -6,8 +6,8 @@ module dtiled.algorithm;
 import std.range;
 import std.typecons : Tuple;
 import std.algorithm;
-import std.container : Array, SList;
-import dtiled.coords : RowCol, Diagonals;
+import std.container : Array, SList, RedBlackTree;
+import dtiled.coords;
 import dtiled.grid;
 
 /// Same as enclosedTiles, but return coords instead of tiles
@@ -232,4 +232,100 @@ unittest {
   // flood the 'b' and 'c' rooms, moving through diagonals
   assert(grid.floodTiles!(x => x == 'b' || x == 'c')(RowCol(4,4), Diagonals.yes)
       .equal(['c', 'c', 'b', 'b']));
+}
+
+auto shortestPath(alias cost, Tile)(TileGrid!Tile grid, RowCol start, RowCol end)
+  if (is(typeof(cost(Tile.init)) : real))
+{
+  alias Cost = typeof(cost(Tile.init));
+  enum noParent = size_t.max;
+
+  struct Entry {
+    RowCol coord;
+    int fscore;
+  }
+
+  // helpers to translate between grid coords and _dist/_prev array indices
+  auto coordToIdx(RowCol coord) { return coord.row * grid.numCols + coord.col; }
+  auto idxToCoord(size_t idx)   { return RowCol(idx / grid.numCols, idx % grid.numCols); }
+
+  Array!size_t parent;
+  Array!Cost   gscore, fscore;
+  SList!RowCol closed;
+  auto open = new RedBlackTree!(Entry, (a,b) => a.fscore < b.fscore, true);
+
+  parent.length = grid.numTiles;
+  fscore.length = grid.numTiles;
+  gscore.length = grid.numTiles;
+
+  parent[].fill(noParent);
+
+  gscore[coordToIdx(start)] = 0;
+  fscore[coordToIdx(start)] = 0;
+
+  open.insert(Entry(start, 0));
+
+  while (!open.empty) {
+    // get the current most optimal tile and move it from the open to the closed set
+    auto current = open.front.coord;
+    open.removeFront();
+    closed.insertFront(current);
+
+    // if current is the destination, reconstruct the path
+    if (current == end) {
+      auto path = [current];
+      auto curIdx = coordToIdx(current);
+
+      while (parent[curIdx] != size_t.max) {
+        curIdx = parent[curIdx];
+        path ~= idxToCoord(curIdx);
+      }
+
+      return path;
+    }
+
+    // current is not the destination, explore its neighbors
+    foreach(neighbor ; current.adjacent) {
+      if (!grid.contains(neighbor) || closed[].canFind(neighbor)) continue;
+
+      auto neighborIdx = coordToIdx(neighbor);
+
+      // tentative score is the score of the current tile plus the cost to the neighbor
+      auto estimate = gscore[coordToIdx(current)] + cost(grid.tileAt(neighbor));
+
+      bool inOpenSet = open[].canFind!(x => x.coord == neighbor);
+
+      if (!inOpenSet) open.insert(Entry(neighbor, estimate));
+
+      // if it is a new tile or if we have found a shorter route to this tile
+      if (!inOpenSet || estimate < gscore[neighborIdx]) {
+        parent[neighborIdx] = coordToIdx(current);
+        gscore[neighborIdx] = estimate;
+        fscore[neighborIdx] = estimate + cast(Cost) manhattan(neighbor, end);
+      }
+    }
+  }
+
+  return null;
+}
+
+private auto tileCost(char c) { return c == 'X' ? 99 : 1; }
+
+unittest {
+  // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
+  auto grid = TileGrid!char([
+    // 0    1    2    3    4    5 <-col| row
+    [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
+    [ 'X', ' ', 'b', 'X', 'a', 'X' ], // 1
+    [ 'X', ' ', 'b', 'X', 'a', 'X' ], // 2
+    [ 'X', ' ', 'X', 'X', 'a', ' ' ], // 3
+    [ ' ', 'a', 'a', 'a', 'a', 'X' ], // 4
+    [ ' ', ' ', ' ', 'X', 'X', 'X' ], // 5
+  ]);
+
+  auto path = shortestPath!(tileCost)(grid, RowCol(1,4), RowCol(4,1));
+  assert(path[] !is null, "failed to find path when one existed");
+
+  // the 'a's mark the optimal path
+  assert(path[].all!(x => grid.tileAt(x) == 'a'));
 }
