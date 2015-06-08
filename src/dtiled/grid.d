@@ -194,7 +194,7 @@ struct TileGrid(Tile) {
    * foreach(unit ; unitsHit) unit.applySomeEffect;
    * --------------
    */
-  auto maskTiles(T)(in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+  auto maskTiles(T)(RowCol offset, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
     return maskCoords(mask).map!(x => tileAt(x));
   }
 
@@ -290,8 +290,8 @@ struct TileGrid(Tile) {
    *
    * Params:
    *  coord = grid location of center tile.
-   *  diagonal = if no, include tiles to the north, south, east, and west only.
-   *             if yes, additionaly include northwest, northeast, southwest, and southeast.
+   *  diagonals = if no, include tiles to the north, south, east, and west only.
+   *              if yes, also include northwest, northeast, southwest, and southeast.
    */
   auto adjacentTiles(RowCol coord, Diagonals diagonals = Diagonals.no) {
     return coord.adjacent(diagonals)
