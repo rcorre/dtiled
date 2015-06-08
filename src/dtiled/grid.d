@@ -83,15 +83,15 @@ struct TileGrid(Tile) {
   unittest {
     import std.exception  : assertThrown;
 
-    auto grid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+    auto grid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
     ]);
 
-    assert(grid.tileAt(RowCol(0, 0)) == "00"); // top left tile
-    assert(grid.tileAt(RowCol(2, 4)) == "24"); // bottom right tile
-    assert(grid.tileAt(RowCol(1, 1)) == "11");
+    assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
+    assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
+    assert(grid.tileAt(RowCol(1, 1)) == 11);
   }
 
   /// Foreach over every tile in the map.
@@ -108,18 +108,19 @@ struct TileGrid(Tile) {
 
   ///
   unittest {
-    auto myGrid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+    auto myGrid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
     ]);
-    string[] actual;
 
+    int[] actual;
     foreach(tile ; myGrid) { actual ~= tile; }
+
     assert(actual == [
-        "00", "01", "02", "03", "04",
-        "10", "11", "12", "13", "14",
-        "20", "21", "22", "23", "24"]);
+        00, 01, 02, 03, 04,
+        10, 11, 12, 13, 14,
+        20, 21, 22, 23, 24]);
   }
 
   /// Foreach over every [coordinate,tile] pair in the map.
@@ -136,16 +137,14 @@ struct TileGrid(Tile) {
 
   ///
   unittest {
-    import std.format : format;
-
-    auto myGrid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+    auto myGrid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
     ]);
 
     foreach(coord, tile ; myGrid) {
-      assert(tile == "%d%d".format(coord.row, coord.col));
+      assert(tile == coord.row * 10 + coord.col);
     }
   }
 
@@ -236,10 +235,10 @@ struct TileGrid(Tile) {
     import std.array : empty;
     import std.algorithm : equal;
 
-    auto myGrid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+    auto myGrid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
     ]);
 
     auto mask1 = [
@@ -248,17 +247,17 @@ struct TileGrid(Tile) {
       [ 0, 0, 0 ],
     ];
     assert(myGrid.maskTilesAround(RowCol(0,0), mask1).empty);
-    assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal(["00", "01", "02"]));
-    assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal(["10", "11", "12"]));
-    assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal(["13", "14"]));
+    assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal([00, 01, 02]));
+    assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal([10, 11, 12]));
+    assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal([13, 14]));
 
     auto mask2 = [
       [ 0, 0, 1 ],
       [ 0, 0, 1 ],
       [ 1, 1, 1 ],
     ];
-    assert(myGrid.maskTilesAround(RowCol(0,0), mask2).equal(["01", "10", "11"]));
-    assert(myGrid.maskTilesAround(RowCol(1,2), mask2).equal(["03", "13", "21", "22", "23"]));
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask2).equal([01, 10, 11]));
+    assert(myGrid.maskTilesAround(RowCol(1,2), mask2).equal([03, 13, 21, 22, 23]));
     assert(myGrid.maskTilesAround(RowCol(2,4), mask2).empty);
 
     auto mask3 = [
@@ -266,14 +265,14 @@ struct TileGrid(Tile) {
       [ 1 , 0 , 1 , 0 , 1 ],
       [ 0 , 0 , 0 , 0 , 0 ],
     ];
-    assert(myGrid.maskTilesAround(RowCol(0,0), mask3).equal(["00", "02"]));
-    assert(myGrid.maskTilesAround(RowCol(1,2), mask3).equal(["02", "10", "12", "14"]));
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask3).equal([00, 02]));
+    assert(myGrid.maskTilesAround(RowCol(1,2), mask3).equal([02, 10, 12, 14]));
 
     auto mask4 = [
       [ 1 , 1 , 1 , 0 , 1 ],
     ];
-    assert(myGrid.maskTilesAround(RowCol(0,0), mask4).equal(["00", "02"]));
-    assert(myGrid.maskTilesAround(RowCol(2,2), mask4).equal(["20", "21", "22", "24"]));
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask4).equal([00, 02]));
+    assert(myGrid.maskTilesAround(RowCol(2,2), mask4).equal([20, 21, 22, 24]));
 
     auto mask5 = [
       [ 1 ],
@@ -282,8 +281,8 @@ struct TileGrid(Tile) {
       [ 1 ],
       [ 1 ],
     ];
-    assert(myGrid.maskTilesAround(RowCol(0,4), mask5).equal(["14", "24"]));
-    assert(myGrid.maskTilesAround(RowCol(1,1), mask5).equal(["01", "21"]));
+    assert(myGrid.maskTilesAround(RowCol(0,4), mask5).equal([14, 24]));
+    assert(myGrid.maskTilesAround(RowCol(1,1), mask5).equal([01, 21]));
   }
 
   /**
@@ -303,25 +302,25 @@ struct TileGrid(Tile) {
   ///
   unittest {
     import std.algorithm : equal;
-    auto myGrid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+    auto myGrid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
     ]);
 
-    assert(myGrid.adjacentTiles(RowCol(0,0)).equal(["01", "10"]));
-    assert(myGrid.adjacentTiles(RowCol(1,1)).equal(["01", "10", "12", "21"]));
-    assert(myGrid.adjacentTiles(RowCol(2,2)).equal(["12", "21", "23"]));
-    assert(myGrid.adjacentTiles(RowCol(2,4)).equal(["14", "23"]));
+    assert(myGrid.adjacentTiles(RowCol(0,0)).equal([01, 10]));
+    assert(myGrid.adjacentTiles(RowCol(1,1)).equal([01, 10, 12, 21]));
+    assert(myGrid.adjacentTiles(RowCol(2,2)).equal([12, 21, 23]));
+    assert(myGrid.adjacentTiles(RowCol(2,4)).equal([14, 23]));
 
     assert(myGrid.adjacentTiles(RowCol(0,0), Diagonals.yes)
-        .equal(["01", "10", "11"]));
+        .equal([01, 10, 11]));
     assert(myGrid.adjacentTiles(RowCol(1,1), Diagonals.yes)
-        .equal(["00", "01", "02", "10", "12", "20", "21", "22"]));
+        .equal([00, 01, 02, 10, 12, 20, 21, 22]));
     assert(myGrid.adjacentTiles(RowCol(2,2), Diagonals.yes)
-        .equal(["11", "12", "13", "21", "23"]));
+        .equal([11, 12, 13, 21, 23]));
     assert(myGrid.adjacentTiles(RowCol(2,4), Diagonals.yes)
-        .equal(["13", "14", "23"]));
+        .equal([13, 14, 23]));
   }
 }
 
@@ -376,17 +375,15 @@ void createMaskAround(alias fn, Tile, T)(TileGrid!Tile grid, RowCol center, ref 
 
 ///
 unittest {
-  import std.conv;
-
-  auto myGrid = TileGrid!string([
-      [ "00", "01", "02", "03", "04" ],
-      [ "10", "11", "12", "13", "14" ],
-      [ "20", "21", "22", "23", "24" ],
+  auto myGrid = TileGrid!int([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
   ]);
 
   uint[3][3] mask;
 
-  myGrid.createMaskAround!(tile => tile.to!int > 10)(RowCol(1,1), mask);
+  myGrid.createMaskAround!(tile => tile > 10)(RowCol(1,1), mask);
 
   assert(mask == [
       [0, 0, 0],
@@ -394,7 +391,7 @@ unittest {
       [1, 1, 1],
   ]);
 
-  myGrid.createMaskAround!(tile => tile.to!int < 24)(RowCol(2,4), mask);
+  myGrid.createMaskAround!(tile => tile < 24)(RowCol(2,4), mask);
 
   assert(mask == [
       [1, 1, 0],
