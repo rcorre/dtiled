@@ -367,6 +367,19 @@ struct TileGrid(Tile) {
   }
 
   /**
+   * Same as maskTiles, but return coords instead of tiles.
+   */
+  auto maskCoords(T)(in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+    assert(mask.length    == numRows, "a mask must be the same size as the grid");
+    assert(mask[0].length == numCols, "a mask must be the same size as the grid");
+    assert(mask.all!(x => x.length == mask[0].length), "a mask cannot be a jagged array");
+
+    return RowCol(0,0).span(RowCol(numRows, numCols))
+      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
+      .filter!(x => sourceContains(x)); // remove coords outside of source map
+  }
+
+  /**
    * Select specific tiles from this slice based on a mask.
    *
    * The mask must be the same size as the grid.
@@ -393,21 +406,14 @@ struct TileGrid(Tile) {
    * ];
    *
    * // get tiles contained by a cross pattern centered at (2,3)
-   * auto tilesHit = map.sliceAround((RowCol(2, 3), 1).mask(attackPattern));
+   * auto tilesHit = map.sliceAround((RowCol(2, 3), 1).maskTiles(attackPattern));
    *
    * // now do something with those tiles
    * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
    * --------------
    */
-  auto mask(T)(in T[][] mask) if (is(typeof(cast(bool) T.init))) {
-    assert(mask.length    == numRows, "a mask must be the same size as the grid");
-    assert(mask[0].length == numCols, "a mask must be the same size as the grid");
-    assert(mask.all!(x => x.length == mask[0].length), "a mask cannot be a jagged array");
-
-    return RowCol(0,0).span(RowCol(numRows, numCols))
-      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
-      .filter!(x => sourceContains(x))  // remove coords outside of source map
-      .map!(x => tileAt(x));            // grab tiles at those coords
+  auto maskTiles(T)(in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+    return maskCoords(mask).map!(x => tileAt(x));
   }
 
   /// More masking examples:
@@ -425,33 +431,33 @@ struct TileGrid(Tile) {
       [ 0, 0, 0 ],
       [ 0, 0, 0 ],
     ];
-    assert(myGrid.sliceAround(RowCol(0,0), 3).mask(mask1).empty);
-    assert(myGrid.sliceAround(RowCol(1,1), 3).mask(mask1).equal(["00", "01", "02"]));
-    assert(myGrid.sliceAround(RowCol(2,1), 3).mask(mask1).equal(["10", "11", "12"]));
-    assert(myGrid.sliceAround(RowCol(2,4), 3).mask(mask1).equal(["13", "14"]));
+    assert(myGrid.sliceAround(RowCol(0,0), 3).maskTiles(mask1).empty);
+    assert(myGrid.sliceAround(RowCol(1,1), 3).maskTiles(mask1).equal(["00", "01", "02"]));
+    assert(myGrid.sliceAround(RowCol(2,1), 3).maskTiles(mask1).equal(["10", "11", "12"]));
+    assert(myGrid.sliceAround(RowCol(2,4), 3).maskTiles(mask1).equal(["13", "14"]));
 
     auto mask2 = [
       [ 0, 0, 1 ],
       [ 0, 0, 1 ],
       [ 1, 1, 1 ],
     ];
-    assert(myGrid.sliceAround(RowCol(0,0), 3).mask(mask2).equal(["01", "10", "11"]));
-    assert(myGrid.sliceAround(RowCol(1,2), 3).mask(mask2).equal(["03", "13", "21", "22", "23"]));
-    assert(myGrid.sliceAround(RowCol(2,4), 3).mask(mask2).empty);
+    assert(myGrid.sliceAround(RowCol(0,0), 3).maskTiles(mask2).equal(["01", "10", "11"]));
+    assert(myGrid.sliceAround(RowCol(1,2), 3).maskTiles(mask2).equal(["03", "13", "21", "22", "23"]));
+    assert(myGrid.sliceAround(RowCol(2,4), 3).maskTiles(mask2).empty);
 
     auto mask3 = [
       [ 0 , 0 , 1 , 0 , 0 ],
       [ 1 , 0 , 1 , 0 , 1 ],
       [ 0 , 0 , 0 , 0 , 0 ],
     ];
-    assert(myGrid.sliceAround(RowCol(0,0), 3, 5).mask(mask3).equal(["00", "02"]));
-    assert(myGrid.sliceAround(RowCol(1,2), 3, 5).mask(mask3).equal(["02", "10", "12", "14"]));
+    assert(myGrid.sliceAround(RowCol(0,0), 3, 5).maskTiles(mask3).equal(["00", "02"]));
+    assert(myGrid.sliceAround(RowCol(1,2), 3, 5).maskTiles(mask3).equal(["02", "10", "12", "14"]));
 
     auto mask4 = [
       [ 1 , 1 , 1 , 0 , 1 ],
     ];
-    assert(myGrid.sliceAround(RowCol(0,0), 1, 5).mask(mask4).equal(["00", "02"]));
-    assert(myGrid.sliceAround(RowCol(2,2), 1, 5).mask(mask4).equal(["20", "21", "22", "24"]));
+    assert(myGrid.sliceAround(RowCol(0,0), 1, 5).maskTiles(mask4).equal(["00", "02"]));
+    assert(myGrid.sliceAround(RowCol(2,2), 1, 5).maskTiles(mask4).equal(["20", "21", "22", "24"]));
 
     auto mask5 = [
       [ 1 ],
@@ -460,8 +466,8 @@ struct TileGrid(Tile) {
       [ 1 ],
       [ 1 ],
     ];
-    assert(myGrid.sliceAround(RowCol(0,4), 5, 1).mask(mask5).equal(["14", "24"]));
-    assert(myGrid.sliceAround(RowCol(1,1), 5, 1).mask(mask5).equal(["01", "21"]));
+    assert(myGrid.sliceAround(RowCol(0,4), 5, 1).maskTiles(mask5).equal(["14", "24"]));
+    assert(myGrid.sliceAround(RowCol(1,1), 5, 1).maskTiles(mask5).equal(["01", "21"]));
   }
 
   /**
