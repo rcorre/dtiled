@@ -45,16 +45,21 @@ unittest {
  * Represents a grid of rectangular tiles.
  */
 struct TileGrid(Tile) {
-  const {
-    RowCol sliceOffset; /// coord of the top-left corner of this slice
-    size_t numRows;     /// Number of rows along the tile grid y axis
-    size_t numCols;     /// Number of cols along the tile grid x axis
+  private {
+    RowCol _sliceOffset;
+    size_t _numRows;
+    size_t _numCols;
+    private Tile[][] _tiles;
   }
 
-  private Tile[][] _tiles;
+  /// Number of columns along the tile grid x axis
+  @property auto numCols() { return _numCols; }
+
+  /// Number of rows along the tile grid y axis
+  @property auto numRows() { return _numRows; }
 
   /// The total number of tiles in the grid.
-  @property auto numTiles() { return numRows * numCols; }
+  @property auto numTiles() { return _numRows * _numCols; }
 
   /**
    * Wrap a 2D array in a grid structure. The grid must be rectangular (not jagged).
@@ -73,9 +78,9 @@ struct TileGrid(Tile) {
         "all rows of an OrthoMap must have the same length (cannot be jagged array)");
 
     _tiles = tiles;
-    this.sliceOffset = sliceOffset;
-    this.numRows = nRows;
-    this.numCols = nCols;
+    _sliceOffset = sliceOffset;
+    _numRows = nRows;
+    _numCols = nCols;
   }
 
   private {
@@ -86,7 +91,7 @@ struct TileGrid(Tile) {
     }
 
     bool sourceContains(RowCol coord) {
-      auto absCoord = coord + sliceOffset; // coord relative to source
+      auto absCoord = coord + _sliceOffset; // coord relative to source
       return
         absCoord.row >= 0 && absCoord.row < _tiles.length &&  // row in source bounds
         absCoord.col >= 0 && absCoord.col < _tiles[0].length; // col in source bounds
@@ -95,7 +100,7 @@ struct TileGrid(Tile) {
     void enforceBounds(RowCol coord) {
       enforce(sliceContains(coord),
         "%s is out of slice bounds [%s,%s)"
-        .format(coord + sliceOffset, RowCol(0,0), RowCol(numRows, numCols)));
+        .format(coord + _sliceOffset, RowCol(0,0), RowCol(numRows, numCols)));
 
       enforce(sourceContains(coord),
         "%s is out of source bounds [%s,%s)"
@@ -130,7 +135,7 @@ struct TileGrid(Tile) {
    */
   ref Tile tileAt(RowCol coord) {
     enforceBounds(coord);
-    auto relativeCoord = coord + sliceOffset;
+    auto relativeCoord = coord + _sliceOffset;
     return _tiles[relativeCoord.row][relativeCoord.col];
   }
 
@@ -151,6 +156,31 @@ struct TileGrid(Tile) {
     // tileAt enforces in-bounds access
     assertThrown(grid.tileAt(RowCol(-1, -1))); // row/col out of bounds (< 0)
     assertThrown(grid.tileAt(RowCol(3, 1)));   // row out of bounds (> 2)
+  }
+
+  /**
+   * Translate a coord within this slice to the corresponding coord in the map.
+   *
+   * Params:
+   *  localCoord = coord relative to this slice.
+   */
+  RowCol absoluteCoord(RowCol localCoord) {
+    return localCoord + _sliceOffset;
+  }
+
+  unittest {
+    // 3x5 grid
+    auto tiles = [
+      [ 0, 1, 2, 3, 4, 5 ],
+      [ 0, 1, 2, 3, 4, 5 ],
+      [ 0, 1, 2, 3, 4, 5 ],
+    ];
+
+    auto grid = TileGrid!int(tiles);
+    auto slice = grid[RowCol(1,1)..RowCol(3,5)];
+
+    assert(slice.absoluteCoord(RowCol(1,1)) == RowCol(2,2));
+    assert(grid.absoluteCoord(RowCol(1,1))  == RowCol(1,1));
   }
 
   /// Foreach over every tile in the map.
@@ -232,7 +262,7 @@ struct TileGrid(Tile) {
    */
   @nogc
   auto opSlice(RowCol start, RowCol end) {
-    auto relStart = start + sliceOffset;
+    auto relStart = start + _sliceOffset;
     auto size = end - start;
     return TileGrid!Tile(_tiles, relStart, size.row, size.col);
   }
