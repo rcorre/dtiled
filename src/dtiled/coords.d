@@ -189,6 +189,19 @@ unittest {
   assert(RowCol(2,2).span(RowCol(5,2)).empty);
 }
 
+/// ditto
+auto span(RowCol start, coord_t endRow, coord_t endCol) {
+  return span(start, RowCol(endRow, endCol));
+}
+
+unittest {
+  import std.algorithm : equal;
+
+  assert(RowCol(0,0).span(2,3).equal([
+    RowCol(0,0), RowCol(0,1), RowCol(0,2),
+    RowCol(1,0), RowCol(1,1), RowCol(1,2)]));
+}
+
 /// Represents a location in continuous 2D space.
 alias PixelCoord = Tuple!(float, "x", float, "y");
 
