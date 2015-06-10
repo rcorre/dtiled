@@ -151,7 +151,7 @@ struct TileGrid(Tile) {
   /**
    * Same as maskTiles, but return coords instead of tiles.
    */
-  auto maskCoords(T)(RowCol offset, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+  auto maskCoords(T)(RowCol offset, in T mask) if (isValidMask!T) {
     assertNotJagged(mask, "mask");
 
     return RowCol(0,0).span(arraySize2D(mask))
@@ -194,7 +194,7 @@ struct TileGrid(Tile) {
    * foreach(unit ; unitsHit) unit.applySomeEffect;
    * --------------
    */
-  auto maskTiles(T)(RowCol offset, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+  auto maskTiles(T)(RowCol offset, in T mask) if (isValidMask!T) {
     return maskCoords(mask).map!(x => tileAt(x));
   }
 
@@ -208,7 +208,7 @@ struct TileGrid(Tile) {
    *         each true value takes the tile at that grid coordinate.
    *         the mask should be in row major order (indexed as mask[row][col]).
    */
-  auto maskCoordsAround(T)(RowCol center, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+  auto maskCoordsAround(T)(RowCol center, in T mask) if (isValidMask!T) {
     assertNotJagged(mask, "mask");
 
     auto offset = center - RowCol(mask.length / 2, mask[0].length / 2);
@@ -226,7 +226,7 @@ struct TileGrid(Tile) {
    *         each true value takes the tile at that grid coordinate.
    *         the mask should be in row major order (indexed as mask[row][col]).
    */
-  auto maskTilesAround(T)(RowCol center, in T[][] mask) if (is(typeof(cast(bool) T.init))) {
+  auto maskTilesAround(T)(RowCol center, in T mask) if (isValidMask!T) {
     return maskCoordsAround(center, mask).map!(x => tileAt(x));
   }
 
@@ -241,12 +241,12 @@ struct TileGrid(Tile) {
       [ 20, 21, 22, 23, 24 ],
     ]);
 
-    auto mask1 = [
+    uint[3][3] mask1 = [
       [ 1, 1, 1 ],
       [ 0, 0, 0 ],
       [ 0, 0, 0 ],
     ];
-    assert(myGrid.maskTilesAround(RowCol(0,0), mask1).empty);
+    assert(myGrid.maskTilesAround!(uint[3][3])(RowCol(0,0), mask1).empty);
     assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal([00, 01, 02]));
     assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal([10, 11, 12]));
     assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal([13, 14]));
@@ -409,4 +409,18 @@ private void assertNotJagged(T)(in T array, string name) {
 // get a RowCol representing the size of a 2D array (assumed non-jagged).
 private auto arraySize2D(T)(in T array) {
   return RowCol(array.length, array[0].length);
+}
+
+private enum isValidMask(T) = is(typeof(cast(bool) T.init[0][0]))   && // must have boolean elements
+                              is(typeof(T.init.length)    : size_t) && // must have row count
+                              is(typeof(T.init[0].length) : size_t);   // must have column count
+
+unittest {
+  static assert(isValidMask!(int[][]));
+  static assert(isValidMask!(uint[][3]));
+  static assert(isValidMask!(uint[3][]));
+  static assert(isValidMask!(uint[3][3]));
+
+  static assert(!isValidMask!int);
+  static assert(!isValidMask!(int[]));
 }
