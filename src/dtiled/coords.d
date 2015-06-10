@@ -25,16 +25,18 @@ import std.format    : format;
 import std.typecons  : Tuple, Flag;
 import std.algorithm : map, cartesianProduct;
 
+private alias coord_t = long;
+
 /// Whether to consider diagonals adjacent in situations dealing with the concept of adjacency.
 alias Diagonals = Flag!"Diagonals";
 
 /// Represents a discrete location within the map grid.
 struct RowCol {
-  long row, col;
+  coord_t row, col;
 
   /// Construct a row column pair
   @nogc
-  this(long row, long col) {
+  this(coord_t row, coord_t col) {
     this.row = row;
     this.col = col;
   }
