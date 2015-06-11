@@ -9,7 +9,7 @@ module dtiled.grid;
 
 import std.range     : only, chain, takeNone, hasLength;
 import std.format    : format;
-import std.algorithm : all, map, filter;
+import std.algorithm : all, map, filter, joiner;
 import std.exception : enforce;
 import dtiled.coords;
 
@@ -27,6 +27,9 @@ struct TileGrid(Tile) {
 
   /// The total number of tiles in the grid.
   @property auto numTiles() { return numRows * numCols; }
+
+  /// Flat iterator over all tiles in map
+  @property auto tiles() { return _tiles.joiner; }
 
   /**
    * Wrap a 2D array in a grid structure. The grid must be rectangular (not jagged).
