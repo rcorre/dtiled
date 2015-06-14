@@ -63,7 +63,6 @@ auto enclosedCoords(alias isWall, T)(T grid, RowCol origin, Diagonals diags = Di
  *
  * Params:
  *  isWall = predicate which returns true if a tile should be considered a 'wall'
- *  Tile = type that represents a tile in the grid
  *  grid = grid of tiles to find enclosed area in
  *  origin = tile that may be part of an enclosed region
  *  diags = if yes, an area is not considered enclosed if there is a diagonal opening.
@@ -181,7 +180,6 @@ auto floodCoords(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagona
  *
  * Params:
  *  pred   = predicate that returns true if the flood should progress through a given tile.
- *  Tile   = type representing a tile in the grid.
  *  grid   = grid to apply flood to.
  *  origin = coordinate at which to begin flood.
  *  diags  = by default, flood only progresses to directly adjacent tiles.

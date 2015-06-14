@@ -32,20 +32,47 @@ auto numCols(T)(in T grid) if (isArray2D!T) {
   return grid[0].length;
 }
 
+unittest {
+  auto grid = [
+    [ 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0 ],
+  ];
+
+  assert(grid.numCols == 4);
+}
+
 /// Number of rows along a grid's y axis.
 auto numRows(T)(in T grid) if (isArray2D!T) {
   return grid.length;
 }
 
+unittest {
+  auto grid = [
+    [ 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0 ],
+  ];
+
+  assert(grid.numRows == 2);
+}
+
 /// The total number of tiles in a grid.
 auto numTiles(T)(in T grid) if (isArray2D!T) {
- return numRows * numCols;
+ return grid.numRows * grid.numCols;
+}
+
+unittest {
+  auto grid = [
+    [ 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0 ],
+  ];
+
+  assert(grid.numTiles == 8);
 }
 
 /**
- * True if the grid coordinate is within the grid and map bounds.
+ * True if the grid coordinate is within the grid bounds.
  */
-bool contains(T)(T grid, RowCol coord) if (isArray2D!T) {
+bool contains(T)(in T grid, RowCol coord) if (isArray2D!T) {
   return
     coord.row >= 0      &&
     coord.col >= 0      &&
@@ -53,14 +80,16 @@ bool contains(T)(T grid, RowCol coord) if (isArray2D!T) {
     coord.col < grid.numCols;
 }
 
+///
 unittest {
   // 5x3 map
   auto grid = [
-      //col 0  1  2  3  4       row
-      [ 0, 0, 0, 0, 0 ], // 0
-      [ 0, 0, 0, 0, 0 ], // 1
-      [ 0, 0, 0, 0, 0 ], // 2
+    //0  1  2  3  4 col   row
+    [ 0, 0, 0, 0, 0 ], // 0
+    [ 0, 0, 0, 0, 0 ], // 1
+    [ 0, 0, 0, 0, 0 ], // 2
   ];
+  
   assert( grid.contains(RowCol(0 , 0))); // top left
   assert( grid.contains(RowCol(2 , 4))); // bottom right
   assert( grid.contains(RowCol(1 , 2))); // center
@@ -71,8 +100,11 @@ unittest {
 }
 
 /**
- * Get the tile at a given position in the grid. Throws if out of bounds.
+ * Get the tile at a given position in the grid.
+ * The coord must be in bounds.
+ * 
  * Params:
+ *  grid = grid from which to retrieve tile.
  *  coord = a row/column pair identifying a point in the tile grid.
  */
 ref auto tileAt(T)(T grid, RowCol coord) if (isArray2D!T) {
@@ -80,7 +112,29 @@ ref auto tileAt(T)(T grid, RowCol coord) if (isArray2D!T) {
   return grid[coord.row][coord.col];
 }
 
-/// Range that iterates over all tiles in a grid.
+///
+unittest {
+  auto grid = [
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+  ];
+
+  assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
+  assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
+  assert(grid.tileAt(RowCol(1, 1)) == 11); // one down/right from the top left
+
+  // tileAt returns a reference:
+  grid.tileAt(RowCol(2,2)) = 99;
+  assert(grid.tileAt(RowCol(2,2)) == 99);
+}
+
+/**
+ * Get a range that iterates over all tiles in a grid.
+ * 
+ * This is a 'flat' range that iterates over every tile in a left->right, top->bottom order.
+ * Foreach over this range can operate on either every tile or every (coord, tile) pair.
+ */
 auto tiles(T)(ref T grid) if (isArray2D!T) {
   alias CoordRange = typeof(span(RowCol.init, RowCol.init));
   alias TileType = typeof(grid[0][0]);
@@ -158,24 +212,15 @@ unittest {
   }
 }
 
-///
-unittest {
-  import std.exception  : assertThrown;
-
-  auto grid = [
-      [ 00, 01, 02, 03, 04 ],
-      [ 10, 11, 12, 13, 14 ],
-      [ 20, 21, 22, 23, 24 ],
-  ];
-
-  assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
-  assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
-  assert(grid.tileAt(RowCol(1, 1)) == 11);
-}
-
-
 /**
  * Same as maskTiles, but return coords instead of tiles.
+ * 
+ * Params:
+ *  grid = grid to apply mask to
+ *  offset = map coordinate on which to align the top-left corner of the mask.
+ *  mask = a rectangular array of true/false values indicating which tiles to take.
+ *         each true value takes the tile at that grid coordinate.
+ *         the mask should be in row major order (indexed as mask[row][col]).
  */
 auto maskCoords(T, U)(ref T grid, RowCol offset, in U mask) if (isArray2D!T && isValidMask!U) {
   assertNotJagged(mask, "mask");
@@ -194,7 +239,7 @@ auto maskCoords(T, U)(ref T grid, RowCol offset, in U mask) if (isArray2D!T && i
  * The mask is allowed to extend out of bounds - out of bounds coordinates are ignored
  *
  * Params:
- *  T = type of mask marker. Anything that is convertible to bool
+ *  grid = grid to apply mask to
  *  offset = map coordinate on which to align the top-left corner of the mask.
  *  mask = a rectangular array of true/false values indicating which tiles to take.
  *         each true value takes the tile at that grid coordinate.
@@ -228,6 +273,7 @@ auto maskTiles(T, U)(ref T grid, RowCol offset, in U mask) if (isArray2D!T && is
  * Same as maskCoords, but centered.
  *
  * Params:
+ *  grid = grid to apply mask to
  *  center = map coord on which to position the center of the mask.
  *           if the mask has an even side length, rounds down to compute the 'center'
  *  mask = a rectangular array of true/false values indicating which tiles to take.
@@ -246,6 +292,7 @@ auto maskCoordsAround(T, U)(ref T grid, RowCol center, in U mask) if (isArray2D!
  * Same as maskTiles, but centered.
  *
  * Params:
+ *  grid = grid to apply mask to
  *  center = map coord on which to position the center of the mask.
  *           if the mask has an even side length, rounds down to compute the 'center'
  *  mask = a rectangular array of true/false values indicating which tiles to take.
@@ -315,11 +362,12 @@ unittest {
  * Return all tiles adjacent to the tile at the given coord (not including the tile itself).
  *
  * Params:
- *  coord = grid location of center tile.
+ *  grid      = grid to get tiles from
+ *  coord     = grid location of center tile.
  *  diagonals = if no, include tiles to the north, south, east, and west only.
  *              if yes, also include northwest, northeast, southwest, and southeast.
  */
-auto adjacentTiles(T)(T grid, RowCol coord, Diagonals diagonals = Diagonals.no) if (isArray2D!T) {
+auto adjacentTiles(T)(ref T grid, RowCol coord, Diagonals diagonals = Diagonals.no) if (isArray2D!T) {
   return coord.adjacent(diagonals)
     .filter!(x => grid.contains(x))
     .map!(x => grid.tileAt(x));
@@ -349,8 +397,6 @@ unittest {
       .equal([13, 14, 23]));
 }
 
-// NOTE: declared outside of struct due to issues with alias parameters on templated structs.
-// See https://issues.dlang.org/show_bug.cgi?id=11098
 /**
  * Generate a mask from a region of tiles based on a condition.
  *
