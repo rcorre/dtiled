@@ -38,6 +38,7 @@ version(unittest) {
 
 unittest {
   auto map = testMap(5, 10, 32, 64);
+  static assert(isArray2D!(OrthoMap!char));
   assert(map.numRows    == 5);
   assert(map.numCols    == 10);
   assert(map.tileWidth  == 32);
@@ -54,7 +55,7 @@ unittest {
  * Additionally, it stores information about tile size for operations in pixel coordinate space.
  */
 struct OrthoMap(Tile) {
-  TileGrid!Tile grid;
+  Tile[][] grid;
   alias grid this;
 
   private {
@@ -80,7 +81,7 @@ struct OrthoMap(Tile) {
           "all rows of an OrthoMap must have the same length (cannot be jagged array)");
     }
 
-    grid = TileGrid!Tile(tiles);
+    grid = tiles;
   }
 
   @property {
@@ -112,6 +113,7 @@ struct OrthoMap(Tile) {
   unittest {
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
     auto map = testMap(5, 3, 32, 32);
+    static assert(isArray2D!(OrthoMap!char));
     assert( map.contains(RowCol(0 , 0)));  // top left
     assert( map.contains(RowCol(4 , 2)));  // bottom right
     assert( map.contains(RowCol(3 , 1)));  // center
@@ -125,7 +127,7 @@ struct OrthoMap(Tile) {
    * True if the pixel position is within the map bounds.
    */
   bool containsPoint(T)(T pos) if (isPixelCoord!T) {
-    return contains(coordAtPoint(pos));
+    return grid.contains(coordAtPoint(pos));
   }
 
   ///
@@ -149,7 +151,7 @@ struct OrthoMap(Tile) {
    */
   ref Tile tileAtPoint(T)(T pos) if (isPixelCoord!T) {
     enforce(containsPoint(pos), "position %d,%d out of map bounds: ".format(pos.x, pos.y));
-    return tileAt(coordAtPoint(pos));
+    return grid.tileAt(coordAtPoint(pos));
   }
 
   ///

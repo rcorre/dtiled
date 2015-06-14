@@ -11,9 +11,8 @@ import dtiled.coords : RowCol, Diagonals;
 import dtiled.grid;
 
 /// Same as enclosedTiles, but return coords instead of tiles
-auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin,
-    Diagonals diags = Diagonals.no)
-  if (is(typeof(isWall(Tile.init)) : bool))
+auto enclosedCoords(alias isWall, T)(T grid, RowCol origin, Diagonals diags = Diagonals.no)
+  if (is(typeof(isWall(grid[0][0])) : bool))
 {
   // track whether we have hit the edge of the map
   bool hitEdge;
@@ -71,9 +70,8 @@ auto enclosedCoords(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin,
  *
  * Returns: a range of tiles in the enclosure (empty if origin is not part of an enclosed region)
  */
-auto enclosedTiles(alias isWall, Tile)(TileGrid!Tile grid, RowCol origin,
-    Diagonals diags = Diagonals.no)
-  if (is(typeof(isWall(Tile.init)) : bool))
+auto enclosedTiles(alias isWall, T)(T grid, RowCol origin, Diagonals diags = Diagonals.no)
+  if (is(typeof(isWall(grid[0][0])) : bool))
 {
   return enclosedCoords!isWall(grid, origin, diags).map!(x => grid.tileAt(x));
 }
@@ -84,7 +82,7 @@ unittest {
   import std.algorithm : equal;
 
   // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
-  auto tiles = TileGrid!char([
+  auto tiles = [
     // 0    1    2    3    4    5 <-col| row
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
     [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
@@ -92,7 +90,7 @@ unittest {
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 3
     [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
     [ 'd', 'd', 'd', 'X', 'X', 'c' ], // 5
-  ]);
+  ];
 
   static bool isWall(char c) { return c == 'X'; }
 
@@ -120,14 +118,14 @@ unittest {
 }
 
 /// Same as floodTiles, but return coordinates instead of the tiles at those coordinates.
-auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
-  if (is(typeof(pred(Tile.init)) : bool))
+auto floodCoords(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagonals.no)
+  if (is(typeof(pred(grid[0][0])) : bool))
 {
   struct Result {
     private {
-      TileGrid!Tile _grid;
-      SList!RowCol  _stack;
-      Array!bool    _visited;
+      T            _grid;
+      SList!RowCol _stack;
+      Array!bool   _visited;
 
       // helpers to translate between the 2D grid coordinate space and the 1D visited array
       bool getVisited(RowCol coord) {
@@ -146,7 +144,7 @@ auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals 
       }
     }
 
-    this(TileGrid!Tile grid, RowCol origin) {
+    this(T grid, RowCol origin) {
       _grid = grid;
       _visited.length = grid.numRows * grid.numCols; // one visited entry for each tile
 
@@ -189,8 +187,8 @@ auto floodCoords(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals 
  *  diags  = by default, flood only progresses to directly adjacent tiles.
  *           Diagonals.yes causes the flood to progress across diagonals too.
  */
-auto floodTiles(alias pred, Tile)(TileGrid!Tile grid, RowCol origin, Diagonals diags = Diagonals.no)
-  if (is(typeof(pred(Tile.init)) : bool))
+auto floodTiles(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagonals.no)
+  if (is(typeof(pred(grid[0][0])) : bool))
 {
   return floodCoords!pred(grid, origin, diags).map!(x => grid.tileAt(x));
 }
@@ -201,7 +199,7 @@ unittest {
   import std.algorithm : equal;
 
   // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
-  auto grid = TileGrid!char([
+  auto grid = [
     // 0    1    2    3    4    5 <-col| row
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
     [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
@@ -209,7 +207,7 @@ unittest {
     [ 'X', 'X', 'X', 'X', 'X', 'c' ], // 3
     [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
     [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
-  ]);
+  ];
 
   // starting on a wall should return an empty result
   assert(grid.floodTiles!(x => x == 'a')(RowCol(0,0)).empty);
