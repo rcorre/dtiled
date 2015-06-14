@@ -15,47 +15,17 @@ module dtiled.map;
 import dtiled.grid;
 import dtiled.coords;
 
-/// Types used in examples:
-version(unittest) {
-  import std.conv : to;
-
-  private struct TestTile { string id; }
-
-  OrthoMap!TestTile testMap(int rows, int cols, int tileWidth, int tileHeight) {
-    TestTile[][] tiles;
-
-    foreach(row ; 0..rows) {
-      TestTile[] newRow;
-      foreach(col ; 0..cols) {
-        newRow ~= TestTile(row.to!string ~ col.to!string);
-      }
-      tiles ~= newRow;
-    }
-
-    return OrthoMap!TestTile(tileWidth, tileHeight, tiles);
-  }
-}
-
-unittest {
-  auto map = testMap(5, 10, 32, 64);
-  static assert(isArray2D!(OrthoMap!char));
-  assert(map.numRows    == 5);
-  assert(map.numCols    == 10);
-  assert(map.tileWidth  == 32);
-  assert(map.tileHeight == 64);
-}
-
 /**
  * Generic Tile Map structure that uses a single layer of tiles in an orthogonal grid.
  *
  * This provides a 'flat' representation of multiple tile and object layers.
  * T can be whatever type you would like to use to represent a single tile within the map.
  *
- * An OrthoMap supports all the operations of a TileGrid for working with RowCol coordinates.
+ * An OrthoMap supports all the operations of dtiled.grid for working with RowCol coordinates.
  * Additionally, it stores information about tile size for operations in pixel coordinate space.
  */
 struct OrthoMap(Tile) {
-  Tile[][] grid;
+  Tile[][] grid; /// The underlying tile grid structure, surfaced with alias this.
   alias grid this;
 
   private {
@@ -67,11 +37,11 @@ struct OrthoMap(Tile) {
    * Construct an orthogonal tilemap. The grid must be rectangular (not jagged).
    *
    * Params:
-   *  tileWidth = width of each tile in pixels
+   *  tiles      = tiles arranged in **row major** order, indexed as tiles[row][col].
+   *  tileWidth  = width of each tile in pixels
    *  tileHeight = height of each tile in pixels
-   *  tiles = tiles arranged in **row major** order, indexed as tiles[row][col].
    */
-  this(int tileWidth, int tileHeight, Tile[][] tiles) {
+  this(Tile[][] tiles, int tileWidth, int tileHeight) {
     _tileWidth  = tileWidth;
     _tileHeight = tileHeight;
 
@@ -81,7 +51,7 @@ struct OrthoMap(Tile) {
           "all rows of an OrthoMap must have the same length (cannot be jagged array)");
     }
 
-    grid = tiles;
+    this.grid = tiles;
   }
 
   @property {
@@ -112,13 +82,18 @@ struct OrthoMap(Tile) {
   ///
   unittest {
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
-    auto map = testMap(5, 3, 32, 32);
-    static assert(isArray2D!(OrthoMap!char));
-    assert( map.contains(RowCol(0 , 0)));  // top left
-    assert( map.contains(RowCol(4 , 2)));  // bottom right
-    assert( map.contains(RowCol(3 , 1)));  // center
-    assert(!map.contains(RowCol(0 , 3)));  // beyond right border
-    assert(!map.contains(RowCol(5 , 0)));  // beyond bottom border
+    auto grid = [
+      [ 00, 01, 02, 03, 04, ],
+      [ 10, 11, 12, 13, 14, ],
+      [ 20, 21, 22, 23, 24, ],
+    ];
+    auto map = OrthoMap!int(grid, 32, 32);
+
+    assert( map.contains(RowCol(0 , 0))); // top left
+    assert( map.contains(RowCol(4 , 2))); // bottom right
+    assert( map.contains(RowCol(3 , 1))); // center
+    assert(!map.contains(RowCol(0 , 3))); // beyond right border
+    assert(!map.contains(RowCol(5 , 0))); // beyond bottom border
     assert(!map.contains(RowCol(0 ,-1))); // beyond left border
     assert(!map.contains(RowCol(-1, 0))); // beyond top border
   }
@@ -133,7 +108,13 @@ struct OrthoMap(Tile) {
   ///
   unittest {
     // 5x3 map, pixel bounds are [0, 0, 96, 160] (32*3 = 96, 32*5 = 160)
-    auto map = testMap(5, 3, 32, 32);
+    auto grid = [
+      [ 00, 01, 02, 03, 04, ],
+      [ 10, 11, 12, 13, 14, ],
+      [ 20, 21, 22, 23, 24, ],
+    ];
+    auto map = OrthoMap!int(grid, 32, 32);
+
     assert( map.containsPoint(PixelCoord(   0,    0))); // top left
     assert( map.containsPoint(PixelCoord(  95,  159))); // bottom right
     assert( map.containsPoint(PixelCoord(  48,   80))); // center
@@ -150,27 +131,23 @@ struct OrthoMap(Tile) {
    *  pos = pixel location in 2D space
    */
   ref Tile tileAtPoint(T)(T pos) if (isPixelCoord!T) {
-    enforce(containsPoint(pos), "position %d,%d out of map bounds: ".format(pos.x, pos.y));
+    assert(containsPoint(pos), "position %d,%d out of map bounds: ".format(pos.x, pos.y));
     return grid.tileAt(coordAtPoint(pos));
   }
 
   ///
   unittest {
-    import std.exception  : assertThrown;
+    auto grid = [
+      [ 00, 01, 02, 03, 04, ],
+      [ 10, 11, 12, 13, 14, ],
+      [ 20, 21, 22, 23, 24, ],
+    ];
 
-    // the test map looks like:
-    // 00 01 02 03 04
-    // 10 11 12 13 14
-    // 20 21 22 23 24
-    auto map = testMap(3, 5, 32, 32);
+    auto map = OrthoMap!int(grid, 32, 32);
 
-    assert(map.tileAtPoint(PixelCoord(  0,  0)).id == "00"); // corner of top left tile
-    assert(map.tileAtPoint(PixelCoord( 16, 30)).id == "00"); // inside top left tile
-    assert(map.tileAtPoint(PixelCoord(149, 95)).id == "24"); // inside bottom right tile
-
-    // tileAt enforces in-bounds access
-    assertThrown(map.tileAtPoint(PixelCoord(-0.5, 0))); // beyond far left
-    assertThrown(map.tileAtPoint(PixelCoord(0, 97)));   // beyond far bottom
+    assert(map.tileAtPoint(PixelCoord(  0,  0)) == 00); // corner of top left tile
+    assert(map.tileAtPoint(PixelCoord( 16, 30)) == 00); // inside top left tile
+    assert(map.tileAtPoint(PixelCoord(149, 95)) == 24); // inside bottom right tile
   }
 
   /**
@@ -187,7 +164,11 @@ struct OrthoMap(Tile) {
   ///
   unittest {
     // 2 rows, 3 cols, 32x64 tiles
-    auto myMap = testMap(2, 3, 32, 64);
+    auto grid = [
+      [ 00, 01, 02, ],
+      [ 10, 11, 12, ],
+    ];
+    auto myMap = OrthoMap(grid, 32, 64);
 
     assert(myMap.tileOffset(RowCol(0, 0)) == PixelCoord(0, 0));
     assert(myMap.tileOffset(RowCol(1, 2)) == PixelCoord(64, 64));
@@ -207,7 +188,11 @@ struct OrthoMap(Tile) {
   ///
   unittest {
     // 2 rows, 3 cols, 32x64 tiles
-    auto myMap = testMap(2, 3, 32, 64);
+    auto grid = [
+      [ 00, 01, 02, ],
+      [ 10, 11, 12, ],
+    ];
+    auto myMap = testMap(grid, 32, 64);
 
     assert(myMap.tileCenter(RowCol(0, 0)) == PixelCoord(16, 32));
     assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
