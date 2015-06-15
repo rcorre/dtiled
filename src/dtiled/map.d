@@ -15,6 +15,11 @@ module dtiled.map;
 import dtiled.grid;
 import dtiled.coords;
 
+unittest {
+  auto grid = [[1]];
+  auto map = OrthoMap!int(grid, 32, 32);
+}
+
 /**
  * Generic Tile Map structure that uses a single layer of tiles in an orthogonal grid.
  *
@@ -90,10 +95,10 @@ struct OrthoMap(Tile) {
     auto map = OrthoMap!int(grid, 32, 32);
 
     assert( map.contains(RowCol(0 , 0))); // top left
-    assert( map.contains(RowCol(4 , 2))); // bottom right
-    assert( map.contains(RowCol(3 , 1))); // center
-    assert(!map.contains(RowCol(0 , 3))); // beyond right border
-    assert(!map.contains(RowCol(5 , 0))); // beyond bottom border
+    assert( map.contains(RowCol(2 , 4))); // bottom right
+    assert( map.contains(RowCol(1 , 3))); // center
+    assert(!map.contains(RowCol(3 , 0))); // beyond bottom border
+    assert(!map.contains(RowCol(0 , 5))); // beyond right border
     assert(!map.contains(RowCol(0 ,-1))); // beyond left border
     assert(!map.contains(RowCol(-1, 0))); // beyond top border
   }
@@ -107,7 +112,7 @@ struct OrthoMap(Tile) {
 
   ///
   unittest {
-    // 5x3 map, pixel bounds are [0, 0, 96, 160] (32*3 = 96, 32*5 = 160)
+    // 3x5 map, pixel bounds are [0, 0, 160, 96] (32*3 = 96, 32*5 = 160)
     auto grid = [
       [ 00, 01, 02, 03, 04, ],
       [ 10, 11, 12, 13, 14, ],
@@ -116,12 +121,12 @@ struct OrthoMap(Tile) {
     auto map = OrthoMap!int(grid, 32, 32);
 
     assert( map.containsPoint(PixelCoord(   0,    0))); // top left
-    assert( map.containsPoint(PixelCoord(  95,  159))); // bottom right
-    assert( map.containsPoint(PixelCoord(  48,   80))); // center
-    assert(!map.containsPoint(PixelCoord(  96,    0))); // beyond right border
-    assert(!map.containsPoint(PixelCoord(   0,  160))); // beyond bottom border
-    assert(!map.containsPoint(PixelCoord(-0.5,    0))); // beyond left border
-    assert(!map.containsPoint(PixelCoord(   0, -0.5))); // beyond top border
+    assert( map.containsPoint(PixelCoord( 159,   95))); // bottom right
+    assert( map.containsPoint(PixelCoord(  80,   48))); // center
+    assert(!map.containsPoint(PixelCoord(   0,   96))); // beyond right border
+    assert(!map.containsPoint(PixelCoord( 160,    0))); // beyond bottom border
+    assert(!map.containsPoint(PixelCoord(   0, -0.5))); // beyond left border
+    assert(!map.containsPoint(PixelCoord(-0.5,    0))); // beyond top border
   }
 
   /**
@@ -192,15 +197,15 @@ struct OrthoMap(Tile) {
       [ 00, 01, 02, ],
       [ 10, 11, 12, ],
     ];
-    auto myMap = testMap(grid, 32, 64);
+    auto myMap = OrthoMap!int(grid, 32, 64);
 
     assert(myMap.tileCenter(RowCol(0, 0)) == PixelCoord(16, 32));
     assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
   }
 
   /// Use foreach(tile ; myMap) to iterate over all tiles in a map.
-  int opApply(int delegate(ref TileType) fn) {
-    return grid.opApply(fn);
+  int opApply(int delegate(ref Tile) fn) {
+    return grid.tiles.opApply(fn);
   }
 
   /// Foreach over every tile in the map
@@ -211,7 +216,7 @@ struct OrthoMap(Tile) {
       [ 00, 01, 02, ],
       [ 10, 11, 12, ],
     ];
-    auto myMap = testMap(grid, 32, 64);
+    auto myMap = OrthoMap!int(grid, 32, 64);
 
     int[] result;
 
@@ -226,7 +231,7 @@ struct OrthoMap(Tile) {
       [ 00, 01, 02, ],
       [ 10, 11, 12, ],
     ];
-    auto myMap = testMap(grid, 32, 64);
+    auto myMap = OrthoMap!int(grid, 32, 64);
 
     foreach(ref tile ; myMap) tile += 30;
 
@@ -234,8 +239,8 @@ struct OrthoMap(Tile) {
   }
 
   /// Use foreach(coord, tile ; myMap) to iterate over all tiles in a map with coordinates.
-  int opApply(int delegate(RowCol, ref TileType) fn) {
-    return grid.opApply(fn);
+  int opApply(int delegate(RowCol, ref Tile) fn) {
+    return grid.tiles.opApply(fn);
   }
 
   /// Foreach over every (coord, tile) pair in the map
@@ -246,8 +251,9 @@ struct OrthoMap(Tile) {
       [ 00, 01, 02, ],
       [ 10, 11, 12, ],
     ];
-    auto myMap = testMap(grid, 32, 64);
+    auto myMap = OrthoMap!int(grid, 32, 64);
 
-    foreach(tile ; myMap) assert(myMap.tileAt(coord) == tile);
+
+    foreach(coord, tile ; myMap) assert(myMap.tileAt(coord) == tile);
   }
 }
