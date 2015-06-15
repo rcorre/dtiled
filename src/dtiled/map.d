@@ -197,4 +197,57 @@ struct OrthoMap(Tile) {
     assert(myMap.tileCenter(RowCol(0, 0)) == PixelCoord(16, 32));
     assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
   }
+
+  /// Use foreach(tile ; myMap) to iterate over all tiles in a map.
+  int opApply(int delegate(ref TileType) fn) {
+    return grid.opApply(fn);
+  }
+
+  /// Foreach over every tile in the map
+  unittest {
+    import std.algorithm : equal;
+
+    auto grid = [
+      [ 00, 01, 02, ],
+      [ 10, 11, 12, ],
+    ];
+    auto myMap = testMap(grid, 32, 64);
+
+    int[] result;
+
+    foreach(tile ; myMap) result ~= tile;
+
+    assert(result.equal([ 00, 01, 02, 10, 11, 12 ]));
+  }
+
+  /// Use ref with foreach to modify tiles
+  unittest {
+    auto grid = [
+      [ 00, 01, 02, ],
+      [ 10, 11, 12, ],
+    ];
+    auto myMap = testMap(grid, 32, 64);
+
+    foreach(ref tile ; myMap) tile += 30;
+
+    assert(myMap.tileAt(RowCol(1,1)) == 41);
+  }
+
+  /// Use foreach(coord, tile ; myMap) to iterate over all tiles in a map with coordinates.
+  int opApply(int delegate(RowCol, ref TileType) fn) {
+    return grid.opApply(fn);
+  }
+
+  /// Foreach over every (coord, tile) pair in the map
+  unittest {
+    import std.algorithm : equal;
+
+    auto grid = [
+      [ 00, 01, 02, ],
+      [ 10, 11, 12, ],
+    ];
+    auto myMap = testMap(grid, 32, 64);
+
+    foreach(tile ; myMap) assert(myMap.tileAt(coord) == tile);
+  }
 }
