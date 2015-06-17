@@ -12,12 +12,12 @@
  */
 module dtiled.map;
 
-import dtiled.grid;
 import dtiled.coords;
+import dtiled.grid;
 
+// need a test here to kickstart the unit tests inside OrthoMap!T
 unittest {
-  auto grid = [[1]];
-  auto map = OrthoMap!int(grid, 32, 32);
+  auto map = OrthoMap!int([[1]], 32, 32);
 }
 
 /**
@@ -30,7 +30,8 @@ unittest {
  * Additionally, it stores information about tile size for operations in pixel coordinate space.
  */
 struct OrthoMap(Tile) {
-  Tile[][] grid; /// The underlying tile grid structure, surfaced with alias this.
+  /// The underlying tile grid structure, surfaced with alias this.
+  RectGrid!(Tile[][]) grid; 
   alias grid this;
 
   private {
@@ -39,7 +40,7 @@ struct OrthoMap(Tile) {
   }
 
   /**
-   * Construct an orthogonal tilemap. The grid must be rectangular (not jagged).
+   * Construct an orthogonal tilemap from a rectangular (non-jagged) grid of tiles.
    *
    * Params:
    *  tiles      = tiles arranged in **row major** order, indexed as tiles[row][col].
@@ -47,16 +48,15 @@ struct OrthoMap(Tile) {
    *  tileHeight = height of each tile in pixels
    */
   this(Tile[][] tiles, int tileWidth, int tileHeight) {
+    this(rectGrid(tiles), tileWidth, tileHeight);
+  }
+
+  /// ditto
+  this(RectGrid!(Tile[][]) grid, int tileWidth, int tileHeight) {
     _tileWidth  = tileWidth;
     _tileHeight = tileHeight;
 
-    debug {
-      import std.algorithm : all;
-      assert(tiles.all!(x => x.length == tiles[0].length),
-          "all rows of an OrthoMap must have the same length (cannot be jagged array)");
-    }
-
-    this.grid = tiles;
+    this.grid = grid;
   }
 
   @property {
@@ -87,12 +87,12 @@ struct OrthoMap(Tile) {
   ///
   unittest {
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
-    auto grid = [
+    auto tiles = [
       [ 00, 01, 02, 03, 04, ],
       [ 10, 11, 12, 13, 14, ],
       [ 20, 21, 22, 23, 24, ],
     ];
-    auto map = OrthoMap!int(grid, 32, 32);
+    auto map = OrthoMap!int(tiles, 32, 32);
 
     assert( map.contains(RowCol(0 , 0))); // top left
     assert( map.contains(RowCol(2 , 4))); // bottom right

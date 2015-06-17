@@ -18,6 +18,7 @@ enum isArray2D(T) = is(typeof(T.init[0][0]))              && // 2D random access
                     is(typeof(T.init.length)    : size_t) && // stores count of rows
                     is(typeof(T.init[0].length) : size_t);   // stores count of columns
 
+///
 unittest {
   import std.container : Array;
 
@@ -26,375 +27,402 @@ unittest {
   static assert(isArray2D!(Array!(Array!int)));
 }
 
-/// Number of columns along a grid's x axis.
-auto numCols(T)(in T grid) if (isArray2D!T) {
-  assertNotJagged(grid, "grid");
-  return grid[0].length;
-}
-
-unittest {
-  auto grid = [
-    [ 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0 ],
-  ];
-
-  assert(grid.numCols == 4);
-}
-
-/// Number of rows along a grid's y axis.
-auto numRows(T)(in T grid) if (isArray2D!T) {
-  return grid.length;
-}
-
-unittest {
-  auto grid = [
-    [ 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0 ],
-  ];
-
-  assert(grid.numRows == 2);
-}
-
-/// The total number of tiles in a grid.
-auto numTiles(T)(in T grid) if (isArray2D!T) {
- return grid.numRows * grid.numCols;
-}
-
-unittest {
-  auto grid = [
-    [ 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0 ],
-  ];
-
-  assert(grid.numTiles == 8);
-}
-
-/**
- * True if the grid coordinate is within the grid bounds.
- */
-bool contains(T)(in T grid, RowCol coord) if (isArray2D!T) {
-  return
-    coord.row >= 0      &&
-    coord.col >= 0      &&
-    coord.row < grid.numRows &&
-    coord.col < grid.numCols;
-}
+/// Convenience function to wrap a RectGrid around a 2D array.
+auto rectGrid(T)(T tiles) if (isArray2D!T) { return RectGrid!T(tiles); }
 
 ///
 unittest {
-  // 5x3 map
-  auto grid = [
-    //0  1  2  3  4 col   row
-    [ 0, 0, 0, 0, 0 ], // 0
-    [ 0, 0, 0, 0, 0 ], // 1
-    [ 0, 0, 0, 0, 0 ], // 2
+  auto dynamicArray = [
+    [1,2,3],
+    [4,5,6]
   ];
-  
-  assert( grid.contains(RowCol(0 , 0))); // top left
-  assert( grid.contains(RowCol(2 , 4))); // bottom right
-  assert( grid.contains(RowCol(1 , 2))); // center
-  assert(!grid.contains(RowCol(0 , 5))); // beyond right border
-  assert(!grid.contains(RowCol(3 , 0))); // beyond bottom border
-  assert(!grid.contains(RowCol(0 ,-1))); // beyond left border
-  assert(!grid.contains(RowCol(-1, 0))); // beyond top border
+  auto dynamicGrid = rectGrid(dynamicArray);
+  assert(dynamicGrid.numRows == 2 && dynamicGrid.numCols == 3);
+  static assert(is(dynamicGrid.TileType == int));
+
+  char[3][2] staticArray = [
+    [ 'a', 'a', 'a' ],
+    [ 'a', 'a', 'a' ],
+  ];
+  auto staticGrid = rectGrid(staticArray);
+  assert(staticGrid.numRows == 2 && staticGrid.numCols == 3);
+  static assert(is(staticGrid.TileType == char));
 }
 
-/**
- * Get the tile at a given position in the grid.
- * The coord must be in bounds.
- * 
- * Params:
- *  grid = grid from which to retrieve tile.
- *  coord = a row/column pair identifying a point in the tile grid.
- */
-ref auto tileAt(T)(T grid, RowCol coord) if (isArray2D!T) {
-  assert(grid.contains(coord), "coord %s not in bounds".format(coord));
-  return grid[coord.row][coord.col];
-}
+struct RectGrid(T) if (isArray2D!T) {
+  private T _tiles;
 
-///
-unittest {
-  auto grid = [
+  /// The type used to represent a tile in this grid
+  alias TileType = typeof(_tiles[0][0]);
+
+  /// Construct a grid from a 2D tile array. See rectGrid for a constructor with type inference.
+  this(T tiles) {
+    assertNotJagged(tiles, "RectGrid cannot be a constructed from a jagged array");
+    _tiles = tiles;
+  }
+
+  /// Number of columns along a grid's x axis.
+  auto numCols() { return _tiles[0].length; }
+
+  ///
+  unittest {
+    auto grid = rectGrid([
+      [ 0, 0, 0, 0 ],
+      [ 0, 0, 0, 0 ],
+    ]);
+
+    assert(grid.numCols == 4);
+  }
+
+  /// Number of rows along a grid's y axis.
+  auto numRows() { return _tiles.length; }
+
+  unittest {
+    auto grid = rectGrid([
+      [ 0, 0, 0, 0 ],
+      [ 0, 0, 0, 0 ],
+    ]);
+
+    assert(grid.numRows == 2);
+  }
+
+  /// The total number of tiles in a grid.
+  auto numTiles() { return this.numRows * this.numCols; }
+
+  unittest {
+    auto grid = rectGrid([
+      [ 0, 0, 0, 0 ],
+      [ 0, 0, 0, 0 ],
+    ]);
+
+    assert(grid.numTiles == 8);
+  }
+
+  /**
+   * True if the grid coordinate is within the grid bounds.
+   */
+  bool contains(RowCol coord) {
+    return
+      coord.row >= 0           &&
+      coord.col >= 0           &&
+      coord.row < this.numRows &&
+      coord.col < this.numCols;
+  }
+
+  ///
+  unittest {
+    // 5x3 map
+    auto grid = rectGrid([
+      //0  1  2  3  4 col   row
+      [ 0, 0, 0, 0, 0 ], // 0
+      [ 0, 0, 0, 0, 0 ], // 1
+      [ 0, 0, 0, 0, 0 ], // 2
+    ]);
+
+    assert( grid.contains(RowCol(0 , 0))); // top left
+    assert( grid.contains(RowCol(2 , 4))); // bottom right
+    assert( grid.contains(RowCol(1 , 2))); // center
+    assert(!grid.contains(RowCol(0 , 5))); // beyond right border
+    assert(!grid.contains(RowCol(3 , 0))); // beyond bottom border
+    assert(!grid.contains(RowCol(0 ,-1))); // beyond left border
+    assert(!grid.contains(RowCol(-1, 0))); // beyond top border
+  }
+
+  /**
+   * Get the tile at a given position in the grid.
+   * The coord must be in bounds.
+   *
+   * Params:
+   *  grid = grid from which to retrieve tile.
+   *  coord = a row/column pair identifying a point in the tile grid.
+   */
+  ref auto tileAt(RowCol coord) {
+    assert(this.contains(coord), "coord %s not in bounds".format(coord));
+    return _tiles[coord.row][coord.col];
+  }
+
+  ///
+  unittest {
+    auto grid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
       [ 10, 11, 12, 13, 14 ],
       [ 20, 21, 22, 23, 24 ],
-  ];
+    ]);
 
-  assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
-  assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
-  assert(grid.tileAt(RowCol(1, 1)) == 11); // one down/right from the top left
+    assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
+    assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
+    assert(grid.tileAt(RowCol(1, 1)) == 11); // one down/right from the top left
 
-  // tileAt returns a reference:
-  grid.tileAt(RowCol(2,2)) = 99;
-  assert(grid.tileAt(RowCol(2,2)) == 99);
-}
+    // tileAt returns a reference:
+    grid.tileAt(RowCol(2,2)) = 99;
+    assert(grid.tileAt(RowCol(2,2)) == 99);
+  }
 
-/**
- * Get a range that iterates over all tiles in a grid.
- * 
- * This is a 'flat' range that iterates over every tile in a left->right, top->bottom order.
- * Foreach over this range can operate on either every tile or every (coord, tile) pair.
- */
-auto tiles(T)(ref T grid) if (isArray2D!T) {
-  alias CoordRange = typeof(span(RowCol.init, RowCol.init));
-  alias TileType = typeof(grid[0][0]);
+  /**
+   * Get a range that iterates over all tiles in the grid.
+   *
+   * This is a 'flat' range that iterates over every tile in a left->right, top->bottom order.
+   * Foreach over this range can operate on either every tile or every (coord, tile) pair.
+   */
+  auto tiles() {
+    alias CoordRange = typeof(span(RowCol.init, RowCol.init));
+    alias GridType = typeof(this);
 
-  struct Result {
-    CoordRange _range;
-    private T  _grid;
+    struct Result {
+      CoordRange _range;
+      private GridType  _grid;
 
-    this(T source) {
-      _grid = source;
-      _range = RowCol(0,0).span(RowCol(grid.numRows, grid.numCols));
-    }
-
-    bool empty() { return _range.empty; }
-    ref auto front() { return _grid.tileAt(_range.front); }
-    void popFront() { _range.popFront; }
-
-    // foreach([ref] tile ; grid.tiles)
-    int opApply(int delegate(ref TileType) fn) {
-      int res = 0;
-
-      while (!empty) {
-        res = fn(front);
-        if (res) break;
-        popFront();
+      this(GridType source) {
+        _grid = source;
+        _range = RowCol(0,0).span(RowCol(source.numRows, source.numCols));
       }
 
-      return res;
-    }
+      bool empty() { return _range.empty; }
+      ref auto front() { return _grid.tileAt(_range.front); }
+      void popFront() { _range.popFront; }
 
-    // foreach(coord, [ref] tile ; grid.tiles)
-    int opApply(int delegate(RowCol, ref TileType) fn) {
-      int res = 0;
+      // foreach([ref] tile ; grid.tiles)
+      int opApply(int delegate(ref TileType) fn) {
+        int res = 0;
 
-      while (!empty) {
-        res = fn(_range.front, front); // fn(coord, tileAt(coord))
-        if (res) break;
-        popFront();
+        while (!empty) {
+          res = fn(front);
+          if (res) break;
+          popFront();
+        }
+
+        return res;
       }
 
-      return res;
+      // foreach(coord, [ref] tile ; grid.tiles)
+      int opApply(int delegate(RowCol, ref TileType) fn) {
+        int res = 0;
+
+        while (!empty) {
+          res = fn(_range.front, front); // fn(coord, tileAt(coord))
+          if (res) break;
+          popFront();
+        }
+
+        return res;
+      }
+    }
+
+    return Result(this);
+  }
+
+  ///
+  unittest {
+    auto myGrid = rectGrid([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+    ]);
+
+    int[] actual;
+    foreach(tile ; myGrid.tiles) { actual ~= tile; }
+
+    assert(actual == [
+        00, 01, 02, 03, 04,
+        10, 11, 12, 13, 14,
+        20, 21, 22, 23, 24]);
+  }
+
+  /// foreach over every (tile,coord) pair in the grid
+  unittest {
+    auto myGrid = rectGrid([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+    ]);
+
+    foreach(coord, tile ; myGrid.tiles) {
+      assert(tile == coord.row * 10 + coord.col);
     }
   }
 
-  return Result(grid);
-}
+  /**
+   * Same as maskTiles, but return coords instead of tiles.
+   *
+   * Params:
+   *  grid = grid to apply mask to
+   *  offset = map coordinate on which to align the top-left corner of the mask.
+   *  mask = a rectangular array of true/false values indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   */
+  auto maskCoords(T)(RowCol offset, in T mask) if (isValidMask!T) {
+    assertNotJagged(mask, "mask cannot be a jagged array");
 
-///
-unittest {
-  auto myGrid = [
-      [ 00, 01, 02, 03, 04 ],
-      [ 10, 11, 12, 13, 14 ],
-      [ 20, 21, 22, 23, 24 ],
-  ];
-
-  int[] actual;
-  foreach(tile ; myGrid.tiles) { actual ~= tile; }
-
-  assert(actual == [
-      00, 01, 02, 03, 04,
-      10, 11, 12, 13, 14,
-      20, 21, 22, 23, 24]);
-}
-
-/// foreach over every (tile,coord) pair in the grid
-unittest {
-  auto myGrid = [
-      [ 00, 01, 02, 03, 04 ],
-      [ 10, 11, 12, 13, 14 ],
-      [ 20, 21, 22, 23, 24 ],
-  ];
-
-  foreach(coord, tile ; myGrid.tiles) {
-    assert(tile == coord.row * 10 + coord.col);
+    return RowCol(0,0).span(arraySize2D(mask))
+      .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
+      .map!(x => x + offset)            // add the offset to get the corresponding map coord
+      .filter!(x => this.contains(x));  // remove coords outside of bounds
   }
-}
 
-/**
- * Same as maskTiles, but return coords instead of tiles.
- * 
- * Params:
- *  grid = grid to apply mask to
- *  offset = map coordinate on which to align the top-left corner of the mask.
- *  mask = a rectangular array of true/false values indicating which tiles to take.
- *         each true value takes the tile at that grid coordinate.
- *         the mask should be in row major order (indexed as mask[row][col]).
- */
-auto maskCoords(T, U)(ref T grid, RowCol offset, in U mask) if (isArray2D!T && isValidMask!U) {
-  assertNotJagged(mask, "mask");
+  /**
+   * Select specific tiles from this slice based on a mask.
+   *
+   * The upper left corner of the mask is positioned at the given offset.
+   * Each map tile that is overlaid with a 'true' value is included in the result.
+   * The mask is allowed to extend out of bounds - out of bounds coordinates are ignored
+   *
+   * Params:
+   *  grid = grid to apply mask to
+   *  offset = map coordinate on which to align the top-left corner of the mask.
+   *  mask = a rectangular array of true/false values indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   *
+   * Examples:
+   * Suppose you are making a strategy game, and an attack hits all tiles in a cross pattern.
+   * This attack is used on the tile at row 2, column 3.
+   * You want to check each tile that was affected to see if any unit was hit:
+   * --------------
+   * // cross pattern
+   * ubyte[][] attackPattern = [
+   *   [0,1,0]
+   *   [1,1,1]
+   *   [0,1,0]
+   * ];
+   *
+   * // get tiles contained by a cross pattern centered at (2,3)
+   * auto tilesHit = map.maskTilesAround((RowCol(2, 3), attackPattern));
+   *
+   * // now do something with those tiles
+   * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
+   * foreach(unit ; unitsHit) unit.applySomeEffect;
+   * --------------
+   */
+  auto maskTiles(T)(RowCol offset, in T mask) if (isValidMask!T) {
+    return this.maskCoords(mask).map!(x => this.tileAt(x));
+  }
 
-  return RowCol(0,0).span(arraySize2D(mask))
-    .filter!(x => mask[x.row][x.col]) // remove elements that are 0 in the mask
-    .map!(x => x + offset)            // add the offset to get the corresponding map coord
-    .filter!(x => grid.contains(x));  // remove coords outside of bounds
-}
+  /**
+   * Same as maskCoords, but centered.
+   *
+   * Params:
+   *  grid = grid to apply mask to
+   *  center = map coord on which to position the center of the mask.
+   *           if the mask has an even side length, rounds down to compute the 'center'
+   *  mask = a rectangular array of true/false values indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   */
+  auto maskCoordsAround(T)(RowCol center, in T mask) if (isValidMask!T) {
+    assertNotJagged(mask, "mask");
 
-/**
- * Select specific tiles from this slice based on a mask.
- *
- * The upper left corner of the mask is positioned at the given offset.
- * Each map tile that is overlaid with a 'true' value is included in the result.
- * The mask is allowed to extend out of bounds - out of bounds coordinates are ignored
- *
- * Params:
- *  grid = grid to apply mask to
- *  offset = map coordinate on which to align the top-left corner of the mask.
- *  mask = a rectangular array of true/false values indicating which tiles to take.
- *         each true value takes the tile at that grid coordinate.
- *         the mask should be in row major order (indexed as mask[row][col]).
- *
- * Examples:
- * Suppose you are making a strategy game, and an attack hits all tiles in a cross pattern.
- * This attack is used on the tile at row 2, column 3.
- * You want to check each tile that was affected to see if any unit was hit:
- * --------------
- * // cross pattern
- * ubyte[][] attackPattern = [
- *   [0,1,0]
- *   [1,1,1]
- *   [0,1,0]
- * ];
- *
- * // get tiles contained by a cross pattern centered at (2,3)
- * auto tilesHit = map.maskTilesAround((RowCol(2, 3), attackPattern));
- *
- * // now do something with those tiles
- * auto unitsHit = tilesHit.map!(tile => tile.unitOnTile).filter!(unit => unit !is null);
- * foreach(unit ; unitsHit) unit.applySomeEffect;
- * --------------
- */
-auto maskTiles(T, U)(ref T grid, RowCol offset, in U mask) if (isArray2D!T && isValidMask!U) {
-  return grid.maskCoords(mask).map!(x => grid.tileAt(x));
-}
+    auto offset = center - RowCol(mask.length / 2, mask[0].length / 2);
 
-/**
- * Same as maskCoords, but centered.
- *
- * Params:
- *  grid = grid to apply mask to
- *  center = map coord on which to position the center of the mask.
- *           if the mask has an even side length, rounds down to compute the 'center'
- *  mask = a rectangular array of true/false values indicating which tiles to take.
- *         each true value takes the tile at that grid coordinate.
- *         the mask should be in row major order (indexed as mask[row][col]).
- */
-auto maskCoordsAround(T, U)(ref T grid, RowCol center, in U mask) if (isArray2D!T && isValidMask!U) {
-  assertNotJagged(mask, "mask");
+    return this.maskCoords(offset, mask);
+  }
 
-  auto offset = center - RowCol(mask.length / 2, mask[0].length / 2);
+  /**
+   * Same as maskTiles, but centered.
+   *
+   * Params:
+   *  center = map coord on which to position the center of the mask.
+   *           if the mask has an even side length, rounds down to compute the 'center'
+   *  mask = a rectangular array of true/false values indicating which tiles to take.
+   *         each true value takes the tile at that grid coordinate.
+   *         the mask should be in row major order (indexed as mask[row][col]).
+   */
+  auto maskTilesAround(T)(RowCol center, in T mask) if (isValidMask!T) {
+    return this.maskCoordsAround(center, mask).map!(x => this.tileAt(x));
+  }
 
-  return grid.maskCoords(offset, mask);
-}
+  /// More masking examples:
+  unittest {
+    import std.array : empty;
+    import std.algorithm : equal;
 
-/**
- * Same as maskTiles, but centered.
- *
- * Params:
- *  grid = grid to apply mask to
- *  center = map coord on which to position the center of the mask.
- *           if the mask has an even side length, rounds down to compute the 'center'
- *  mask = a rectangular array of true/false values indicating which tiles to take.
- *         each true value takes the tile at that grid coordinate.
- *         the mask should be in row major order (indexed as mask[row][col]).
- */
-auto maskTilesAround(T, U)(ref T grid, RowCol center, in U mask) if (isArray2D!T && isValidMask!U) {
-  return grid.maskCoordsAround(center, mask).map!(x => grid.tileAt(x));
-}
-
-/// More masking examples:
-unittest {
-  import std.array : empty;
-  import std.algorithm : equal;
-
-  auto myGrid = [
+    auto myGrid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
       [ 10, 11, 12, 13, 14 ],
       [ 20, 21, 22, 23, 24 ],
-  ];
+    ]);
 
-  uint[3][3] mask1 = [
-    [ 1, 1, 1 ],
-    [ 0, 0, 0 ],
-    [ 0, 0, 0 ],
-  ];
-  assert(myGrid.maskTilesAround(RowCol(0,0), mask1).empty);
-  assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal([00, 01, 02]));
-  assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal([10, 11, 12]));
-  assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal([13, 14]));
+    uint[3][3] mask1 = [
+      [ 1, 1, 1 ],
+      [ 0, 0, 0 ],
+        [ 0, 0, 0 ],
+    ];
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask1).empty);
+    assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal([00, 01, 02]));
+    assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal([10, 11, 12]));
+    assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal([13, 14]));
 
-  auto mask2 = [
-    [ 0, 0, 1 ],
-    [ 0, 0, 1 ],
-    [ 1, 1, 1 ],
-  ];
-  assert(myGrid.maskTilesAround(RowCol(0,0), mask2).equal([01, 10, 11]));
-  assert(myGrid.maskTilesAround(RowCol(1,2), mask2).equal([03, 13, 21, 22, 23]));
-  assert(myGrid.maskTilesAround(RowCol(2,4), mask2).empty);
+    auto mask2 = [
+      [ 0, 0, 1 ],
+      [ 0, 0, 1 ],
+      [ 1, 1, 1 ],
+    ];
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask2).equal([01, 10, 11]));
+    assert(myGrid.maskTilesAround(RowCol(1,2), mask2).equal([03, 13, 21, 22, 23]));
+    assert(myGrid.maskTilesAround(RowCol(2,4), mask2).empty);
 
-  auto mask3 = [
-    [ 0 , 0 , 1 , 0 , 0 ],
-    [ 1 , 0 , 1 , 0 , 1 ],
+    auto mask3 = [
+      [ 0 , 0 , 1 , 0 , 0 ],
+      [ 1 , 0 , 1 , 0 , 1 ],
       [ 0 , 0 , 0 , 0 , 0 ],
-  ];
-  assert(myGrid.maskTilesAround(RowCol(0,0), mask3).equal([00, 02]));
-  assert(myGrid.maskTilesAround(RowCol(1,2), mask3).equal([02, 10, 12, 14]));
+    ];
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask3).equal([00, 02]));
+    assert(myGrid.maskTilesAround(RowCol(1,2), mask3).equal([02, 10, 12, 14]));
 
-  auto mask4 = [
-    [ 1 , 1 , 1 , 0 , 1 ],
-  ];
-  assert(myGrid.maskTilesAround(RowCol(0,0), mask4).equal([00, 02]));
-  assert(myGrid.maskTilesAround(RowCol(2,2), mask4).equal([20, 21, 22, 24]));
+    auto mask4 = [
+      [ 1 , 1 , 1 , 0 , 1 ],
+    ];
+    assert(myGrid.maskTilesAround(RowCol(0,0), mask4).equal([00, 02]));
+    assert(myGrid.maskTilesAround(RowCol(2,2), mask4).equal([20, 21, 22, 24]));
 
-  auto mask5 = [
-    [ 1 ],
-    [ 1 ],
+    auto mask5 = [
+      [ 1 ],
+      [ 1 ],
       [ 0 ],
-        [ 1 ],
-          [ 1 ],
-  ];
-  assert(myGrid.maskTilesAround(RowCol(0,4), mask5).equal([14, 24]));
-  assert(myGrid.maskTilesAround(RowCol(1,1), mask5).equal([01, 21]));
-}
+      [ 1 ],
+      [ 1 ],
+    ];
+    assert(myGrid.maskTilesAround(RowCol(0,4), mask5).equal([14, 24]));
+    assert(myGrid.maskTilesAround(RowCol(1,1), mask5).equal([01, 21]));
+  }
 
-/**
- * Return all tiles adjacent to the tile at the given coord (not including the tile itself).
- *
- * Params:
- *  grid      = grid to get tiles from
- *  coord     = grid location of center tile.
- *  diagonals = if no, include tiles to the north, south, east, and west only.
- *              if yes, also include northwest, northeast, southwest, and southeast.
- */
-auto adjacentTiles(T)(ref T grid, RowCol coord, Diagonals diagonals = Diagonals.no) if (isArray2D!T) {
-  return coord.adjacent(diagonals)
-    .filter!(x => grid.contains(x))
-    .map!(x => grid.tileAt(x));
-}
+  /**
+   * Return all tiles adjacent to the tile at the given coord (not including the tile itself).
+   *
+   * Params:
+   *  coord     = grid location of center tile.
+   *  diagonals = if no, include tiles to the north, south, east, and west only.
+   *              if yes, also include northwest, northeast, southwest, and southeast.
+   */
+  auto adjacentTiles(RowCol coord, Diagonals diagonals = Diagonals.no) {
+    return coord.adjacent(diagonals)
+      .filter!(x => this.contains(x))
+      .map!(x => this.tileAt(x));
+  }
 
-///
-unittest {
-  import std.algorithm : equal;
-  auto myGrid = [
+  ///
+  unittest {
+    import std.algorithm : equal;
+    auto myGrid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
       [ 10, 11, 12, 13, 14 ],
       [ 20, 21, 22, 23, 24 ],
-  ];
+    ]);
 
-  assert(myGrid.adjacentTiles(RowCol(0,0)).equal([01, 10]));
-  assert(myGrid.adjacentTiles(RowCol(1,1)).equal([01, 10, 12, 21]));
-  assert(myGrid.adjacentTiles(RowCol(2,2)).equal([12, 21, 23]));
-  assert(myGrid.adjacentTiles(RowCol(2,4)).equal([14, 23]));
+    assert(myGrid.adjacentTiles(RowCol(0,0)).equal([01, 10]));
+    assert(myGrid.adjacentTiles(RowCol(1,1)).equal([01, 10, 12, 21]));
+    assert(myGrid.adjacentTiles(RowCol(2,2)).equal([12, 21, 23]));
+    assert(myGrid.adjacentTiles(RowCol(2,4)).equal([14, 23]));
 
-  assert(myGrid.adjacentTiles(RowCol(0,0), Diagonals.yes)
-      .equal([01, 10, 11]));
-  assert(myGrid.adjacentTiles(RowCol(1,1), Diagonals.yes)
-      .equal([00, 01, 02, 10, 12, 20, 21, 22]));
-  assert(myGrid.adjacentTiles(RowCol(2,2), Diagonals.yes)
-      .equal([11, 12, 13, 21, 23]));
-  assert(myGrid.adjacentTiles(RowCol(2,4), Diagonals.yes)
-      .equal([13, 14, 23]));
+    assert(myGrid.adjacentTiles(RowCol(0,0), Diagonals.yes)
+        .equal([01, 10, 11]));
+    assert(myGrid.adjacentTiles(RowCol(1,1), Diagonals.yes)
+        .equal([00, 01, 02, 10, 12, 20, 21, 22]));
+    assert(myGrid.adjacentTiles(RowCol(2,2), Diagonals.yes)
+        .equal([11, 12, 13, 21, 23]));
+    assert(myGrid.adjacentTiles(RowCol(2,4), Diagonals.yes)
+        .equal([13, 14, 23]));
+  }
 }
 
 /**
@@ -406,7 +434,6 @@ unittest {
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
- *  grid = grid to generate mask from
  *  offset = map coord from which to start the top-left corner of the mask
  *  mask = rectangular array to populate with generated mask values.
  *         must match the size of the grid
@@ -430,7 +457,6 @@ void createMask(alias fn, T, U)(T grid, RowCol offset, ref U mask)
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
- *  grid = grid to generate mask from
  *  center = center position around which to generate mask
  *  mask = rectangular array to populate with generated mask values.
  *         must match the size of the grid
@@ -441,16 +467,16 @@ void createMaskAround(alias fn, T, U)(T grid, RowCol center, ref U mask)
   assertNotJagged(mask, "mask");
 
   auto offset = center - RowCol(mask.length / 2, mask[0].length / 2);
-  createMask!fn(grid, offset, mask);
+  grid.createMask!fn(offset, mask);
 }
 
 ///
 unittest {
-  auto myGrid = [
+  auto myGrid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
       [ 10, 11, 12, 13, 14 ],
       [ 20, 21, 22, 23, 24 ],
-  ];
+  ]);
 
   uint[3][3] mask;
 
@@ -472,9 +498,8 @@ unittest {
 }
 
 // assertion helper for input array args
-private void assertNotJagged(T)(in T array, string name) {
-  assert(array[].all!(x => x.length == array[0].length),
-      "param %s must be a rectangular (non-jagged) array".format(name));
+private void assertNotJagged(T)(in T array, string msg) {
+  assert(array[].all!(x => x.length == array[0].length), msg);
 }
 
 // get a RowCol representing the size of a 2D array (assumed non-jagged).
