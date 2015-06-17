@@ -440,6 +440,8 @@ struct RectGrid(T) if (isArray2D!T) {
   }
 }
 
+// NOTE: declared outside of struct due to issues with alias parameters on templated structs.
+// See https://issues.dlang.org/show_bug.cgi?id=11098
 /**
  * Generate a mask from a region of tiles based on a condition.
  *
@@ -449,6 +451,7 @@ struct RectGrid(T) if (isArray2D!T) {
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
+ *  grid = grid to generate mask from
  *  offset = map coord from which to start the top-left corner of the mask
  *  mask = rectangular array to populate with generated mask values.
  *         must match the size of the grid
@@ -472,6 +475,7 @@ void createMask(alias fn, T, U)(T grid, RowCol offset, ref U mask)
  *
  * Params:
  *  fn = function that generates a mask entry from a tile
+ *  grid = grid to generate mask from
  *  center = center position around which to generate mask
  *  mask = rectangular array to populate with generated mask values.
  *         must match the size of the grid
