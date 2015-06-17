@@ -159,59 +159,62 @@ struct RectGrid(T) if (isArray2D!T) {
   }
 
   /**
-   * Get a range that iterates over all tiles in the grid.
-   *
-   * This is a 'flat' range that iterates over every tile in a left->right, top->bottom order.
-   * Foreach over this range can operate on either every tile or every (coord, tile) pair.
+   * Get a range that iterates through every coordinate in the grid.
    */
-  auto tiles() {
-    alias CoordRange = typeof(span(RowCol.init, RowCol.init));
-    alias GridType = typeof(this);
-
-    struct Result {
-      CoordRange _range;
-      private GridType  _grid;
-
-      this(GridType source) {
-        _grid = source;
-        _range = RowCol(0,0).span(RowCol(source.numRows, source.numCols));
-      }
-
-      bool empty() { return _range.empty; }
-      ref auto front() { return _grid.tileAt(_range.front); }
-      void popFront() { _range.popFront; }
-
-      // foreach([ref] tile ; grid.tiles)
-      int opApply(int delegate(ref TileType) fn) {
-        int res = 0;
-
-        while (!empty) {
-          res = fn(front);
-          if (res) break;
-          popFront();
-        }
-
-        return res;
-      }
-
-      // foreach(coord, [ref] tile ; grid.tiles)
-      int opApply(int delegate(RowCol, ref TileType) fn) {
-        int res = 0;
-
-        while (!empty) {
-          res = fn(_range.front, front); // fn(coord, tileAt(coord))
-          if (res) break;
-          popFront();
-        }
-
-        return res;
-      }
-    }
-
-    return Result(this);
+  auto allCoords() {
+    return RowCol(0,0).span(RowCol(this.numRows, this.numCols));
   }
 
-  ///
+  /// Use allCoords to apply range-oriented functions to the coords in the grid.
+  unittest {
+    import std.algorithm;
+
+    auto myGrid = rectGrid([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+    ]);
+
+    auto coords = myGrid.allCoords
+      .filter!(x => x.col > 3)
+      .map!(x => x.row * 10 + x.col);
+
+    assert(coords.equal([04, 14, 24]));
+  }
+
+  /**
+   * Get a range that iterates through every tile in the grid.
+   */
+  auto allTiles() {
+    return this.allCoords.map!(coord => this.tileAt(coord));
+  }
+
+  /// Use allTiles to apply range-oriented functions to the tiles in the grid.
+  unittest {
+    import std.algorithm;
+
+    auto myGrid = rectGrid([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+    ]);
+
+    assert(myGrid.allTiles.filter!(x => x > 22).equal([23, 24]));
+  }
+
+  /// Foreach over every tile in the grid. Supports `ref`.
+  int opApply(int delegate(ref TileType) fn) {
+    int res = 0;
+
+    foreach(coord ; this.allCoords) {
+      res = fn(this.tileAt(coord));
+      if (res) break;
+    }
+
+    return res;
+  }
+
+  /// foreach with coords
   unittest {
     auto myGrid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
@@ -220,7 +223,7 @@ struct RectGrid(T) if (isArray2D!T) {
     ]);
 
     int[] actual;
-    foreach(tile ; myGrid.tiles) { actual ~= tile; }
+    foreach(tile ; myGrid) { actual ~= tile; }
 
     assert(actual == [
         00, 01, 02, 03, 04,
@@ -228,7 +231,19 @@ struct RectGrid(T) if (isArray2D!T) {
         20, 21, 22, 23, 24]);
   }
 
-  /// foreach over every (tile,coord) pair in the grid
+  /// Foreach over every (coord,tile) pair in the grid. Supports `ref`.
+  int opApply(int delegate(RowCol, ref TileType) fn) {
+    int res = 0;
+
+    foreach(coord ; this.allCoords) {
+      res = fn(coord, this.tileAt(coord));
+      if (res) break;
+    }
+
+    return res;
+  }
+
+  /// foreach with coords
   unittest {
     auto myGrid = rectGrid([
       [ 00, 01, 02, 03, 04 ],
@@ -236,7 +251,7 @@ struct RectGrid(T) if (isArray2D!T) {
       [ 20, 21, 22, 23, 24 ],
     ]);
 
-    foreach(coord, tile ; myGrid.tiles) {
+    foreach(coord, tile ; myGrid) {
       assert(tile == coord.row * 10 + coord.col);
     }
   }
@@ -497,19 +512,20 @@ unittest {
   ]);
 }
 
+private:
 // assertion helper for input array args
-private void assertNotJagged(T)(in T array, string msg) {
+void assertNotJagged(T)(in T array, string msg) {
   assert(array[].all!(x => x.length == array[0].length), msg);
 }
 
 // get a RowCol representing the size of a 2D array (assumed non-jagged).
-private auto arraySize2D(T)(in T array) {
+auto arraySize2D(T)(in T array) {
   return RowCol(array.length, array[0].length);
 }
 
-private enum isValidMask(T) = is(typeof(cast(bool) T.init[0][0]))   && // must have boolean elements
-                              is(typeof(T.init.length)    : size_t) && // must have row count
-                              is(typeof(T.init[0].length) : size_t);   // must have column count
+enum isValidMask(T) = is(typeof(cast(bool) T.init[0][0]))   && // must have boolean elements
+                      is(typeof(T.init.length)    : size_t) && // must have row count
+                      is(typeof(T.init[0].length) : size_t);   // must have column count
 
 unittest {
   static assert(isValidMask!(int[][]));

@@ -31,7 +31,7 @@ unittest {
  */
 struct OrthoMap(Tile) {
   /// The underlying tile grid structure, surfaced with alias this.
-  RectGrid!(Tile[][]) grid; 
+  RectGrid!(Tile[][]) grid;
   alias grid this;
 
   private {
@@ -202,58 +202,48 @@ struct OrthoMap(Tile) {
     assert(myMap.tileCenter(RowCol(0, 0)) == PixelCoord(16, 32));
     assert(myMap.tileCenter(RowCol(1, 2)) == PixelCoord(80, 96));
   }
+}
 
-  /// Use foreach(tile ; myMap) to iterate over all tiles in a map.
-  int opApply(int delegate(ref Tile) fn) {
-    return grid.tiles.opApply(fn);
-  }
+/// Foreach over every tile in the map
+unittest {
+  import std.algorithm : equal;
 
-  /// Foreach over every tile in the map
-  unittest {
-    import std.algorithm : equal;
+  auto grid = [
+    [ 00, 01, 02, ],
+    [ 10, 11, 12, ],
+  ];
+  auto myMap = OrthoMap!int(grid, 32, 64);
 
-    auto grid = [
-      [ 00, 01, 02, ],
-      [ 10, 11, 12, ],
-    ];
-    auto myMap = OrthoMap!int(grid, 32, 64);
+  int[] result;
 
-    int[] result;
+  foreach(tile ; myMap) result ~= tile;
 
-    foreach(tile ; myMap) result ~= tile;
+  assert(result.equal([ 00, 01, 02, 10, 11, 12 ]));
+}
 
-    assert(result.equal([ 00, 01, 02, 10, 11, 12 ]));
-  }
+/// Use ref with foreach to modify tiles
+unittest {
+  auto grid = [
+    [ 00, 01, 02, ],
+    [ 10, 11, 12, ],
+  ];
+  auto myMap = OrthoMap!int(grid, 32, 64);
 
-  /// Use ref with foreach to modify tiles
-  unittest {
-    auto grid = [
-      [ 00, 01, 02, ],
-      [ 10, 11, 12, ],
-    ];
-    auto myMap = OrthoMap!int(grid, 32, 64);
+  foreach(ref tile ; myMap) tile += 30;
 
-    foreach(ref tile ; myMap) tile += 30;
+  assert(myMap.tileAt(RowCol(1,1)) == 41);
+}
 
-    assert(myMap.tileAt(RowCol(1,1)) == 41);
-  }
+/// Foreach over every (coord, tile) pair in the map
+unittest {
+  import std.algorithm : equal;
 
-  /// Use foreach(coord, tile ; myMap) to iterate over all tiles in a map with coordinates.
-  int opApply(int delegate(RowCol, ref Tile) fn) {
-    return grid.tiles.opApply(fn);
-  }
-
-  /// Foreach over every (coord, tile) pair in the map
-  unittest {
-    import std.algorithm : equal;
-
-    auto grid = [
-      [ 00, 01, 02, ],
-      [ 10, 11, 12, ],
-    ];
-    auto myMap = OrthoMap!int(grid, 32, 64);
+  auto grid = [
+    [ 00, 01, 02, ],
+    [ 10, 11, 12, ],
+  ];
+  auto myMap = OrthoMap!int(grid, 32, 64);
 
 
-    foreach(coord, tile ; myMap) assert(myMap.tileAt(coord) == tile);
-  }
+  foreach(coord, tile ; myMap) assert(myMap.tileAt(coord) == tile);
 }
