@@ -173,7 +173,7 @@ struct OrthoMap(Tile) {
       [ 00, 01, 02, ],
       [ 10, 11, 12, ],
     ];
-    auto myMap = OrthoMap(grid, 32, 64);
+    auto myMap = OrthoMap!int(grid, 32, 64);
 
     assert(myMap.tileOffset(RowCol(0, 0)) == PixelCoord(0, 0));
     assert(myMap.tileOffset(RowCol(1, 2)) == PixelCoord(64, 64));
