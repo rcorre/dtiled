@@ -8,6 +8,7 @@
 module dtiled.grid;
 
 import std.range     : only, chain, takeNone, hasLength;
+import std.range     : isInputRange, isForwardRange, isBidirectionalRange;
 import std.format    : format;
 import std.algorithm : all, map, filter;
 import std.exception : enforce;
@@ -159,6 +160,55 @@ struct RectGrid(T) if (isArray2D!T) {
   }
 
   /**
+   * Access tiles via a range of coords. Tiles are returned by ref.
+   * 
+   * Params:
+   *  coords = A range that yields coords.
+   */
+  ref auto tilesAt(R)(R coords) if (isInputRange!R && is(typeof(coords.front) : RowCol)) {
+    alias GridType = typeof(this);
+
+    struct Result {
+      private GridType _grid;
+      private R        _coords;
+
+      ref auto front() { return _grid.tileAt(_coords.front); }
+      bool empty()     { return _coords.empty(); }
+      void popFront()  { _coords.popFront(); }
+
+      static if (isForwardRange!R) {
+        auto save() { return Result(_grid, _coords.save); }
+      }
+
+      static if (isBidirectionalRange!R) {
+        auto back() { return _grid.tileAt(_coords.back); }
+        void popBack() { _coords.popBack(); }
+      }
+    }
+
+    return Result(this, coords);
+  }
+
+  unittest {
+    import std.range;
+    import std.algorithm : equal;
+
+    auto grid = rectGrid([
+      [ 00, 01, 02, 03, 04 ],
+      [ 10, 11, 12, 13, 14 ],
+      [ 20, 21, 22, 23, 24 ],
+    ]);
+
+    auto r1 = chain(RowCol(0,0).only, RowCol(2,2).only, RowCol(2,0).only);
+    assert(grid.tilesAt(r1).equal([00, 22, 20]));
+
+    auto r2 = grid.allCoords.filter!(x => x.row > 1 && x.col > 2);
+    auto tiles = grid.tilesAt(r2);
+    assert(tiles.equal([23, 24]));
+    assert(tiles.equal([23, 24]));
+  }
+
+  /**
    * Get a range that iterates through every coordinate in the grid.
    */
   auto allCoords() {
@@ -186,7 +236,7 @@ struct RectGrid(T) if (isArray2D!T) {
    * Get a range that iterates through every tile in the grid.
    */
   auto allTiles() {
-    return this.allCoords.map!(coord => this.tileAt(coord));
+    return tilesAt(this.allCoords);
   }
 
   /// Use allTiles to apply range-oriented functions to the tiles in the grid.
@@ -200,6 +250,13 @@ struct RectGrid(T) if (isArray2D!T) {
     ]);
 
     assert(myGrid.allTiles.filter!(x => x > 22).equal([23, 24]));
+
+    // use ref with allTiles to apply modifications
+    foreach(ref tile ; myGrid.allTiles.filter!(x => x < 10)) {
+      tile += 10;
+    }
+
+    assert(myGrid.tileAt(RowCol(0,0)) == 10);
   }
 
   /// Foreach over every tile in the grid. Supports `ref`.
