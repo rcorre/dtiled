@@ -1,14 +1,50 @@
 DTiled: D language Tiled map parser.
 ===
 
-You know what's great? Tilemap-based games. You know, things like Megaman, Final
-Fantasy, Legend of Zelda, ect.
+Do you like tilemap-based games?
+How about the D programming language?
+Would you like to make a tilemapped game in D?
 
-You know what else is great? The D programming language.
+If so, you'll probably need to implement a lot of commonly-needed tilemap
+functionality, like mapping between screen coordinates and grid coordinates,
+iterating through groups of tiles, loading a map from a file, and more.
 
-That puts dtiled at the intersection of two awesome things. It has a
-[dub package](http://code.dlang.org/packages/dtiled)
-so stick it in your `dependencies` and start making games!
+I've spent enough time re-implementing or copying my tilemap logic between game
+projects that I decided to factor it out into a library.
+Here's a quick overview of what dtiled can do:
+
+```d
+// row/col coordinates are explicitly specified to avoid nasty bugs
+tilemap.tileAt(RowCol(2,3));
+
+// convert between 'grid' (row/column) and 'pixel' (x/y) coordinates
+auto tileUnderMouse = tilemap.tileAtPoint(myGameEngine.mousePos);
+auto pos = tilemap.tileCenter(RowCol(3,2)).as!MyVectorType;
+
+// no nested for loops! Conveniently foreach over all tiles in a map:
+foreach(coord, ref tile ; tilemap) {
+  tile.awesomeness += 10; // if your tiles are structs, use ref to modify them
+}
+
+// finding the neighbors of a tile is an oft-needed task
+auto adjacent = tilemap.adjacentTiles(RowCol(3,3));
+auto surrounding = tilemap.adjacentTiles(RowCol(3,3), Diagonals.yes);
+
+// use masks for grabbing tiles in some pattern
+uint[3,3] newWallShape = [
+  [ 1, 1, 1 ],
+  [ 0, 1, 0 ],
+  [ 0, 1, 0 ],
+];
+
+bool blocked = tilemap
+  .maskTilesAround(RowCol(5,5), newWallShape)
+  .any!(x => x.obstructed);
+
+// load data for maps created with the Tiled map editor
+auto mapData = MapData.load("map.json");
+foreach(gid ; mapData.getLayer("ground").data) { ... }
+```
 
 To see the full suite of features offered by dtiled, check out the
 [docs](http://rcorre.github.io/dtiled/dtiled.html).
@@ -150,10 +186,14 @@ accept anything vector-like as an argument (anything that has a numeric `x` or
 you want to use.
 
 # The Grid
-Much of our `OrthoMap`'s functionality comes from the module `dtiled.grid`,
-which provides functions that treat a 2D array of anything as a grid of tiles.
+A grid is a thin wrapper around a 2D array that enforces `RowCol`-based access
+and provides grid-related functionality.
 
-The simplest operation is to access a tile by its coordinate:
+The `OrthoMap` we created earlier supports all of this as it is a wrapper around
+a `RectGrid`, but you can apply these same functions to any 2D array by wrapping
+it with `rectGrid`.
+
+The simplest grid operation is to access a tile by its coordinate:
 
 ```d
 auto tile = tileMap.tileAt(RowCol(2,3));  // grab the tile at row 2, column 3
@@ -172,8 +212,7 @@ RowCol(2,3).adjacent          // [ (1,3), (2,2), (2,4), (3,3) ]
 RowCol(0,0).span(RowCol(2,2)) // [ (0,0), (0,1), (1,0), (1,1) ]
 ```
 
-Here are some other useful things you can do with `dtiled.grid`. Note that they
-will work with our `OrthoMap` as well as any old 2D array:
+Here are some other useful things you can do with a grid:
 
 ```d
 auto neighbors = grid.adjacentTiles(RowCol(2,3));
@@ -198,6 +237,9 @@ uint[3][3] mask = [
 auto tilesUnderWall = grid.maskTilesAround(RowCol(5,3), mask);
 bool canPlaceWall = tilesUnderWall.all!(x => !x.hasObstruction);
 ```
+
+`OrthoMap` supports all of this functionality as it is a wrapper around a
+`RectGrid`.
 
 # Algorithms
 Most of the above was pretty mundane, so lets break out `dtiled.algorithm`.
