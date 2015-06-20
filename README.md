@@ -31,7 +31,7 @@ auto adjacent = tilemap.adjacentTiles(RowCol(3,3));
 auto surrounding = tilemap.adjacentTiles(RowCol(3,3), Diagonals.yes);
 
 // use masks for grabbing tiles in some pattern
-uint[3,3] newWallShape = [
+uint[3][3] newWallShape = [
   [ 1, 1, 1 ],
   [ 0, 1, 0 ],
   [ 0, 1, 0 ],
