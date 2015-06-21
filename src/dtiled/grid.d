@@ -50,6 +50,7 @@ unittest {
   static assert(is(staticGrid.TileType == char));
 }
 
+/// A grid of rectangular tiles. Wraps a 2D array to provide grid-based access to tiles.
 struct RectGrid(T) if (isArray2D!T) {
   private T _tiles;
 
@@ -161,7 +162,7 @@ struct RectGrid(T) if (isArray2D!T) {
 
   /**
    * Access tiles via a range of coords. Tiles are returned by ref.
-   * 
+   *
    * Params:
    *  coords = A range that yields coords.
    */
