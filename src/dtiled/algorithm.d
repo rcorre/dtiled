@@ -234,6 +234,22 @@ unittest {
       .equal(['c', 'c', 'b', 'b']));
 }
 
+/**
+ * Get the shortest path between two coordinates.
+ *
+ * Params:
+ *  cost = function that returns the cost to move onto a tile.
+ *         To represent an 'impassable' tile, cost should return a large value.
+ *         Do $(RED NOT) let cost return a value large enough to overflow when added to another.
+ *         For example, if cost returns an int, the return value should be less than `int.max / 2`.
+ *  Tile = type of tile in the grid
+ *  grid = grid of tiles to find path on
+ *  start = tile to start pathfinding from
+ *  end = the 'goal' the pathfinder should reach
+ *
+ *  Returns: the shortest path as a range of tiles, including `end` but not including `start`.
+ *           returns an empty range if no path could be found or if `start` == `end`.
+ */
 auto shortestPath(alias cost, Tile)(TileGrid!Tile grid, RowCol start, RowCol end)
   if (is(typeof(cost(Tile.init)) : real))
 {
