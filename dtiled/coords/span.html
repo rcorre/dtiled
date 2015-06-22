@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function span</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class="selected module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function span</h1>
+			<section>
+				<p> Enumerate all row/col pairs spanning the rectangle bounded by the corners <a href="../../dtiled/coords/span.html#start"><code class="prettyprint lang-d">start</code></a> and <a href="../../dtiled/coords/span.html#end"><code class="prettyprint lang-d">end</code></a>.
+</p>
+<section>
+<p> The order of enumeration is determined <a href="../../dtiled/coords/as.html"><code class="prettyprint lang-d">as</code></a> follows:
+ Enumerate all columns in a row before moving to the next row.
+ If start.row &gt;= end.row, enumerate rows in increasing order, otherwise enumerate in decreasing.
+ If start.col &gt;= end.col, enumerate cols in increasing order, otherwise enumerate in decreasing.
+</p>
+
+</section>
+
+					<section>
+						<h3>Prototypes</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto std.<wbr/>algorithm.<wbr/>iteration.<wbr/>__T9MapResultS756dtiled6coords4spanFS6dtiled6coords6RowColS6dtiled6coords6RowColZ9__lambda3TS3std9algorithm6setops114__T16cartesianProductTS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultTS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultZ16cartesianProductFS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultZ6ResultZ.<wbr/>MapResult span(
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> start,
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> end
+);
+
+auto std.<wbr/>algorithm.<wbr/>iteration.<wbr/>__T9MapResultS756dtiled6coords4spanFS6dtiled6coords6RowColS6dtiled6coords6RowColZ9__lambda3TS3std9algorithm6setops114__T16cartesianProductTS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultTS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultZ16cartesianProductFS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultS3std5range15__T4iotaTlTlTlZ4iotaFlllZ6ResultZ6ResultZ.<wbr/>MapResult span(
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> start,
+&nbsp;&nbsp;long endRow,
+&nbsp;&nbsp;long endCol
+);</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="start">start</td><td> <a href="../../dtiled/coords/RowCol.html"><code class="prettyprint lang-d">RowCol</code></a> pair to <a href="../../dtiled/coords/span.html#start"><code class="prettyprint lang-d">start</code></a> enumeration from, $(B inclusive)</td></tr>
+<tr><td id="end">end</td><td> <a href="../../dtiled/coords/RowCol.html"><code class="prettyprint lang-d">RowCol</code></a> pair to <a href="../../dtiled/coords/span.html#end"><code class="prettyprint lang-d">end</code></a> enumeration at, $(B exclusive)</td></tr>
+</table>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">import std.algorithm : equal;
+
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(0,0).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,3)).equal([
+  <a href="../../dtiled/coords/RowCol.html">RowCol</a>(0,0), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(0,1), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(0,2),
+  <a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,0), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,1), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,2)]));
+
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(0,0)).equal([
+  <a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,1),
+  <a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,2), <a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,1)]));
+
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(1,3)).equal([<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2)]));
+
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(3,1)).equal([<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2)]));
+
+// <a href="../../dtiled/coords/as.html">as</a> the upper bound of span is exclusive, both of these are empty (span over 0 columns):
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2)).empty);
+assert(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(2,2).span(<a href="../../dtiled/coords/RowCol.html">RowCol</a>(5,2)).empty);
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+
+			</section>
+			<section>
+				<h2>License</h2>
+
+			</section>
+		</div>
+	</body>
+</html>

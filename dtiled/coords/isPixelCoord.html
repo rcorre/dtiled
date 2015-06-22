@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Enum member isPixelCoord</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class="selected module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Enum member isPixelCoord</h1>
+			<section>
+				<p>True if T is a type that can represent a location in terms of pixels.
+</p>
+
+					<section>
+						<h3>Declaration</h3>
+						<pre class="code prettyprint lang-d prototype">
+enum isPixelCoord(T) = is(typeof(T.x) : real) && is(typeof(T.y) : real) && is(T == struct);</pre>
+					</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">// <a href="../../dtiled/coords/PixelCoord.html">PixelCoord</a> is dtiled's vector representation within pixel coordinate space.
+static assert(isPixelCoord!<a href="../../dtiled/coords/PixelCoord.html">PixelCoord</a>);
+
+// <a href="../../dtiled/coords/as.html">as</a> a user, you may choose any (x,y) numeric pair to use <a href="../../dtiled/coords/as.html">as</a> a pixel coordinate
+struct MyVector(T) { T x, y; }
+
+static assert(isPixelCoord!(MyVector!int));
+static assert(isPixelCoord!(MyVector!uint));
+static assert(isPixelCoord!(MyVector!float));
+static assert(isPixelCoord!(MyVector!double));
+static assert(isPixelCoord!(MyVector!real));
+
+// To avoid confusion, grid coordinates are distinct from pixel coordinates
+static assert(!isPixelCoord!<a href="../../dtiled/coords/RowCol.html">RowCol</a>);
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+
+			</section>
+			<section>
+				<h2>License</h2>
+
+			</section>
+		</div>
+	</body>
+</html>

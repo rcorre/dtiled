@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module dtiled.coords</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../dtiled/coords.html" class="selected module">coords</a>
+							</li>
+							<li>
+								<a href="../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dtiled.coords</h1>
+			<p> This module helps handle coordinate systems within a map.
+</p>
+<section>
+<p> When dealing with a grid, do you ever forget whether the row or column is the first index?
+</p>
+
+<p> Me too.
+</p>
+
+<p> For this reason, all functions dealing with grid coordinates take a <a href="../dtiled/coords/RowCol.html"><code class="prettyprint lang-d">RowCol</code></a> argument.
+ This makes it abundantly clear that the map is indexed in row-major order.
+ Furthormore, it prevents confusion between **grid** coordinates and **pixel** coordinates.
+</p>
+
+<p> A 'pixel' coordinate refers to an (x,y) location in 'pixel' space.
+ The units used by 'pixel' coords are the same <a href="../dtiled/coords/as.html"><code class="prettyprint lang-d">as</code></a> used in MapData tilewidth and tileheight.
+</p>
+
+<p> Within dtiled, pixel locations are represented by a <a href="../dtiled/coords/PixelCoord.html"><code class="prettyprint lang-d">PixelCoord</code></a>.
+ However, you may already be using a game library that provides some 'Vector' implementation
+ used to represent positions.
+ You can pass any such type to dtiled functions expecting a pixel coordinate so long <a href="../dtiled/coords/as.html"><code class="prettyprint lang-d">as</code></a> it
+ satisfies <a href="../dtiled/coords/isPixelCoord.html"><code class="prettyprint lang-d">isPixelCoord</code></a>.
+</p>
+</section>
+
+			<section></section>
+			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="as" class="public" href="../dtiled/coords/as.html">
+								<code>as</code>
+							</a>
+						</td>
+						<td>Convert a <a href="../dtiled/coords/PixelCoord.html"><code class="prettyprint lang-d">PixelCoord</code></a> to a user-defined (x,y) numeric pair.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="manhattan" class="public" href="../dtiled/coords/manhattan.html">
+								<code>manhattan</code>
+							</a>
+						</td>
+						<td> Return the <code class="prettyprint lang-d">manhattan</code> distance between two tile coordinates.
+ For two coordinates <a href="../dtiled/coords/manhattan.html#a"><code class="prettyprint lang-d">a</code></a> and <a href="../dtiled/coords/manhattan.html#b"><code class="prettyprint lang-d">b</code></a>, this is defined <a href="../dtiled/coords/as.html"><code class="prettyprint lang-d">as</code></a> abs(a.row - b.row) + abs(a.col - b.col)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="span" class="public" href="../dtiled/coords/span.html">
+								<code>span</code>
+							</a>
+						</td>
+						<td> Enumerate all row/col pairs spanning the rectangle bounded by the corners <a href="../dtiled/coords/span.html#start"><code class="prettyprint lang-d">start</code></a> and <a href="../dtiled/coords/span.html#end"><code class="prettyprint lang-d">end</code></a>.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="RowCol" class="public" href="../dtiled/coords/RowCol.html">
+								<code>RowCol</code>
+							</a>
+						</td>
+						<td>Represents a discrete location within the map grid.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enum values</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="isPixelCoord" class="public" href="../dtiled/coords/isPixelCoord.html">
+								<code>isPixelCoord</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>True if T is a type that can represent a location in terms of pixels.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="Diagonals" class="public" href="../dtiled/coords/Diagonals.html">
+								<code>Diagonals</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">std.<wbr/>typecons.<wbr/>Flag!("Diagonals")</code>
+						</td>
+						<td>Whether to consider diagonals adjacent in situations dealing with the concept of adjacency.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="PixelCoord" class="public" href="../dtiled/coords/PixelCoord.html">
+								<code>PixelCoord</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">std.<wbr/>typecons.<wbr/>Tuple!(float,"x",float,"y")</code>
+						</td>
+						<td>Represents a location in continuous 2D space.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+
+			</section>
+			<section>
+				<h2>License</h2>
+
+			</section>
+		</div>
+	</body>
+</html>

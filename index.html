@@ -12,8 +12,25 @@
 	<body onload="prettyPrint(); setupDdox();">
 		<nav id="main-nav">
 						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
 							<li>
-								<a href="./dtiled.html" class=" module">dtiled</a>
+								<a href="./dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="./dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="./dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="./dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="./dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
 							</li>
 						</ul>
 				<noscript>
@@ -41,11 +58,47 @@ $('#symbolSearchPane').show();
 				</tr>
 			<tr>
 				<td>
-					<a href="./dtiled.html">dtiled</a>
+					<a href="./dtiled/algorithm.html">dtiled.algorithm</a>
+				</td>
+				<td>
+ Provides various useful operations on a tile grid.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dtiled/coords.html">dtiled.coords</a>
+				</td>
+				<td>
+ This module helps handle coordinate systems within a map.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dtiled/data.html">dtiled.data</a>
 				</td>
 				<td>
  Read and write data for <a href="mapeditor.org">Tiled</a> maps.
  Currently only supports JSON format.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dtiled/grid.html">dtiled.grid</a>
+				</td>
+				<td>
+ A grid wraps a 2D array to provide specialized grid-based functionality.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dtiled/map.html">dtiled.map</a>
+				</td>
+				<td>
+ A map is essentially a grid with additional information about tile positions and sizes.
 
 				</td>
 			</tr>

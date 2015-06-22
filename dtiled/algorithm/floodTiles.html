@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function floodTiles</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class="selected module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function floodTiles</h1>
+			<section>
+				<p> Returns a range that iterates through tiles based on a flood filling algorithm.
+</p>
+<section>
+</section>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto floodTiles(alias pred, T)(
+&nbsp;&nbsp;T grid,
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> origin,
+&nbsp;&nbsp;<a href="../../dtiled/coords/Diagonals.html">Diagonals</a> diags = Diagonals.no
+)
+if (is(typeof(pred(grid.tileAt(RowCol(0, 0)))) : bool));</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="pred">pred</td><td> predicate that returns true if the flood should progress through a given tile.</td></tr>
+<tr><td id="grid">grid</td><td> <a href="../../dtiled/algorithm/floodTiles.html#grid"><code class="prettyprint lang-d">grid</code></a> to apply flood to.</td></tr>
+<tr><td id="origin">origin</td><td> coordinate at which to begin flood.</td></tr>
+<tr><td id="diags">diags</td><td> by default, flood only progresses to directly adjacent tiles.
+           Diagonals.yes causes the flood to progress across diagonals too.</td></tr>
+</table>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">import std.array;
+import std.algorithm : equal;
+
+// let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
+auto <a href="../../dtiled/algorithm/floodTiles.html#grid">grid</a> = rectGrid([
+  // 0    1    2    3    4    5 <-col| row
+  [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
+  [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
+  [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 2
+  [ 'X', 'X', 'X', 'X', 'X', 'c' ], // 3
+  [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
+  [ 'd', 'd', 'd', 'X', 'X', 'X' ], // 5
+]);
+
+// starting on a wall should return an empty result
+assert(grid.floodTiles!(x => x == 'a')(RowCol(0,0)).empty);
+assert(grid.floodTiles!(x => x == 'a')(RowCol(3,3)).empty);
+
+// flood the 'a' room
+assert(grid.floodTiles!(x => x == 'a')(RowCol(1,1)).equal(['a', 'a', 'a', 'a']));
+assert(grid.floodTiles!(x => x == 'a')(RowCol(1,2)).equal(['a', 'a', 'a', 'a']));
+assert(grid.floodTiles!(x => x == 'a')(RowCol(2,1)).equal(['a', 'a', 'a', 'a']));
+assert(grid.floodTiles!(x => x == 'a')(RowCol(2,2)).equal(['a', 'a', 'a', 'a']));
+
+// flood the 'a' room, but asking for a 'b'
+assert(grid.floodTiles!(x => x == 'b')(RowCol(2,2)).empty);
+
+// flood the 'b' room
+assert(grid.floodTiles!(x => x == 'b')(RowCol(1,4)).equal(['b', 'b']));
+
+// flood the 'c' room
+assert(grid.floodTiles!(x => x == 'c')(RowCol(4,4)).equal(['c']));
+
+// flood the 'd' room
+assert(grid.floodTiles!(x => x == 'd')(RowCol(4,1)).equal(['d', 'd', 'd', 'd', 'd', 'd']));
+
+// flood the 'b' and 'c' rooms, moving through diagonals
+assert(grid.floodTiles!(x => x == 'b' || x == 'c')(RowCol(4,4), Diagonals.yes)
+    .equal(['c', 'c', 'b', 'b']));
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+
+			</section>
+			<section>
+				<h2>License</h2>
+
+			</section>
+		</div>
+	</body>
+</html>

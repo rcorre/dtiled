@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function RectGrid.allCoords</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class="selected module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function RectGrid.allCoords</h1>
+			<section>
+				<p> Get a range that iterates through every coordinate in the grid.
+</p>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto allCoords();</pre>
+					</section>
+<section><h3>Example</h3>
+<p>Use <code class="prettyprint lang-d">allCoords</code> to apply range-oriented functions to the coords in the grid.
+</p>
+<pre class="code prettyprint lang-d">import std.algorithm;
+
+auto myGrid = <a href="../../dtiled/grid/rectGrid.html">rectGrid</a>([
+  [ 00, 01, 02, 03, 04 ],
+  [ 10, 11, 12, 13, 14 ],
+  [ 20, 21, 22, 23, 24 ],
+]);
+
+auto coords = myGrid.allCoords
+  .filter!(x => x.col > 3)
+  .map!(x => x.row * 10 + x.col);
+
+assert(coords.equal([04, 14, 24]));
+
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

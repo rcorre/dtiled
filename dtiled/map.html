@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module dtiled.map</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../dtiled/map.html" class="selected module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dtiled.map</h1>
+			<p> A map is essentially a grid with additional information about tile positions and sizes.
+</p>
+<section>
+<p> Currently, the only map type is <code class="prettyprint lang-d"><a href="../dtiled/map/OrthoMap.html"><code class="prettyprint lang-d">OrthoMap</code></a></code>, but <code class="prettyprint lang-d">IsoMap</code> and <code class="prettyprint lang-d">HexMap</code> may be added in later
+ versions.
+</p>
+
+<p> An <code class="prettyprint lang-d"><a href="../dtiled/map/OrthoMap.html"><code class="prettyprint lang-d">OrthoMap</code></a></code> represents a map of rectangular (usually square) tiles that are arranged
+ orthogonally. In other words, all tiles in a row are at the same y corrdinate, and all tiles in
+ a column are at the same x coordinate (as opposed to an Isometric map, where there is an offset).
+</p>
+
+<p> An <code class="prettyprint lang-d"><a href="../dtiled/map/OrthoMap.html"><code class="prettyprint lang-d">OrthoMap</code></a></code> provides all of the functionality as <code class="prettyprint lang-d">RectGrid</code>.
+ It also stores the size of tiles and provides functions to translate between 'grid coordinates'
+ (row/column) and 'screen coordinates' (x/y pixel positions).
+</p>
+
+</section>
+
+			<section></section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="OrthoMap" class="public" href="../dtiled/map/OrthoMap.html">
+								<code>OrthoMap</code>
+							</a>
+						</td>
+						<td> Generic Tile Map structure that uses a single layer of tiles in an orthogonal <a href="../dtiled/map/OrthoMap.grid.html"><code class="prettyprint lang-d">grid</code></a>.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

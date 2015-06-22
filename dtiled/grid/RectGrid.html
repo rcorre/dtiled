@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct RectGrid</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class="selected module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct RectGrid</h1>
+			<section>
+				<p>A grid of rectangular tiles. Wraps a 2D array to provide grid-based access to tiles.
+</p>
+
+					<section>
+						<h3>Constructors</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td>Construct a grid from a 2D tile array. See <a href="../../dtiled/grid/rectGrid.html"><code class="prettyprint lang-d">rectGrid</code></a> for a constructor with type inference.
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.adjacentTiles.html" class="public">
+										<code>adjacentTiles</code>
+									</a>
+								</td>
+								<td> Return all tiles adjacent to the tile at the given <a href="../../dtiled/grid/RectGrid.adjacentTiles.html#coord"><code class="prettyprint lang-d">coord</code></a> (not including the tile itself).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.allCoords.html" class="public">
+										<code>allCoords</code>
+									</a>
+								</td>
+								<td> Get a range that iterates through every coordinate in the grid.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.allTiles.html" class="public">
+										<code>allTiles</code>
+									</a>
+								</td>
+								<td> Get a range that iterates through every tile in the grid.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.contains.html" class="public">
+										<code>contains</code>
+									</a>
+								</td>
+								<td> True if the grid coordinate is within the grid bounds.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.numCols.html" class="public">
+										<code>numCols</code>
+									</a>
+								</td>
+								<td>Number of columns along a grid's x axis.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.numRows.html" class="public">
+										<code>numRows</code>
+									</a>
+								</td>
+								<td>Number of rows along a grid's y axis.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.numTiles.html" class="public">
+										<code>numTiles</code>
+									</a>
+								</td>
+								<td>The total number of tiles in a grid.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.opApply.html" class="public">
+										<code>opApply</code>
+									</a>
+								</td>
+								<td>Foreach over every tile in the grid. Supports <code class="prettyprint lang-d">ref</code>.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.opApply.html" class="public">
+										<code>opApply</code>
+									</a>
+								</td>
+								<td>Foreach over every (coord,tile) pair in the grid. Supports <code class="prettyprint lang-d">ref</code>.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.tileAt.html" class="public">
+										<code>tileAt</code>
+									</a>
+								</td>
+								<td> Get the tile at a given position in the grid.
+ The <a href="../../dtiled/grid/RectGrid.tileAt.html#coord"><code class="prettyprint lang-d">coord</code></a> must be in bounds.
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Aliases</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.TileType.html" class="public">
+										<code>TileType</code>
+									</a>
+								</td>
+								<td>The type used to represent a tile in this grid
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Templates</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.maskCoords.html" class="public">
+										<code>maskCoords</code>
+									</a>
+								</td>
+								<td> Same as <a href="../../dtiled/grid/RectGrid.maskTiles.html"><code class="prettyprint lang-d">maskTiles</code></a>, but return coords instead of tiles.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.maskCoordsAround.html" class="public">
+										<code>maskCoordsAround</code>
+									</a>
+								</td>
+								<td> Same as <a href="../../dtiled/grid/RectGrid.maskCoords.html"><code class="prettyprint lang-d">maskCoords</code></a>, but centered.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.maskTiles.html" class="public">
+										<code>maskTiles</code>
+									</a>
+								</td>
+								<td> Select specific tiles from this slice based on a mask.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.maskTilesAround.html" class="public">
+										<code>maskTilesAround</code>
+									</a>
+								</td>
+								<td> Same as <a href="../../dtiled/grid/RectGrid.maskTiles.html"><code class="prettyprint lang-d">maskTiles</code></a>, but centered.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.tilesAt.html" class="public">
+										<code>tilesAt</code>
+									</a>
+								</td>
+								<td> Access tiles via a range of coords. Tiles are returned by ref.
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

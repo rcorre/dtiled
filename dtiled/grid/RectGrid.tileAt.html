@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function RectGrid.tileAt</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class="selected module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function RectGrid.tileAt</h1>
+			<section>
+				<p> Get the tile at a given position in the grid.
+ The <a href="../../dtiled/grid/RectGrid.tileAt.html#coord"><code class="prettyprint lang-d">coord</code></a> must be in bounds.
+</p>
+<section>
+</section>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto ref tileAt(
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> coord
+);</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="coord">coord</td><td> a row/column pair identifying a point in the tile grid.</td></tr>
+</table>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">auto grid = <a href="../../dtiled/grid/rectGrid.html">rectGrid</a>([
+  [ 00, 01, 02, 03, 04 ],
+  [ 10, 11, 12, 13, 14 ],
+  [ 20, 21, 22, 23, 24 ],
+]);
+
+assert(grid.tileAt(RowCol(0, 0)) == 00); // top left tile
+assert(grid.tileAt(RowCol(2, 4)) == 24); // bottom right tile
+assert(grid.tileAt(RowCol(1, 1)) == 11); // one down/right from the top left
+
+// tileAt returns a reference:
+grid.tileAt(RowCol(2,2)) = 99;
+assert(grid.tileAt(RowCol(2,2)) == 99);
+
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

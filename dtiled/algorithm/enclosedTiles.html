@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function enclosedTiles</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class="selected module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function enclosedTiles</h1>
+			<section>
+				<p> Find an area of tiles enclosed by 'walls'.
+</p>
+<section>
+</section>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto enclosedTiles(alias isWall, T)(
+&nbsp;&nbsp;T grid,
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> origin,
+&nbsp;&nbsp;<a href="../../dtiled/coords/Diagonals.html">Diagonals</a> diags = Diagonals.no
+)
+if (is(typeof(isWall(grid.tileAt(RowCol(0, 0)))) : bool));</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="isWall">isWall</td><td> predicate which returns true if a tile should be considered a 'wall'</td></tr>
+<tr><td id="grid">grid</td><td> <a href="../../dtiled/algorithm/enclosedTiles.html#grid"><code class="prettyprint lang-d">grid</code></a> of tiles to find enclosed area in</td></tr>
+<tr><td id="origin">origin</td><td> tile that may be part of an enclosed region</td></tr>
+<tr><td id="diags">diags</td><td> if yes, an area is not considered enclosed if there is a diagonal opening.
+</td></tr>
+</table>
+</section>
+<section><h3>Returns</h3>
+<p>a range of tiles in the enclosure (empty if <a href="../../dtiled/algorithm/enclosedTiles.html#origin"><code class="prettyprint lang-d">origin</code></a> is not part of an enclosed region)
+</p>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">import std.array;
+import std.algorithm : equal;
+
+// let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
+auto tiles = rectGrid([
+  // 0    1    2    3    4    5 <-col| row
+  [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
+  [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 1
+  [ 'X', 'a', 'a', 'X', 'b', 'X' ], // 2
+  [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 3
+  [ 'd', 'd', 'd', 'X', 'c', 'X' ], // 4
+  [ 'd', 'd', 'd', 'X', 'X', 'c' ], // 5
+]);
+
+static bool isWall(char c) { return c == 'X'; }
+
+// starting on a wall should return an empty result
+assert(tiles.enclosedTiles!isWall(RowCol(0, 0)).empty);
+
+// all tiles in the [1,1] -> [2,2] area should find the 'a' room
+assert(tiles.enclosedTiles!isWall(RowCol(1, 1)).equal(['a', 'a', 'a', 'a']));
+assert(tiles.enclosedTiles!isWall(RowCol(1, 2)).equal(['a', 'a', 'a', 'a']));
+assert(tiles.enclosedTiles!isWall(RowCol(2, 1)).equal(['a', 'a', 'a', 'a']));
+assert(tiles.enclosedTiles!isWall(RowCol(2, 2)).equal(['a', 'a', 'a', 'a']));
+
+// get the two-tile 'b' room at [1,4] -> [2,4]
+assert(tiles.enclosedTiles!isWall(RowCol(1, 4)).equal(['b', 'b']));
+assert(tiles.enclosedTiles!isWall(RowCol(2, 4)).equal(['b', 'b']));
+
+// get the single tile 'c' room at 4,4
+assert(tiles.enclosedTiles!isWall(RowCol(4, 4)).equal(['c']));
+// if we require that diagonals be blocked too, 'c' is not an enclosure
+assert(tiles.enclosedTiles!isWall(RowCol(4, 4), Diagonals.yes).empty);
+
+// the 'd' region is not an enclosure (touches map edge)
+assert(tiles.enclosedTiles!isWall(RowCol(4, 1)).empty);
+assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+
+			</section>
+			<section>
+				<h2>License</h2>
+
+			</section>
+		</div>
+	</body>
+</html>

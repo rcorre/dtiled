@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function RectGrid.contains</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class="selected module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Function RectGrid.contains</h1>
+			<section>
+				<p> True if the grid coordinate is within the grid bounds.
+</p>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+bool contains(
+&nbsp;&nbsp;<a href="../../dtiled/coords/RowCol.html">RowCol</a> coord
+);</pre>
+					</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d">// 5x3 map
+auto grid = <a href="../../dtiled/grid/rectGrid.html">rectGrid</a>([
+  //0  1  2  3  4 col   row
+  [ 0, 0, 0, 0, 0 ], // 0
+  [ 0, 0, 0, 0, 0 ], // 1
+  [ 0, 0, 0, 0, 0 ], // 2
+]);
+
+assert( grid.contains(RowCol(0 , 0))); // top left
+assert( grid.contains(RowCol(2 , 4))); // bottom right
+assert( grid.contains(RowCol(1 , 2))); // center
+assert(!grid.contains(RowCol(0 , 5))); // beyond right border
+assert(!grid.contains(RowCol(3 , 0))); // beyond bottom border
+assert(!grid.contains(RowCol(0 ,-1))); // beyond left border
+assert(!grid.contains(RowCol(-1, 0))); // beyond top border
+
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

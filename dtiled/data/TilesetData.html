@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct TilesetData</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class="selected module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct TilesetData</h1>
+			<section>
+				<p> A <code class="prettyprint lang-d">TilesetData</code> maps GIDs (Global IDentifiers) to tiles.
+</p>
+<section>
+<p> Each tileset has a range of GIDs that map to the tiles it contains.
+ This range starts at <code class="prettyprint lang-d"><a href="../../dtiled/data/TilesetData.firstGid.html"><code class="prettyprint lang-d">firstGid</code></a></code> and extends to the <code class="prettyprint lang-d"><a href="../../dtiled/data/TilesetData.firstGid.html"><code class="prettyprint lang-d">firstGid</code></a></code> of the next tileset.
+ The index of a tile within a tileset is given by tile.gid - tileset.firstGid.
+ A tileset uses its <code class="prettyprint lang-d"><a href="../../dtiled/data/TilesetData.image.html"><code class="prettyprint lang-d">image</code></a></code> as a 'tile atlas' and may specify per-tile <code class="prettyprint lang-d"><a href="../../dtiled/data/TilesetData.properties.html"><code class="prettyprint lang-d">properties</code></a></code>.
+</p>
+</section>
+
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.firstGid.html" class="public"><code>firstGid</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td>The GID that maps to the first tile in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.image.html" class="public"><code>image</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Image used for tiles in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.imageHeight.html" class="public"><code>imageHeight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Height of source <a href="../../dtiled/data/TilesetData.image.html"><code class="prettyprint lang-d">image</code></a> in pixels
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.imageWidth.html" class="public"><code>imageWidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Width of source <a href="../../dtiled/data/TilesetData.image.html"><code class="prettyprint lang-d">image</code></a> in pixels
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.margin.html" class="public"><code>margin</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Buffer between <a href="../../dtiled/data/TilesetData.image.html"><code class="prettyprint lang-d">image</code></a> edge and tiles (in pixels)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.name.html" class="public"><code>name</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Name given to this tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.properties.html" class="public"><code>properties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string]</code></td>
+								<td>Properties assigned to this tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.spacing.html" class="public"><code>spacing</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Spacing between tiles in <a href="../../dtiled/data/TilesetData.image.html"><code class="prettyprint lang-d">image</code></a> (in pixels)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileHeight.html" class="public"><code>tileHeight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Maximum height of tiles in this set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileproperties.html" class="public"><code>tileproperties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string][string]</code></td>
+								<td> Optional per-tile <a href="../../dtiled/data/TilesetData.properties.html"><code class="prettyprint lang-d">properties</code></a>, indexed by the relative ID as a string.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileWidth.html" class="public"><code>tileWidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Maximum width of tiles in this set
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Properties</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.numCols.html" class="public property"><code>numCols</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile rows in the tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.numRows.html" class="public property"><code>numRows</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile rows in the tileset
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.numTiles.html" class="public property"><code>numTiles</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Total number of tiles defined in the tileset
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileCol.html" class="public">
+										<code>tileCol</code>
+									</a>
+								</td>
+								<td> Find the grid position of a tile within this tileset.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileOffsetX.html" class="public">
+										<code>tileOffsetX</code>
+									</a>
+								</td>
+								<td> Find the pixel position of a tile within this tileset.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileOffsetY.html" class="public">
+										<code>tileOffsetY</code>
+									</a>
+								</td>
+								<td> Find the pixel position of a tile within this tileset.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileProperties.html" class="public">
+										<code>tileProperties</code>
+									</a>
+								</td>
+								<td> Find the <a href="../../dtiled/data/TilesetData.properties.html"><code class="prettyprint lang-d">properties</code></a> defined for a tile in this tileset.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/TilesetData.tileRow.html" class="public">
+										<code>tileRow</code>
+									</a>
+								</td>
+								<td> Find the grid position of a tile within this tileset.
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

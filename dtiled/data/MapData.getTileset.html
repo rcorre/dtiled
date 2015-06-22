@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>MapData.getTileset - multiple declarations</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class="selected module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>MapData.getTileset - multiple declarations</h1>
+			<ul>
+				<li>Function MapData.getTileset</li>
+				<li>Function MapData.getTileset</li>
+			</ul>
+			<section>
+				<h2>Function MapData.getTileset</h2>
+				<p> Fetch a tileset by its <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a>. No check for <a href="../../dtiled/data/MapData.layers.html"><code class="prettyprint lang-d">layers</code></a> with duplicate names is performed.
+ Throws if no tileset has a matching <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a> (case-sensitive).
+</p>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto <a href="../../dtiled/data/TilesetData.html">TilesetData</a> getTileset(
+&nbsp;&nbsp;string name
+);</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="name">name</td><td> <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a> of tileset to find</td></tr>
+</table>
+</section>
+<section><h3>Returns</h3>
+<p>Tileset matching <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a>
+</p>
+</section>
+
+			</section>
+			<section>
+				<h2>Function MapData.getTileset</h2>
+				<p> Fetch the tileset containing the tile a given GID.
+ Throws if the <a href="../../dtiled/data/MapData.getTileset.html#gid"><code class="prettyprint lang-d">gid</code></a> is out of range for all <a href="../../dtiled/data/MapData.tilesets.html"><code class="prettyprint lang-d">tilesets</code></a>
+</p>
+
+					<section>
+						<h3>Prototype</h3>
+						<pre class="code prettyprint lang-d prototype">
+auto <a href="../../dtiled/data/TilesetData.html">TilesetData</a> getTileset(
+&nbsp;&nbsp;uint gid
+);</pre>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="gid">gid</td><td> <a href="../../dtiled/data/MapData.getTileset.html#gid"><code class="prettyprint lang-d">gid</code></a> of tile to find tileset for</td></tr>
+</table>
+</section>
+<section><h3>Returns</h3>
+<p>Tileset containing the given <a href="../../dtiled/data/MapData.getTileset.html#gid"><code class="prettyprint lang-d">gid</code></a>
+</p>
+</section>
+<section><h3>Example</h3>
+
+<pre class="code prettyprint lang-d"><a href="../../dtiled/data/MapData.html">MapData</a> map;
+map.tilesets ~= <a href="../../dtiled/data/TilesetData.html">TilesetData</a>();
+map.tilesets[0].firstGid = 1;
+map.tilesets ~= <a href="../../dtiled/data/TilesetData.html">TilesetData</a>();
+map.tilesets[1].firstGid = 5;
+map.tilesets ~= <a href="../../dtiled/data/TilesetData.html">TilesetData</a>();
+map.tilesets[2].firstGid = 12;
+
+assert(map.getTileset(1) == map.tilesets[0]);
+assert(map.getTileset(3) == map.tilesets[0]);
+assert(map.getTileset(5) == map.tilesets[1]);
+assert(map.getTileset(9) == map.tilesets[1]);
+assert(map.getTileset(15) == map.tilesets[2]);
+}
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

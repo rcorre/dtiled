@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Template RectGrid.maskTilesAround</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class=" module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class="selected module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Template RectGrid.maskTilesAround</h1>
+			<section>
+				<p> Same as <a href="../../dtiled/grid/RectGrid.maskTiles.html"><code class="prettyprint lang-d">maskTiles</code></a>, but centered.
+</p>
+<section>
+</section>
+
+					<section>
+						<h2>Arguments</h2>
+						<pre class="code prettyprint lang-d prototype">
+template maskTilesAround(T);</pre>
+					</section>
+					<section>
+						<h3>Functions</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Function name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/grid/RectGrid.maskTilesAround.maskTilesAround.html">maskTilesAround</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="center">center</td><td> map coord on which to position the center of the mask.
+           if the mask has an even side length, rounds down to compute the 'center'</td></tr>
+<tr><td id="mask">mask</td><td> a rectangular array of true/false values indicating which tiles to take.
+         each true value takes the tile at that grid coordinate.
+         the mask should be in row major order (indexed as mask[row][col]).</td></tr>
+</table>
+</section>
+<section><h3>Example</h3>
+<p>More masking examples:
+</p>
+<pre class="code prettyprint lang-d">import std.array : empty;
+import std.algorithm : equal;
+
+auto myGrid = <a href="../../dtiled/grid/rectGrid.html">rectGrid</a>([
+  [ 00, 01, 02, 03, 04 ],
+  [ 10, 11, 12, 13, 14 ],
+  [ 20, 21, 22, 23, 24 ],
+]);
+
+uint[3][3] mask1 = [
+  [ 1, 1, 1 ],
+  [ 0, 0, 0 ],
+    [ 0, 0, 0 ],
+];
+assert(myGrid.maskTilesAround(RowCol(0,0), mask1).empty);
+assert(myGrid.maskTilesAround(RowCol(1,1), mask1).equal([00, 01, 02]));
+assert(myGrid.maskTilesAround(RowCol(2,1), mask1).equal([10, 11, 12]));
+assert(myGrid.maskTilesAround(RowCol(2,4), mask1).equal([13, 14]));
+
+auto mask2 = [
+  [ 0, 0, 1 ],
+  [ 0, 0, 1 ],
+  [ 1, 1, 1 ],
+];
+assert(myGrid.maskTilesAround(RowCol(0,0), mask2).equal([01, 10, 11]));
+assert(myGrid.maskTilesAround(RowCol(1,2), mask2).equal([03, 13, 21, 22, 23]));
+assert(myGrid.maskTilesAround(RowCol(2,4), mask2).empty);
+
+auto mask3 = [
+  [ 0 , 0 , 1 , 0 , 0 ],
+  [ 1 , 0 , 1 , 0 , 1 ],
+  [ 0 , 0 , 0 , 0 , 0 ],
+];
+assert(myGrid.maskTilesAround(RowCol(0,0), mask3).equal([00, 02]));
+assert(myGrid.maskTilesAround(RowCol(1,2), mask3).equal([02, 10, 12, 14]));
+
+auto mask4 = [
+  [ 1 , 1 , 1 , 0 , 1 ],
+];
+assert(myGrid.maskTilesAround(RowCol(0,0), mask4).equal([00, 02]));
+assert(myGrid.maskTilesAround(RowCol(2,2), mask4).equal([20, 21, 22, 24]));
+
+auto mask5 = [
+  [ 1 ],
+  [ 1 ],
+  [ 0 ],
+  [ 1 ],
+  [ 1 ],
+];
+assert(myGrid.maskTilesAround(RowCol(0,4), mask5).equal([14, 24]));
+assert(myGrid.maskTilesAround(RowCol(1,1), mask5).equal([01, 21]));
+
+</pre>
+</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct MapData</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dtiled</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dtiled/algorithm.html" class=" module">algorithm</a>
+							</li>
+							<li>
+								<a href="../../dtiled/coords.html" class=" module">coords</a>
+							</li>
+							<li>
+								<a href="../../dtiled/data.html" class="selected module">data</a>
+							</li>
+							<li>
+								<a href="../../dtiled/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dtiled/map.html" class=" module">map</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct MapData</h1>
+			<section>
+				<p>Top-level Tiled structure - encapsulates all data in the map file.
+</p>
+
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.backgroundColor.html" class="public"><code>backgroundColor</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Hex-formatted background color (#RRGGBB)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.layers.html" class="public"><code>layers</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../dtiled/data/LayerData.html">LayerData</a>[]</code></td>
+								<td>All map <code class="prettyprint lang-d">layers</code> (tiles and objects)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.nextObjectId.html" class="public"><code>nextObjectId</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Global counter across all objects
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.numCols.html" class="public"><code>numCols</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile columns
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.numRows.html" class="public"><code>numRows</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>Number of tile rows
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.orientation.html" class="public"><code>orientation</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../dtiled/data/MapData.Orientation.html">MapData.<wbr/>Orientation</a></code></td>
+								<td>Orthogonal, isometric, or staggered
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.properties.html" class="public"><code>properties</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string[string]</code></td>
+								<td>Key-value property pairs on map
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.renderOrder.html" class="public"><code>renderOrder</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td>Rendering direction (orthogonal only)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.tileHeight.html" class="public"><code>tileHeight</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>General grid size. Individual tiles sizes may differ.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.tilesets.html" class="public"><code>tilesets</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../dtiled/data/TilesetData.html">TilesetData</a>[]</code></td>
+								<td>All tile sets defined in this map
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.tileWidth.html" class="public"><code>tileWidth</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>General grid size. Individual tiles sizes may differ.
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.getLayer.html" class="public">
+										<code>getLayer</code>
+									</a>
+								</td>
+								<td> Fetch a map layer by its <a href="../../dtiled/data/MapData.getLayer.html#name"><code class="prettyprint lang-d">name</code></a>. No check for <a href="../../dtiled/data/MapData.layers.html"><code class="prettyprint lang-d">layers</code></a> with duplicate names is performed.
+ Throws if no layer has a matching <a href="../../dtiled/data/MapData.getLayer.html#name"><code class="prettyprint lang-d">name</code></a> (case-sensitive).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.getTileset.html" class="public">
+										<code>getTileset</code>
+									</a>
+								</td>
+								<td> Fetch a tileset by its <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a>. No check for <a href="../../dtiled/data/MapData.layers.html"><code class="prettyprint lang-d">layers</code></a> with duplicate names is performed.
+ Throws if no tileset has a matching <a href="../../dtiled/data/MapData.getTileset.html#name"><code class="prettyprint lang-d">name</code></a> (case-sensitive).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.getTileset.html" class="public">
+										<code>getTileset</code>
+									</a>
+								</td>
+								<td> Fetch the tileset containing the tile a given GID.
+ Throws if the <a href="../../dtiled/data/MapData.getTileset.html#gid"><code class="prettyprint lang-d">gid</code></a> is out of range for all <a href="../../dtiled/data/MapData.tilesets.html"><code class="prettyprint lang-d">tilesets</code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.load.html" class="public">
+										<code>load</code>
+									</a>
+								</td>
+								<td> Load a Tiled map from a JSON file.
+ Throws if no file is found at that <a href="../../dtiled/data/MapData.load.html#path"><code class="prettyprint lang-d">path</code></a> or if the parsing fails.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.save.html" class="public">
+										<code>save</code>
+									</a>
+								</td>
+								<td> Save a Tiled map to a JSON file.
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Enums</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.Orientation.html" class="public">
+										<code>Orientation</code>
+									</a>
+								</td>
+								<td>Map <a href="../../dtiled/data/MapData.orientation.html"><code class="prettyprint lang-d">orientation</code></a>.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../dtiled/data/MapData.RenderOrder.html" class="public">
+										<code>RenderOrder</code>
+									</a>
+								</td>
+								<td> The order in which tiles on tile <a href="../../dtiled/data/MapData.layers.html"><code class="prettyprint lang-d">layers</code></a> are rendered.
+ From the docs:
+ Valid values are right-down (the default), right-up, left-down and left-up.
+ In all cases, the map is drawn row-by-row.
+ (since 0.10, but only supported for orthogonal maps at the moment)
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p><a href="https://github.com/rcorre">rcorre</a>
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Copyright © 2015, Ryan Roden-Corrent
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p><a href="http://opensource.org/licenses/MIT">MIT</a>
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>
