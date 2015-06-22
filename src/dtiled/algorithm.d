@@ -289,10 +289,10 @@ auto shortestPath(alias cost, Tile)(TileGrid!Tile grid, RowCol start, RowCol end
 
     // if current is the destination, reconstruct the path
     if (current == end) {
-      auto path = [current];
+      RowCol[] path;
       auto curIdx = coordToIdx(current);
 
-      while (parent[curIdx] != size_t.max) {
+      while (parent[curIdx] != noParent) {
         curIdx = parent[curIdx];
         path ~= idxToCoord(curIdx);
       }
@@ -325,9 +325,9 @@ auto shortestPath(alias cost, Tile)(TileGrid!Tile grid, RowCol start, RowCol end
   return null;
 }
 
-private auto tileCost(char c) { return c == 'X' ? 99 : 1; }
-
 unittest {
+  import std.range, std.algorithm;
+
   // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
   auto grid = TileGrid!char([
     // 0    1    2    3    4    5 <-col| row
@@ -339,9 +339,11 @@ unittest {
     [ ' ', ' ', ' ', 'X', 'X', 'X' ], // 5
   ]);
 
-  auto path = shortestPath!(tileCost)(grid, RowCol(1,4), RowCol(4,1));
+  // our cost function returns 1 for an empty tile and 99 for a wall (an 'X')
+  auto path = shortestPath!(x => x == 'X' ? 99 : 1)(grid, RowCol(1,4), RowCol(4,1));
   assert(path[] !is null, "failed to find path when one existed");
 
   // the 'a's mark the optimal path
   assert(path[].all!(x => grid.tileAt(x) == 'a'));
+  assert(path[].walkLength == 6);
 }
