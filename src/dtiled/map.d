@@ -1,10 +1,16 @@
 /**
- * Provides a generic map structure with commonly-needed functionality.
- *
- * While the types provided in dtiled.data are intended to provide the information needed to
- * load a map into a game, a TileMap is a structure intended to be used in-game.
- *
- * A  map structure is like a grid structure with additional of logic to work with pixel coords.
+ * A map is essentially a grid with additional information about tile positions and sizes.
+ * 
+ * Currently, the only map type is `OrthoMap`, but `IsoMap` and `HexMap` may be added in later
+ * versions.
+ * 
+ * An `OrthoMap` represents a map of rectangular (usually square) tiles that are arranged
+ * orthogonally. In other words, all tiles in a row are at the same y corrdinate, and all tiles in
+ * a column are at the same x coordinate (as opposed to an Isometric map, where there is an offset).
+ * 
+ * An `OrthoMap` provides all of the functionality as `RectGrid`. 
+ * It also stores the size of tiles and provides functions to translate between 'grid coordinates'
+ * (row/column) and 'screen coordinates' (x/y pixel positions).
  *
  * Authors: <a href="https://github.com/rcorre">rcorre</a>
  * License: <a href="http://opensource.org/licenses/MIT">MIT</a>

@@ -2,7 +2,9 @@
  * This module helps handle coordinate systems within a map.
  *
  * When dealing with a grid, do you ever forget whether the row or column is the first index?
+ *
  * Me too.
+ *
  * For this reason, all functions dealing with grid coordinates take a RowCol argument.
  * This makes it abundantly clear that the map is indexed in row-major order.
  * Furthormore, it prevents confusion between **grid** coordinates and **pixel** coordinates.

@@ -1,5 +1,8 @@
 /**
- * Provides functions that treat a 2D array as a rectangular grid of tiles.
+ * A grid wraps a 2D array to provide specialized grid-based functionality.
+ *
+ * Currently, the only grid type is RectGrid, which can serve as the base for an orthogonal or isometric map.
+ * HexGrid may be added in a later version to support hexagonal maps.
  *
  * Authors: <a href="https://github.com/rcorre">rcorre</a>
  * License: <a href="http://opensource.org/licenses/MIT">MIT</a>
@@ -135,7 +138,6 @@ struct RectGrid(T) if (isArray2D!T) {
    * The coord must be in bounds.
    *
    * Params:
-   *  grid = grid from which to retrieve tile.
    *  coord = a row/column pair identifying a point in the tile grid.
    */
   ref auto tileAt(RowCol coord) {
@@ -318,7 +320,6 @@ struct RectGrid(T) if (isArray2D!T) {
    * Same as maskTiles, but return coords instead of tiles.
    *
    * Params:
-   *  grid = grid to apply mask to
    *  offset = map coordinate on which to align the top-left corner of the mask.
    *  mask = a rectangular array of true/false values indicating which tiles to take.
    *         each true value takes the tile at that grid coordinate.
@@ -341,7 +342,6 @@ struct RectGrid(T) if (isArray2D!T) {
    * The mask is allowed to extend out of bounds - out of bounds coordinates are ignored
    *
    * Params:
-   *  grid = grid to apply mask to
    *  offset = map coordinate on which to align the top-left corner of the mask.
    *  mask = a rectangular array of true/false values indicating which tiles to take.
    *         each true value takes the tile at that grid coordinate.
@@ -375,7 +375,6 @@ struct RectGrid(T) if (isArray2D!T) {
    * Same as maskCoords, but centered.
    *
    * Params:
-   *  grid = grid to apply mask to
    *  center = map coord on which to position the center of the mask.
    *           if the mask has an even side length, rounds down to compute the 'center'
    *  mask = a rectangular array of true/false values indicating which tiles to take.
