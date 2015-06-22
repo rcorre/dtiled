@@ -26,6 +26,9 @@ foreach(coord, ref tile ; tilemap) {
   tile.awesomeness += 10; // if your tiles are structs, use ref to modify them
 }
 
+// need a range? Use `allTiles` or `allCoords`.
+auto tileRange = tilemap.allTiles.filter!(x => someCondition(x));
+
 // finding the neighbors of a tile is an oft-needed task
 auto adjacent = tilemap.adjacentTiles(RowCol(3,3));
 auto surrounding = tilemap.adjacentTiles(RowCol(3,3), Diagonals.yes);
@@ -47,7 +50,7 @@ foreach(gid ; mapData.getLayer("ground").data) { ... }
 ```
 
 To see the full suite of features offered by dtiled, check out the
-[docs](http://rcorre.github.io/dtiled/dtiled.html).
+[docs](http://rcorre.github.io/dtiled/index.html).
 
 If you're more of the 'see things in action' type, check out the
 [Demo](https://github.com/rcorre/dtiled-example). It uses either
