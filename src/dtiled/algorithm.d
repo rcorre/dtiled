@@ -365,7 +365,7 @@ struct CoordMap(T) {
     struct Result {
       private alias Pair = Tuple!(RowCol, "coord", T, "value");
       private CoordMap!T  _map;
-      private typeof(span(RowCol.init, RowCol.init)) _span;
+      private RowColRange _span;
 
       auto front() { return Pair(_span.front, _map[_span.front]); }
       auto empty() { return _span.empty; }

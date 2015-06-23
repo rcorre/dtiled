@@ -32,6 +32,9 @@ private alias coord_t = long;
 /// Whether to consider diagonals adjacent in situations dealing with the concept of adjacency.
 alias Diagonals = Flag!"Diagonals";
 
+/// The type returned by `span`: a range of RowCol.
+alias RowColRange = typeof(span(RowCol.init, RowCol.init));
+
 /// Represents a discrete location within the map grid.
 struct RowCol {
   coord_t row, col;
