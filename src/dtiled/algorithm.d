@@ -18,31 +18,19 @@ auto enclosedCoords(alias isWall, T)(T grid, RowCol origin, Diagonals diags = Di
   bool hitEdge;
 
   // keep a flag for each tile to mark which have been visited
-  Array!bool visited;
-  visited.length = grid.numRows * grid.numCols;
-
-  // visited[] index for a (row,col) pair
-  auto coordToIdx(RowCol coord) {
-    return coord.row * grid.numCols + coord.col;
-  }
-
-  // row/col coord for a visited[] index
-  auto idxToCoord(size_t idx) {
-    return RowCol(idx / grid.numCols, idx % grid.numCols);
-  }
+  auto visited = CoordMap!bool(grid.numRows, grid.numCols);
 
   bool outOfBounds(RowCol coord) {
     return coord.row < 0 || coord.col < 0 || coord.row >= grid.numRows || coord.col >= grid.numCols;
   }
 
   void flood(RowCol coord) {
-    auto idx = coordToIdx(coord);
     hitEdge = hitEdge || outOfBounds(coord);
 
     // break this recursive branch if we hit an edge or a visited or invalid tile.
-    if (hitEdge || visited[idx] || isWall(grid.tileAt(coord))) return;
+    if (hitEdge || visited[coord] || isWall(grid.tileAt(coord))) return;
 
-    visited[idx] = true;
+    visited[coord] = true;
 
     // recurse into neighboring tiles
     foreach(neighbor ; coord.adjacent(diags)) flood(neighbor);
@@ -51,11 +39,11 @@ auto enclosedCoords(alias isWall, T)(T grid, RowCol origin, Diagonals diags = Di
   // start the flood at the origin tile
   flood(origin);
 
-  return visited[]
-    .enumerate                            // pair each bool with an index
-    .filter!(pair => pair.value)          // keep only the visited nodes
-    .map!(pair => idxToCoord(pair.index)) // grab the tile for each visited node
-    .take(hitEdge ? 0 : size_t.max);      // empty range if edge of map was touched
+  return visited
+    .byKeyValue                      // pair each bool with an index
+    .filter!(pair => pair.value)     // keep only the visited nodes
+    .map!(pair => pair.coord)        // grab the coord for each visited node
+    .take(hitEdge ? 0 : size_t.max); // empty range if edge of map was touched
 }
 
 /**
@@ -349,4 +337,41 @@ unittest {
   // the 'a's mark the optimal path
   assert(path[].all!(x => grid.tileAt(x) == 'a'));
   assert(path[].walkLength == 6);
+}
+
+private:
+
+struct CoordMap(T) {
+  Array!T store;
+  size_t numRows, numCols;
+
+  this(size_t numRows, size_t numCols) {
+    this.numRows = numRows;
+    this.numCols = numCols;
+    store.length = numRows * numCols;
+  }
+
+  ref auto opIndex(RowCol coord) {
+    assert(coord.row >= 0 && coord.col >= 0 && coord.row < numRows && coord.col < numCols);
+    return store[coord.row * numCols + coord.col];
+  }
+
+  void opIndexAssign(T val, RowCol coord) {
+    assert(coord.row >= 0 && coord.col >= 0 && coord.row < numRows && coord.col < numCols);
+    store[coord.row * numCols + coord.col] = val;
+  }
+
+  auto byKeyValue() {
+    struct Result {
+      private alias Pair = Tuple!(RowCol, "coord", T, "value");
+      private CoordMap!T  _map;
+      private typeof(span(RowCol.init, RowCol.init)) _span;
+
+      auto front() { return Pair(_span.front, _map[_span.front]); }
+      auto empty() { return _span.empty; }
+      void popFront() { _span.popFront; }
+    }
+
+    return Result(this, RowCol(0,0).span(numRows, numCols));
+  }
 }
