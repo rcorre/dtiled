@@ -110,30 +110,19 @@ auto floodCoords(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagona
 {
   struct Result {
     private {
-      T            _grid;
-      SList!RowCol _stack;
-      Array!bool   _visited;
-
-      // helpers to translate between the 2D grid coordinate space and the 1D visited array
-      bool getVisited(RowCol coord) {
-        auto idx = coord.row * grid.numCols + coord.col;
-        return _visited[idx];
-      }
-
-      void setVisited(RowCol coord) {
-        auto idx = coord.row * grid.numCols + coord.col;
-        _visited[idx] = true;
-      }
+      T             _grid;
+      SList!RowCol  _stack;
+      CoordMap!bool _visited;
 
       // true if front is out of bounds, already visited, or does not meet the predicate
       bool shouldSkipFront() {
-        return !_grid.contains(front) || getVisited(front) || !pred(_grid.tileAt(front));
+        return !_grid.contains(front) || _visited[front] || !pred(_grid.tileAt(front));
       }
     }
 
     this(T grid, RowCol origin) {
       _grid = grid;
-      _visited.length = grid.numRows * grid.numCols; // one visited entry for each tile
+      _visited = CoordMap!bool(grid.numRows, grid.numCols);
 
       // push the first tile onto the stack only if it meets the predicate
       if (pred(grid.tileAt(origin))) {
@@ -149,7 +138,7 @@ auto floodCoords(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagona
       auto coord = front;
 
       // mark that the current coord was visited and pop it
-      setVisited(coord);
+      _visited[coord] = true;
       _stack.removeFront();
 
       // push neighboring coords onto the stack
@@ -245,7 +234,7 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   alias Cost = typeof(cost(grid.tileAt(RowCol.init)));
 
   // constant used to indicate that a node's parent has not been set
-  enum noParent = size_t.max;
+  enum noParent = RowCol(-1, -1);
 
   struct Entry {
     RowCol coord;
@@ -256,19 +245,16 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   auto coordToIdx(RowCol coord) { return coord.row * grid.numCols + coord.col; }
   auto idxToCoord(size_t idx)   { return RowCol(idx / grid.numCols, idx % grid.numCols); }
 
-  Array!size_t parent;
-  Array!Cost   gscore, fscore;
+  // map each coord to the coord of its parent (or a constant representing the lack of a parent)
+  auto parent = CoordMap!RowCol(grid.numRows, grid.numCols, noParent);
+
+  auto gscore = CoordMap!Cost(grid.numRows, grid.numCols);
+  auto fscore = CoordMap!Cost(grid.numRows, grid.numCols);
   SList!RowCol closed;
   auto open = new RedBlackTree!(Entry, (a,b) => a.fscore < b.fscore, true);
 
-  parent.length = grid.numTiles;
-  fscore.length = grid.numTiles;
-  gscore.length = grid.numTiles;
-
-  parent[].fill(noParent);
-
-  gscore[coordToIdx(start)] = 0;
-  fscore[coordToIdx(start)] = 0;
+  gscore[start] = 0;
+  fscore[start] = 0;
 
   open.insert(Entry(start, 0));
 
@@ -281,11 +267,10 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
     // if current is the destination, reconstruct the path
     if (current == end) {
       RowCol[] path;
-      auto curIdx = coordToIdx(current);
 
-      while (parent[curIdx] != noParent) {
-        curIdx = parent[curIdx];
-        path ~= idxToCoord(curIdx);
+      while (parent[current] != noParent) {
+        path ~= current;
+        current = parent[current];
       }
 
       return path;
@@ -295,20 +280,18 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
     foreach(neighbor ; current.adjacent) {
       if (!grid.contains(neighbor) || closed[].canFind(neighbor)) continue;
 
-      auto neighborIdx = coordToIdx(neighbor);
-
       // tentative score is the score of the current tile plus the cost to the neighbor
-      auto estimate = gscore[coordToIdx(current)] + cost(grid.tileAt(neighbor));
+      auto estimate = gscore[current] + cost(grid.tileAt(neighbor));
 
       bool inOpenSet = open[].canFind!(x => x.coord == neighbor);
 
       if (!inOpenSet) open.insert(Entry(neighbor, estimate));
 
       // if it is a new tile or if we have found a shorter route to this tile
-      if (!inOpenSet || estimate < gscore[neighborIdx]) {
-        parent[neighborIdx] = coordToIdx(current);
-        gscore[neighborIdx] = estimate;
-        fscore[neighborIdx] = estimate + cast(Cost) manhattan(neighbor, end);
+      if (!inOpenSet || estimate < gscore[neighbor]) {
+        parent[neighbor] = current;
+        gscore[neighbor] = estimate;
+        fscore[neighbor] = estimate + cast(Cost) manhattan(neighbor, end);
       }
     }
   }
@@ -340,7 +323,7 @@ unittest {
 }
 
 private:
-
+// helper that maps a 'RowCol' to a value of type T
 struct CoordMap(T) {
   Array!T store;
   size_t numRows, numCols;
@@ -349,6 +332,11 @@ struct CoordMap(T) {
     this.numRows = numRows;
     this.numCols = numCols;
     store.length = numRows * numCols;
+  }
+
+  this(size_t numRows, size_t numCols, T fillWith) {
+    this(numRows, numCols);
+    store[].fill(fillWith);
   }
 
   ref auto opIndex(RowCol coord) {
