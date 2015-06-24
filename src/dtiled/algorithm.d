@@ -230,6 +230,8 @@ unittest {
 auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   if (is(typeof(cost(grid.tileAt(RowCol.init))) : real))
 {
+  // A* implementation:
+
   // type returned by the cost function
   alias Cost = typeof(cost(grid.tileAt(RowCol.init)));
 
@@ -237,43 +239,41 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   enum noParent = RowCol(-1, -1);
 
   // pair a coord with its current fscore for sorted insertion into the 'open' set.
-  struct Entry {
+  struct OpenEntry {
     RowCol coord;
     int fscore;
   }
 
-  // map each coord to the coord of its parent (or a constant representing the lack of a parent)
-  auto parent = CoordMap!RowCol(grid.numRows, grid.numCols, noParent);
-
-  // the 'g' score is the known cost from 'start' to a given tile
-  auto gscore = CoordMap!Cost(grid.numRows, grid.numCols);
-
-  // the 'f' score is the 'g' score of this coord plus its estimated cost to the goal.
-  auto fscore = CoordMap!Cost(grid.numRows, grid.numCols);
-
-  // 'closed' tiles should not be re-visited
-  SList!RowCol closed;
+  // a 'Node' stores all information this algorithm needs for a particular coord.
+  struct Node {
+    bool open;                // an 'open' node is a candidate for exploration
+    bool closed;              // a 'closed' node should not be explored again
+    Cost gscore;              // the known cost from 'start' to a given tile
+    Cost fscore;              // the 'g' score of this coord plus its estimated cost to the goal.
+    RowCol parent = noParent; // the coord of its parent
+  }
+  auto nodes = CoordMap!Node(grid.numRows, grid.numCols);
 
   // 'open' tiles are candidates for exploration; the lowest f-score is the most viable.
-  auto open = new RedBlackTree!(Entry, (a,b) => a.fscore < b.fscore, true);
+  auto open = new RedBlackTree!(OpenEntry, (a,b) => a.fscore < b.fscore, true);
 
   // the open set starts with only the current tile
-  open.insert(Entry(start, 0));
+  open.insert(OpenEntry(start, 0));
 
   // loop until we reach the goal or run out of tiles to explore
   while (!open.empty) {
     // get the current most optimal tile and move it from the open to the closed set
     auto current = open.front.coord;
     open.removeFront();
-    closed.insertFront(current);
+    nodes[current].closed = true;
 
     // if current is the destination, reconstruct the path by following the 'parent' graph
     if (current == end) {
       SList!RowCol path;
 
-      while (parent[current] != noParent) {
+      while (nodes[current].parent != noParent) {
         path.insertFront(current);
-        current = parent[current];
+        current = nodes[current].parent;
       }
 
       return path;
@@ -281,20 +281,24 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
 
     // current is not the destination, explore its neighbors
     foreach(neighbor ; current.adjacent) {
-      if (!grid.contains(neighbor) || closed[].canFind(neighbor)) continue;
+      // ignore this coord if it is out of bounds or already in the closed set
+      if (!grid.contains(neighbor) || nodes[neighbor].closed) continue;
 
       // tentative score is the score of the current tile plus the cost to the neighbor
-      auto estimate = gscore[current] + cost(grid.tileAt(neighbor));
+      auto estimate = nodes[neighbor].gscore + cost(grid.tileAt(neighbor));
 
       // only insert into the open set if it is not already there
-      bool inOpenSet = open[].canFind!(x => x.coord == neighbor);
-      if (!inOpenSet) open.insert(Entry(neighbor, estimate));
+      bool wasOpen = nodes[neighbor].open;
+      if (!wasOpen) {
+        nodes[neighbor].open = true;
+        open.insert(OpenEntry(neighbor, estimate));
+      }
 
       // compute costs if it is a new tile or if we have found a shorter route to this tile
-      if (!inOpenSet || estimate < gscore[neighbor]) {
-        parent[neighbor] = current;
-        gscore[neighbor] = estimate;
-        fscore[neighbor] = estimate + cast(Cost) manhattan(neighbor, end);
+      if (!wasOpen || estimate < nodes[neighbor].gscore) {
+        nodes[neighbor].parent = current;
+        nodes[neighbor].gscore = estimate;
+        nodes[neighbor].fscore = estimate + cast(Cost) manhattan(neighbor, end);
       }
     }
   }
@@ -334,11 +338,6 @@ struct CoordMap(T) {
     this.numRows = numRows;
     this.numCols = numCols;
     store.length = numRows * numCols;
-  }
-
-  this(size_t numRows, size_t numCols, T fillWith) {
-    this(numRows, numCols);
-    store[].fill(fillWith);
   }
 
   ref auto opIndex(RowCol coord) {
