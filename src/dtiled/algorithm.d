@@ -219,7 +219,7 @@ unittest {
  *         To represent an 'impassable' tile, cost should return a large value.
  *         Do $(RED NOT) let cost return a value large enough to overflow when added to another.
  *         For example, if cost returns an int, the return value should be less than `int.max / 2`.
- *  Tile = type of the grid
+ *  T = type of the grid
  *  grid = grid of tiles to find path on
  *  start = tile to start pathfinding from
  *  end = the 'goal' the pathfinder should reach
@@ -266,10 +266,10 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
 
     // if current is the destination, reconstruct the path
     if (current == end) {
-      RowCol[] path;
+      SList!RowCol path;
 
       while (parent[current] != noParent) {
-        path ~= current;
+        path.insertFront(current);
         current = parent[current];
       }
 
@@ -296,30 +296,30 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
     }
   }
 
-  return null;
+  return SList!RowCol(); // no path found, return empty path
 }
 
 unittest {
-  import std.range, std.algorithm;
+  import std.algorithm : equal;
 
   // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
   auto grid = rectGrid([
     // 0    1    2    3    4    5 <-col| row
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
-    [ 'X', ' ', 'b', 'X', 'a', 'X' ], // 1
-    [ 'X', ' ', 'b', 'X', 'a', 'X' ], // 2
-    [ 'X', ' ', 'X', 'X', 'a', ' ' ], // 3
-    [ ' ', 'a', 'a', 'a', 'a', 'X' ], // 4
+    [ 'X', ' ', 'b', 'X', 'b', 'X' ], // 1
+    [ 'X', ' ', 'b', 'X', ' ', 'X' ], // 2
+    [ 'X', ' ', 'X', 'X', ' ', ' ' ], // 3
+    [ ' ', 'a', ' ', ' ', ' ', 'X' ], // 4
     [ ' ', ' ', ' ', 'X', 'X', 'X' ], // 5
   ]);
 
+  // find a path from a to b
   // our cost function returns 1 for an empty tile and 99 for a wall (an 'X')
-  auto path = shortestPath!(x => x == 'X' ? 99 : 1)(grid, RowCol(1,4), RowCol(4,1));
-  assert(path[] !is null, "failed to find path when one existed");
+  auto path = shortestPath!(x => x == 'X' ? 99 : 1)(grid, RowCol(4,1), RowCol(1,4));
+  assert(!path.empty, "failed to find path when one existed");
 
-  // the 'a's mark the optimal path
-  assert(path[].all!(x => grid.tileAt(x) == 'a'));
-  assert(path[].walkLength == 6);
+  // path should include the end but not the start
+  assert(path[].equal([RowCol(4,2), RowCol(4,3), RowCol(4,4), RowCol(3,4), RowCol(2,4), RowCol(1,4)]));
 }
 
 private:
