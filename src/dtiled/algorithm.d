@@ -236,35 +236,38 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   // constant used to indicate that a node's parent has not been set
   enum noParent = RowCol(-1, -1);
 
+  // pair a coord with its current fscore for sorted insertion into the 'open' set.
   struct Entry {
     RowCol coord;
     int fscore;
   }
 
-  // helpers to translate between grid coords and _dist/_prev array indices
-  auto coordToIdx(RowCol coord) { return coord.row * grid.numCols + coord.col; }
-  auto idxToCoord(size_t idx)   { return RowCol(idx / grid.numCols, idx % grid.numCols); }
-
   // map each coord to the coord of its parent (or a constant representing the lack of a parent)
   auto parent = CoordMap!RowCol(grid.numRows, grid.numCols, noParent);
 
+  // the 'g' score is the known cost from 'start' to a given tile
   auto gscore = CoordMap!Cost(grid.numRows, grid.numCols);
+
+  // the 'f' score is the 'g' score of this coord plus its estimated cost to the goal.
   auto fscore = CoordMap!Cost(grid.numRows, grid.numCols);
+
+  // 'closed' tiles should not be re-visited
   SList!RowCol closed;
+
+  // 'open' tiles are candidates for exploration; the lowest f-score is the most viable.
   auto open = new RedBlackTree!(Entry, (a,b) => a.fscore < b.fscore, true);
 
-  gscore[start] = 0;
-  fscore[start] = 0;
-
+  // the open set starts with only the current tile
   open.insert(Entry(start, 0));
 
+  // loop until we reach the goal or run out of tiles to explore
   while (!open.empty) {
     // get the current most optimal tile and move it from the open to the closed set
     auto current = open.front.coord;
     open.removeFront();
     closed.insertFront(current);
 
-    // if current is the destination, reconstruct the path
+    // if current is the destination, reconstruct the path by following the 'parent' graph
     if (current == end) {
       SList!RowCol path;
 
@@ -283,11 +286,11 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
       // tentative score is the score of the current tile plus the cost to the neighbor
       auto estimate = gscore[current] + cost(grid.tileAt(neighbor));
 
+      // only insert into the open set if it is not already there
       bool inOpenSet = open[].canFind!(x => x.coord == neighbor);
-
       if (!inOpenSet) open.insert(Entry(neighbor, estimate));
 
-      // if it is a new tile or if we have found a shorter route to this tile
+      // compute costs if it is a new tile or if we have found a shorter route to this tile
       if (!inOpenSet || estimate < gscore[neighbor]) {
         parent[neighbor] = current;
         gscore[neighbor] = estimate;
@@ -302,7 +305,7 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
 unittest {
   import std.algorithm : equal;
 
-  // let the 'X's represent 'walls', and the other letters 'open' areas we'd link to identify
+  // let the 'X's represent 'walls', we want a path from a to b
   auto grid = rectGrid([
     // 0    1    2    3    4    5 <-col| row
     [ 'X', 'X', 'X', 'X', 'X', 'X' ], // 0
@@ -313,7 +316,6 @@ unittest {
     [ ' ', ' ', ' ', 'X', 'X', 'X' ], // 5
   ]);
 
-  // find a path from a to b
   // our cost function returns 1 for an empty tile and 99 for a wall (an 'X')
   auto path = shortestPath!(x => x == 'X' ? 99 : 1)(grid, RowCol(4,1), RowCol(1,4));
   assert(!path.empty, "failed to find path when one existed");
