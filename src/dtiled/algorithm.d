@@ -306,6 +306,7 @@ auto shortestPath(alias cost, T)(T grid, RowCol start, RowCol end)
   return SList!RowCol(); // no path found, return empty path
 }
 
+///
 unittest {
   import std.algorithm : equal;
 
@@ -328,6 +329,135 @@ unittest {
   assert(path[].equal([RowCol(4,2), RowCol(4,3), RowCol(4,4), RowCol(3,4), RowCol(2,4), RowCol(1,4)]));
 }
 
+
+/**
+ * Get the shortest path between a coordinate and each coordinate within a limited range.
+ *
+ * Params:
+ *  cost = function that returns the cost to move onto a tile.
+ *         To represent an 'impassable' tile, cost should return a large value.
+ *         Do $(RED NOT) let cost return a value large enough to overflow when added to another.
+ *         For example, if cost returns an int, the return value should be less than `int.max / 2`.
+ *  T = type of the grid
+ *  grid = grid of tiles to find path on
+ *  start = tile to start pathfinding from
+ *  maxCost = limit pathfinding to tiles within this cost of the center (inclusive)
+ *
+ *  Returns: A structure that contains the cost and path to each tile within range.
+ */
+auto allShortestPaths(alias cost, T, U : real)(T grid, RowCol start, U maxCost)
+  if (is(typeof(cost(grid.tileAt(RowCol.init))) : U))
+{
+  // constant used to indicate that a node's parent has not been set
+  enum noParent = RowCol(-1, -1);
+
+  // constant used to indicate that a node is unreachable based on current knowledge
+  immutable unreachable = maxCost + 1;
+  assert(unreachable > maxCost, "use a lower maxCost to avoid wrapping");
+  assert(unreachable + maxCost > maxCost, "use a lower maxCost to avoid wrapping");
+
+  // a 'Node' stores all information this algorithm needs for a particular coord.
+  struct Node {
+    U dist;    // the known cost from 'start' to this tile
+    RowCol prev;  // the previous tile on the path leading to this tile
+    bool visited; // true if this tile has been explored
+
+    this(U dist) {
+      this.dist = dist;
+      this.prev = noParent;
+      this.visited = false;
+    }
+  }
+
+  // the first node has dist 0, all others start as unreachable
+  auto nodes = CoordMap!Node(grid.numRows, grid.numCols, Node(unreachable));
+  nodes[start].dist = 0;
+
+  struct QueueEntry {
+    RowCol coord;
+    U dist;
+  }
+  auto queue = new RedBlackTree!(QueueEntry, (a,b) => a.dist < b.dist, true);
+
+  // begin with the 'start' tile
+  queue.insert(QueueEntry(start, 0));
+
+  // loop until we reach the goal or run out of tiles to explore
+  while (!queue.empty) {
+    auto current = queue.front.coord;
+    queue.removeFront();
+
+    // skip if already visited
+    if (nodes[current].visited) continue;
+
+    // mark as visited
+    nodes[current].visited = true;
+
+    foreach(neighbor ; current.adjacent) {
+      // skip tiles that are out of bounds
+      // if we have already popped this node from the stack once, its path must be optimal
+      if (!grid.contains(neighbor) || nodes[neighbor].visited) continue;
+
+      // compute the distance from 'start' -> 'neighbor' via 'current'
+      auto dist = nodes[current].dist + cost(grid.tileAt(neighbor));
+
+      // if we found a shorter path to 'neighbor', change its distance and parent node
+      if (dist < nodes[neighbor].dist) {
+        nodes[neighbor].prev = current;
+        nodes[neighbor].dist = dist;
+        queue.insert(QueueEntry(neighbor));
+      }
+    }
+  }
+
+  struct Result {
+    private CoordMap!Node _nodes;
+
+    auto costTo(RowCol coord) {
+      return nodes[coord].dist;
+    }
+
+    auto pathTo(RowCol coord) {
+      SList!RowCol path;
+
+      while (nodes[coord].prev != noParent) {
+        path.insertFront(coord);
+        coord = nodes[coord].prev;
+      }
+
+      return path;
+    }
+  }
+
+  return Result(nodes);
+}
+
+unittest {
+  import std.algorithm : equal;
+
+  auto grid = rectGrid([
+      //0  1  2  3  4  5  6  7  8  9
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ], // 0
+      [ 1, 1, 1, 1, 1, 1, 2, 2, 1, 1 ], // 1
+      [ 1, 1, 1, 1, 1, 1, 2, 2, 1, 1 ], // 2
+      [ 1, 1, 1, 1, 5, 1, 1, 1, 1, 1 ], // 3
+      [ 2, 2, 2, 2, 2, 0, 1, 9, 1, 1 ], // 4
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ], // 5
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ], // 6
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ], // 7
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ], // 8
+  ]);
+
+  enum maxCost = 6;
+  auto paths = grid.allShortestPaths!(x => x)(RowCol(4,5), maxCost);
+
+  assert(paths.costTo(RowCol(4,5)) == 0);
+
+  assert(paths.costTo(RowCol(0,5)) == 4);
+  assert(paths.pathTo(RowCol(0,5))[].equal(
+    [ RowCol(3,5), RowCol(2,5), RowCol(1,5), RowCol(0,5) ]));
+}
+
 private:
 // helper that maps a 'RowCol' to a value of type T
 struct CoordMap(T) {
@@ -338,6 +468,14 @@ struct CoordMap(T) {
     this.numRows = numRows;
     this.numCols = numCols;
     store.length = numRows * numCols;
+  }
+
+  static if (!is(T == bool)) {
+    this(size_t numRows, size_t numCols, T fillWith) {
+      this.numRows = numRows;
+      this.numCols = numCols;
+      store = Array!T(fillWith.repeat(numRows * numCols));
+    }
   }
 
   ref auto opIndex(RowCol coord) {
