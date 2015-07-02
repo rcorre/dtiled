@@ -220,7 +220,6 @@ Here are some other useful things you can do with a grid:
 ```d
 auto neighbors = grid.adjacentTiles(RowCol(2,3));
 auto surrounding = grid.adjacentTiles(RowCol(2,3), Diagonals.yes);
-auto coords = grid.adjacentCoords(RowCol(2,3)); // coords instead of tiles
 ```
 
 Nice, but still pretty standard fare. What if you need to select tiles with a
