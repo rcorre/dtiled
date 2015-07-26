@@ -131,7 +131,7 @@ struct RowCol {
     ]));
   }
 
-  /// Add or subtract one coordinate from another
+  /// Add or subtract one coordinate from another.
   @nogc
   RowCol opBinary(string op)(RowCol rhs) const if (op == "+" || op == "-") {
     return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
@@ -140,6 +140,18 @@ struct RowCol {
   unittest {
     assert(RowCol(1, 2) + RowCol(4, 1) == RowCol(5, 3));
     assert(RowCol(4, 2) - RowCol(6, 1) == RowCol(-2, 1));
+  }
+
+  /// Add or subtract one coordinate from another in place.
+  @nogc
+  void opOpAssign(string op)(RowCol rhs) if (op == "+" || op == "-") {
+    this = this.opBinary!op(rhs);
+  }
+
+  unittest {
+    auto rc = RowCol(1, 2);
+    rc += RowCol(4, 1);
+    assert(rc == RowCol(5, 3));
   }
 }
 
