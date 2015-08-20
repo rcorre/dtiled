@@ -25,7 +25,7 @@ import std.math      : abs, sgn;
 import std.range     : iota, only, take, chain;
 import std.format    : format;
 import std.typecons  : Tuple, Flag;
-import std.algorithm : map, cartesianProduct;
+import std.algorithm : map, canFind, cartesianProduct;
 
 private alias coord_t = long;
 
@@ -164,18 +164,30 @@ struct RowCol {
  * If start.col >= end.col, enumerate cols in increasing order, otherwise enumerate in decreasing.
  *
  * Params:
+ *  bound = Determines whether each bound is "[" (inclusive) or  ")" (exclusive).
+ *          The default of "[)" includes start but excludes end.
+ *          See_Also: std.random.uniform.
  *  start = RowCol pair to start enumeration from, $(B inclusive)
  *  end   = RowCol pair to end enumeration at, $(B exclusive)
  */
-auto span(RowCol start, RowCol end) {
-  auto colInc = sgn(end.col - start.col); // direction to increment columns (1 or -1)
-  auto rowInc = sgn(end.row - start.row); // direction to increment rows (1 or -1)
+auto span(string bound = "[)")(RowCol start, RowCol end) {
+  enum validBounds = [ "()",  "(]", "[)", "[]" ]; 
+  static assert(validBounds.canFind(bound), 
+      bound ~ " is an invalid span bound. Try one of " ~ validBounds.toString);
 
-  // default increment to 1 in case there is no difference between coords
+  // direction to increment the rows/cols (1 or -1)
+  auto colInc = sgn(end.col - start.col);
+  auto rowInc = sgn(end.row - start.row);
+
   colInc = (colInc == 0) ? 1 : colInc;
   rowInc = (rowInc == 0) ? 1 : rowInc;
 
-  // add/subtract 1 because we want an inclusive range, while iota is exclusive on the upper bound
+  // iota is inclusive on the lower bound; adjust if we want exclusive
+  static if (bound[0] == '(') start += RowCol(rowInc, colInc);
+
+  // iota is exclusive on the upper bound; adjust if we want inclusive
+  static if (bound[1] == ']') end += RowCol(rowInc, colInc);
+
   auto colRange = iota(start.col, end.col, colInc);
   auto rowRange = iota(start.row, end.row, rowInc);
 
@@ -201,6 +213,27 @@ unittest {
   // as the upper bound of span is exclusive, both of these are empty (span over 0 columns):
   assert(RowCol(2,2).span(RowCol(2,2)).empty);
   assert(RowCol(2,2).span(RowCol(5,2)).empty);
+}
+
+/// You can control whether the bounds are inclusive or exclusive
+unittest {
+  import std.algorithm : equal;
+  assert(RowCol(2,2).span!"[]"(RowCol(2,2)).equal([ RowCol(2,2) ]));
+
+  assert(RowCol(2,2).span!"[]"(RowCol(2,5)).equal(
+        [ RowCol(2,2), RowCol(2,3), RowCol(2,4), RowCol(2,5) ]));
+
+  assert(RowCol(5,2).span!"[]"(RowCol(2,2)).equal(
+        [ RowCol(5,2), RowCol(4,2), RowCol(3,2), RowCol(2,2) ]));
+
+  assert(RowCol(2,2).span!"[]"(RowCol(0,0)).equal([ 
+        RowCol(2,2), RowCol(2,1), RowCol(2,0),
+        RowCol(1,2), RowCol(1,1), RowCol(1,0),
+        RowCol(0,2), RowCol(0,1), RowCol(0,0)]));
+
+  assert(RowCol(2,2).span!"(]"(RowCol(3,3)).equal([ RowCol(3,3) ]));
+
+  assert(RowCol(2,2).span!"()"(RowCol(3,3)).empty);
 }
 
 /// ditto
