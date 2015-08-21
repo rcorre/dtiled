@@ -131,20 +131,41 @@ struct RowCol {
     ]));
   }
 
-  /// Add or subtract one coordinate from another.
+  /// Add, subtract, multiply, or divide one coordinate from another.
   @nogc
-  RowCol opBinary(string op)(RowCol rhs) const if (op == "+" || op == "-") {
+  RowCol opBinary(string op)(RowCol rhs) const 
+  if (op == "+" || op == "-" || op == "*" || op == "/") 
+  {
     return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
   }
 
+  /// Binary operations can be performed between coordinates.
   unittest {
-    assert(RowCol(1, 2) + RowCol(4, 1) == RowCol(5, 3));
-    assert(RowCol(4, 2) - RowCol(6, 1) == RowCol(-2, 1));
+    assert(RowCol(1, 2) + RowCol(4,  1) == RowCol( 5,  3));
+    assert(RowCol(4, 2) - RowCol(6,  1) == RowCol(-2,  1));
+    assert(RowCol(4, 2) * RowCol(2, -3) == RowCol( 8, -6));
+    assert(RowCol(8, 4) / RowCol(2, -4) == RowCol( 4, -1));
   }
 
-  /// Add or subtract one coordinate from another in place.
+  /// A coordinate can be multiplied or divided by an integer.
   @nogc
-  void opOpAssign(string op)(RowCol rhs) if (op == "+" || op == "-") {
+  RowCol opBinary(string op, T : coord_t)(T rhs) const 
+  if (op == "*" || op == "/") 
+  {
+    return mixin(q{RowCol(this.row %s rhs, this.col %s rhs)}.format(op, op));
+  }
+
+  /// Multiply/divide a coord by a constant
+  unittest {
+    assert(RowCol(1, 2) * -4 == RowCol(-4, -8));
+    assert(RowCol(4, -6) / 2 == RowCol(2, -3));
+  }
+
+  /// Add, subtract, multiply, or divide one coordinate from another in place.
+  @nogc
+  void opOpAssign(string op, T)(T rhs) 
+  if (is(typeof(this.opBinary!op(rhs)))) 
+  {
     this = this.opBinary!op(rhs);
   }
 
@@ -152,6 +173,16 @@ struct RowCol {
     auto rc = RowCol(1, 2);
     rc += RowCol(4, 1);
     assert(rc == RowCol(5, 3));
+    rc -= RowCol(2, -1);
+    assert(rc == RowCol(3, 4));
+    rc *= RowCol(-2, 4);
+    assert(rc == RowCol(-6, 16));
+    rc /= RowCol(-3, 2);
+    assert(rc == RowCol(2, 8));
+    rc *= 2;
+    assert(rc == RowCol(4, 16));
+    rc /= 4;
+    assert(rc == RowCol(1, 4));
   }
 }
 
