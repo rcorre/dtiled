@@ -1,0 +1,14 @@
+name        "dtiled"
+description "Parse Tiled map files"
+copyright   "Copyright © 2015, rcorre"
+license     "MIT"
+authors     "rcorre"
+
+dependency "jsonizer" version="~>0.5.0"
+
+configuration "library" { }
+
+configuration "unittest" {
+  importPaths [ "src", "tests" ]
+  sourcePaths [ "src", "tests" ]
+}
