@@ -116,6 +116,36 @@ unittest {
   assert(tiles.enclosedTiles!isWall(RowCol(5, 0)).empty);
 }
 
+// test for bug with handling up-right diagonal
+unittest {
+  import std.array;
+  import std.algorithm : equal;
+
+  // 'a' is totally enclosed
+  auto tiles1 = rectGrid([
+    // 0    1    2
+    [ 'X', 'X', 'X' ], // 1
+    [ 'X', 'a', 'X' ], // 2
+    [ 'X', 'X', 'X' ], // 3
+  ]);
+
+  // there is an escape diagonally up and right
+  auto tiles2 = rectGrid([
+    // 0    1    2
+    [ 'X', 'X', 'a' ], // 1
+    [ 'X', 'a', 'X' ], // 2
+    [ 'X', 'X', 'X' ], // 3
+  ]);
+
+  static bool isWall(char c) { return c == 'X'; }
+
+  assert(!tiles1.enclosedTiles!isWall(RowCol(1, 1), Diagonals.no).empty);
+  assert(!tiles1.enclosedTiles!isWall(RowCol(1, 1), Diagonals.no).empty);
+
+  assert(!tiles1.enclosedTiles!isWall(RowCol(1, 1), Diagonals.yes).empty);
+  assert( tiles1.enclosedTiles!isWall(RowCol(1, 1), Diagonals.yes).empty);
+}
+
 /// Same as floodTiles, but return coordinates instead of the tiles at those coordinates.
 auto floodCoords(alias pred, T)(T grid, RowCol origin, Diagonals diags = Diagonals.no)
   if (is(typeof(pred(grid.tileAt(RowCol(0,0)))) : bool))
