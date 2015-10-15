@@ -6,9 +6,9 @@ authors     "rcorre"
 
 dependency "jsonizer" version="~>0.5.0"
 
-configuration "library" { }
+configuration "library"
 
 configuration "unittest" {
-  importPaths [ "src", "tests" ]
-  sourcePaths [ "src", "tests" ]
+  importPaths "src" "tests"
+  sourcePaths "src" "tests"
 }
