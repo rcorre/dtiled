@@ -6,9 +6,12 @@ authors     "rcorre"
 
 dependency "jsonizer" version="~>0.5.0"
 
-configuration "library"
+configuration "library" {
+  targetType "library"
+}
 
 configuration "unittest" {
+  targetType "library"
   importPaths "src" "tests"
   sourcePaths "src" "tests"
 }
