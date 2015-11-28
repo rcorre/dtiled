@@ -133,8 +133,8 @@ struct RowCol {
 
   /// Add, subtract, multiply, or divide one coordinate from another.
   @nogc
-  RowCol opBinary(string op)(RowCol rhs) const 
-  if (op == "+" || op == "-" || op == "*" || op == "/") 
+  RowCol opBinary(string op)(RowCol rhs) const
+  if (op == "+" || op == "-" || op == "*" || op == "/")
   {
     return mixin(q{RowCol(this.row %s rhs.row, this.col %s rhs.col)}.format(op, op));
   }
@@ -149,8 +149,8 @@ struct RowCol {
 
   /// A coordinate can be multiplied or divided by an integer.
   @nogc
-  RowCol opBinary(string op, T : coord_t)(T rhs) const 
-  if (op == "*" || op == "/") 
+  RowCol opBinary(string op, T : coord_t)(T rhs) const
+  if (op == "*" || op == "/")
   {
     return mixin(q{RowCol(this.row %s rhs, this.col %s rhs)}.format(op, op));
   }
@@ -163,8 +163,8 @@ struct RowCol {
 
   /// Add, subtract, multiply, or divide one coordinate from another in place.
   @nogc
-  void opOpAssign(string op, T)(T rhs) 
-  if (is(typeof(this.opBinary!op(rhs)))) 
+  void opOpAssign(string op, T)(T rhs)
+  if (is(typeof(this.opBinary!op(rhs))))
   {
     this = this.opBinary!op(rhs);
   }
@@ -202,8 +202,8 @@ struct RowCol {
  *  end   = RowCol pair to end enumeration at, $(B exclusive)
  */
 auto span(string bound = "[)")(RowCol start, RowCol end) {
-  enum validBounds = [ "()",  "(]", "[)", "[]" ]; 
-  static assert(validBounds.canFind(bound), 
+  enum validBounds = [ "()",  "(]", "[)", "[]" ];
+  static assert(validBounds.canFind(bound),
       bound ~ " is an invalid span bound. Try one of " ~ validBounds.toString);
 
   // direction to increment the rows/cols (1 or -1)
@@ -257,7 +257,7 @@ unittest {
   assert(RowCol(5,2).span!"[]"(RowCol(2,2)).equal(
         [ RowCol(5,2), RowCol(4,2), RowCol(3,2), RowCol(2,2) ]));
 
-  assert(RowCol(2,2).span!"[]"(RowCol(0,0)).equal([ 
+  assert(RowCol(2,2).span!"[]"(RowCol(0,0)).equal([
         RowCol(2,2), RowCol(2,1), RowCol(2,0),
         RowCol(1,2), RowCol(1,1), RowCol(1,0),
         RowCol(0,2), RowCol(0,1), RowCol(0,0)]));
