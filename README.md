@@ -121,7 +121,7 @@ auto loadMap(string path) {
     // in our case, this will always return our only have a single tileset
     // if you use more than one tileset, this will choose the appropriate
     // tileset based on the GID.
-    auto tileset = data.getTileset(gid);
+    auto tileset = mapData.getTileset(gid);
 
     // find which region in the 'tile atlas' this GID is mapped to.
     // this will be the `region` argument to our `drawBitmapRegion` function
@@ -133,12 +133,13 @@ auto loadMap(string path) {
     return Tile(region);
   }
 
-  auto tiles = data.getLayer("ground") // grab the layer named ground
-    .data                              // iterate over the GIDs in that layer
-    .map!(x => buildTile(x))           // build a Tile based on the GID
-    .chunks(data.numCols)              // chunk into rows
-    .map!(x => x.array)                // create an array from each row
-    .array;                            // create an array of all the row arrays
+  auto tiles = mapData
+    .getLayer("ground")      // grab the layer named ground
+    .data                    // iterate over the GIDs in that layer
+    .map!(x => buildTile(x)) // build a Tile based on the GID
+    .chunks(mapData.numCols) // chunk into rows
+    .map!(x => x.array)      // create an array from each row
+    .array;                  // create an array of all the row arrays
 
   // our map wraps the 2D tile array, also storing information about tile size.
   return OrthoMap!Tile(tiles, mapData.tileWidth, mapData.tileHeight);
