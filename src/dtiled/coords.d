@@ -23,11 +23,19 @@ module dtiled.coords;
 import std.conv      : to;
 import std.math      : abs, sgn;
 import std.range     : iota, only, take, chain;
+import std.traits    : Signed;
 import std.format    : format;
 import std.typecons  : Tuple, Flag;
 import std.algorithm : map, canFind, cartesianProduct;
 
-private alias coord_t = long;
+/* This is the type used for map coordinates.
+ * Use the platform's size_t as it will be used to index arrays.
+ * However, make it signed to represent 'virtual' coordinates outside the maps
+ * bounds.
+ * This is useful for representing, for example, a mouse that is positioned
+ * to the left of the leftmost tile in a map.
+ */
+private alias coord_t = Signed!size_t;
 
 /// Whether to consider diagonals adjacent in situations dealing with the concept of adjacency.
 alias Diagonals = Flag!"Diagonals";
