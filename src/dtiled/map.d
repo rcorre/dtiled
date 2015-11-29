@@ -79,15 +79,46 @@ struct OrthoMap(Tile) {
    * Use the containsPoint method to check if a point is in bounds.
    */
   auto coordAtPoint(T)(T pos) if (isPixelCoord!T) {
-    import std.math   : floor, lround;
+    import std.math : floor;
+    import std.traits : isFloatingPoint, Select;
 
-    return RowCol(floor(pos.y / tileHeight).lround,
-                  floor(pos.x / tileWidth).lround);
+    /* if T is not floating, cast to float for operation.
+     * this ensures that an integral value below zero is rounded more negative,
+     * so anything even slightly out of bounds gets a negative coord.
+     */
+    alias F = Select!(isFloatingPoint!T, T, float);
+
+    // we need to cast the result back to the integral coordinate type
+    alias coord_t = typeof(RowCol.row);
+
+    return RowCol(cast(coord_t) floor(pos.y / cast(F) tileHeight),
+                  cast(coord_t) floor(pos.x / cast(F) tileWidth));
   }
 
   ///
   unittest {
     struct Vec { float x, y; }
+
+    // 5x3 map, rows from 0 to 4, cols from 0 to 2
+    auto tiles = [
+      [ 00, 01, 02, 03, 04, ],
+      [ 10, 11, 12, 13, 14, ],
+      [ 20, 21, 22, 23, 24, ],
+    ];
+    auto map = OrthoMap!int(tiles, 32, 32);
+
+    assert(map.coordAtPoint(Vec(0   , 0  )) == RowCol(0  , 0 ));
+    assert(map.coordAtPoint(Vec(16  , 16 )) == RowCol(0  , 0 ));
+    assert(map.coordAtPoint(Vec(32  , 0  )) == RowCol(0  , 1 ));
+    assert(map.coordAtPoint(Vec(0   , 45 )) == RowCol(1  , 0 ));
+    assert(map.coordAtPoint(Vec(105 , 170)) == RowCol(5  , 3 ));
+    assert(map.coordAtPoint(Vec(-10 , 0  )) == RowCol(0  , -1));
+    assert(map.coordAtPoint(Vec(-32 , -33)) == RowCol(-2 , -1));
+  }
+
+  // test with an int pixel coord type
+  unittest {
+    struct Vec { int x, y; }
 
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
     auto tiles = [
