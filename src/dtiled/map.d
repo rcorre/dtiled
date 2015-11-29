@@ -80,18 +80,15 @@ struct OrthoMap(Tile) {
    */
   auto coordAtPoint(T)(T pos) if (isPixelCoord!T) {
     import std.math   : floor, lround;
-    import std.traits : isFloatingPoint, Select;
-    // if T is not floating, cast to float for operation
-    alias F = Select!(isFloatingPoint!T, T, float);
 
-    RowCol coord;
-    coord.col = floor(pos.x / cast(F) tileWidth).lround;
-    coord.row = floor(pos.y / cast(F) tileHeight).lround;
-    return coord;
+    return RowCol(floor(pos.y / tileHeight).lround,
+                  floor(pos.x / tileWidth).lround);
   }
 
   ///
   unittest {
+    struct Vec { float x, y; }
+
     // 5x3 map, rows from 0 to 4, cols from 0 to 2
     auto tiles = [
       [ 00, 01, 02, 03, 04, ],
@@ -100,13 +97,13 @@ struct OrthoMap(Tile) {
     ];
     auto map = OrthoMap!int(tiles, 32, 32);
 
-    assert( map.contains(RowCol(0 , 0))); // top left
-    assert( map.contains(RowCol(2 , 4))); // bottom right
-    assert( map.contains(RowCol(1 , 3))); // center
-    assert(!map.contains(RowCol(3 , 0))); // beyond bottom border
-    assert(!map.contains(RowCol(0 , 5))); // beyond right border
-    assert(!map.contains(RowCol(0 ,-1))); // beyond left border
-    assert(!map.contains(RowCol(-1, 0))); // beyond top border
+    assert(map.coordAtPoint(Vec(0   , 0  )) == RowCol(0  , 0 ));
+    assert(map.coordAtPoint(Vec(16  , 16 )) == RowCol(0  , 0 ));
+    assert(map.coordAtPoint(Vec(32  , 0  )) == RowCol(0  , 1 ));
+    assert(map.coordAtPoint(Vec(0   , 45 )) == RowCol(1  , 0 ));
+    assert(map.coordAtPoint(Vec(105 , 170)) == RowCol(5  , 3 ));
+    assert(map.coordAtPoint(Vec(-10 , 0  )) == RowCol(0  , -1));
+    assert(map.coordAtPoint(Vec(-32 , -33)) == RowCol(-2 , -1));
   }
 
   /**
