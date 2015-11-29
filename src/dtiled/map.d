@@ -1,14 +1,14 @@
 /**
  * A map is essentially a grid with additional information about tile positions and sizes.
- * 
+ *
  * Currently, the only map type is `OrthoMap`, but `IsoMap` and `HexMap` may be added in later
  * versions.
- * 
+ *
  * An `OrthoMap` represents a map of rectangular (usually square) tiles that are arranged
  * orthogonally. In other words, all tiles in a row are at the same y corrdinate, and all tiles in
  * a column are at the same x coordinate (as opposed to an Isometric map, where there is an offset).
- * 
- * An `OrthoMap` provides all of the functionality as `RectGrid`. 
+ *
+ * An `OrthoMap` provides all of the functionality as `RectGrid`.
  * It also stores the size of tiles and provides functions to translate between 'grid coordinates'
  * (row/column) and 'screen coordinates' (x/y pixel positions).
  *
