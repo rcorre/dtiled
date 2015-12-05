@@ -1,6 +1,8 @@
 DTiled: D language Tiled map parser.
 ===
 
+[![Join the chat at https://gitter.im/rcorre/dtiled](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rcorre/dtiled?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Do you like tilemap-based games?
 How about the D programming language?
 Would you like to make a tilemapped game in D?
