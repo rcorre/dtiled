@@ -143,7 +143,7 @@ struct MapData {
    */
   auto getTileset(string name) {
     auto r = tilesets.find!(x => x.name == name);
-    enforce(!r.empty, "Could not find layer named %s".format(name));
+    enforce(!r.empty, "Could not find tileset named %s".format(name));
     return r.front;
   }
 
