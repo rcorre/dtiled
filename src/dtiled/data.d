@@ -69,7 +69,7 @@ struct MapData {
   }
 
   /* Data */
-  @jsonize(JsonizeOptional.no) {
+  @jsonize(Jsonize.yes) {
     @jsonize("width")      int numCols;    /// Number of tile columns
     @jsonize("height")     int numRows;    /// Number of tile rows
     @jsonize("tilewidth")  int tileWidth;  /// General grid size. Individual tiles sizes may differ.
@@ -79,7 +79,7 @@ struct MapData {
     TilesetData[] tilesets;                /// All tile sets defined in this map
   }
 
-  @jsonize(JsonizeOptional.yes) {
+  @jsonize(Jsonize.opt) {
     @jsonize("backgroundcolor") string backgroundColor; /// Hex-formatted background color (#RRGGBB)
     @jsonize("renderorder")     string renderOrder;     /// Rendering direction (orthogonal only)
     @jsonize("nextobjectid")    int    nextObjectId;    /// Global counter across all objects
@@ -196,7 +196,7 @@ struct LayerData {
     imagelayer   /// TODO: try actually creating one of these
   }
 
-  @jsonize(JsonizeOptional.no) {
+  @jsonize(Jsonize.yes) {
     @jsonize("width")  int numCols; /// Number of tile columns. Identical to map width in Tiled Qt.
     @jsonize("height") int numRows; /// Number of tile rows. Identical to map height in Tiled Qt.
     string name;                    /// Name assigned to this layer
@@ -207,7 +207,7 @@ struct LayerData {
   }
 
   // These entries exist only on object layers
-  @jsonize(JsonizeOptional.yes) {
+  @jsonize(Jsonize.opt) {
     TiledGid[] data;                        /// An array of tile GIDs. Only for `tilelayer`
     ObjectData[] objects;                   /// An array of objects. Only on `objectgroup` layers.
     string[string] properties;              /// Optional key-value properties for this layer
@@ -259,7 +259,7 @@ struct LayerData {
  */
 struct ObjectData {
   mixin JsonizeMe;
-  @jsonize(JsonizeOptional.no) {
+  @jsonize(Jsonize.yes) {
     int id;                    /// Incremental id - unique across all objects
     int width;                 /// Width in pixels. Ignored if using a gid.
     int height;                /// Height in pixels. Ignored if using a gid.
@@ -272,7 +272,7 @@ struct ObjectData {
     float rotation;            /// Angle in degrees clockwise
   }
 
-  @jsonize(JsonizeOptional.yes) {
+  @jsonize(Jsonize.opt) {
     TiledGid gid; /// Identifies a tile in a tileset if this object is represented by a tile
   }
 }
@@ -287,7 +287,7 @@ struct ObjectData {
  */
 struct TilesetData {
   mixin JsonizeMe;
-  @jsonize(JsonizeOptional.no) {
+  @jsonize(Jsonize.yes) {
     string name;                               /// Name given to this tileset
     string image;                              /// Image used for tiles in this set
     int margin;                                /// Buffer between image edge and tiles (in pixels)
@@ -300,7 +300,7 @@ struct TilesetData {
     @jsonize("imageheight") int imageHeight;   /// Height of source image in pixels
   }
 
-  @jsonize(JsonizeOptional.yes) {
+  @jsonize(Jsonize.opt) {
     /** Optional per-tile properties, indexed by the relative ID as a string.
      *
      * $(RED Note:) The ID is $(B not) the same as the GID. The ID is calculated relative to the
