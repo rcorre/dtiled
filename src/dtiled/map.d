@@ -18,6 +18,7 @@
  */
 module dtiled.map;
 
+import std.format;
 import dtiled.coords;
 import dtiled.grid;
 
